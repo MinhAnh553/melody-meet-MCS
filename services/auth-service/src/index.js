@@ -9,7 +9,7 @@ import { RedisStore } from 'rate-limit-redis';
 
 import { connectDB } from './config/database.js';
 import authRoutes from './routes/authRoute.js';
-import logger from './util/logger.js';
+import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 dotenv.config();

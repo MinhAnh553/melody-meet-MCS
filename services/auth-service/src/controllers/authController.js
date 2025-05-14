@@ -5,8 +5,8 @@ import userModel from '../models/userModel.js';
 import otpModel from '../models/otpModel.js';
 import mailTemplate from '../templates/mailTemplate.js';
 import emailProvider from '../providers/emailProvider.js';
-import logger from '../util/logger.js';
-import { validateRegister, validateVerify } from '../util/validation.js';
+import logger from '../utils/logger.js';
+import { validateRegister, validateVerify } from '../utils/validation.js';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
