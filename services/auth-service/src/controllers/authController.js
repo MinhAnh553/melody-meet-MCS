@@ -3,10 +3,16 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 import otpModel from '../models/otpModel.js';
+import refreshTokenModel from '../models/refreshTokenModel.js';
 import mailTemplate from '../templates/mailTemplate.js';
 import emailProvider from '../providers/emailProvider.js';
 import logger from '../utils/logger.js';
-import { validateRegister, validateVerify } from '../utils/validation.js';
+import {
+    validateRegister,
+    validateVerify,
+    validateLogin,
+} from '../utils/validation.js';
+
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -87,6 +93,16 @@ const verifyAndRegister = async (req, res) => {
             });
         }
 
+        // Check if user exists
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            logger.error('Validation error: User already exists');
+            return res.status(400).json({
+                success: false,
+                message: 'Email đã được đăng ký',
+            });
+        }
+
         // Verify code
         const verificationRecord = await otpModel.findOne({
             email,
@@ -119,6 +135,13 @@ const verifyAndRegister = async (req, res) => {
             { expiresIn: '7d' },
         );
 
+        // Save refresh token to database
+        await refreshTokenModel.create({
+            token: refreshToken,
+            userId: newUser._id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+
         logger.info(`User registered successfully: ${email}`);
         res.status(201).json({
             success: true,
@@ -135,7 +158,196 @@ const verifyAndRegister = async (req, res) => {
     }
 };
 
+// Login
+const login = async (req, res) => {
+    const { email, password } = req.body;
+    logger.info(`Login request received for email: ${email}`);
+    try {
+        // Validate input
+        const { error } = validateLogin.validate(req.body);
+        if (error) {
+            logger.error('Validation error:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message,
+            });
+        }
+
+        // Check if user exists
+        const user = await userModel.findOne({ email, deleted: false });
+        if (!user) {
+            logger.error('Validation error: User not found');
+            return res.status(400).json({
+                success: false,
+                message: 'Email hoặc mật khẩu không chính xác',
+            });
+        }
+
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            logger.error('Validation error: Invalid password');
+            return res.status(400).json({
+                success: false,
+                message: 'Email hoặc mật khẩu không chính xác',
+            });
+        }
+
+        // Xóa refreshToken cũ
+        await refreshTokenModel.deleteMany({ userId: user._id });
+
+        // Generate tokens
+        const accessToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
+            expiresIn: '1h',
+        });
+
+        // Generate refresh token
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' },
+        );
+
+        // Save refresh token to database
+        await refreshTokenModel.create({
+            token: refreshToken,
+            userId: user._id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+
+        logger.info(`User logged in successfully: ${email}`);
+        res.status(200).json({
+            success: true,
+            message: 'Đăng nhập thành công',
+            accessToken,
+            refreshToken,
+        });
+    } catch (error) {
+        logger.error('Login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// Refresh token
+const refreshTokenUser = async (req, res) => {
+    logger.info(`Refresh token request received`);
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            logger.error('Validation error: Refresh token is required');
+            return res.status(400).json({
+                success: false,
+                message: 'Refresh token là bắt buộc',
+            });
+        }
+
+        // Verify refresh token
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+        } catch (err) {
+            logger.error('Invalid refresh token signature');
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token không hợp lệ',
+            });
+        }
+
+        const storedToken = await refreshTokenModel.findOne({
+            token: refreshToken,
+        });
+        if (!storedToken || storedToken.expiresAt < new Date()) {
+            logger.error('Invalid or expired refresh token');
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token không hợp lệ hoặc đã hết hạn',
+            });
+        }
+
+        const user = await userModel.findById(storedToken.userId);
+        if (!user) {
+            logger.error('User not found');
+            return res.status(404).json({
+                success: false,
+                message: 'Người dùng không tồn tại',
+            });
+        }
+
+        // Generate new access token
+        const accessToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
+            expiresIn: '1h',
+        });
+
+        // Generate new refresh token
+        const newRefreshToken = jwt.sign(
+            { userId: user._id },
+            REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' },
+        );
+
+        // Xóa refreshToken cũ
+        await refreshTokenModel.deleteOne({ _id: storedToken._id });
+
+        // Save new refresh token to database
+        await refreshTokenModel.create({
+            token: newRefreshToken,
+            userId: user._id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+
+        logger.info(`New refresh token generated and saved`);
+        res.status(200).json({
+            success: true,
+            message: 'Refresh token đã được cập nhật',
+            accessToken,
+            refreshToken: newRefreshToken,
+        });
+    } catch (error) {
+        logger.error('Refresh token error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// Logout
+const logout = async (req, res) => {
+    logger.info(`Logout request received`);
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            logger.error('Validation error: Refresh token is required');
+            return res.status(400).json({
+                success: false,
+                message: 'Refresh token là bắt buộc',
+            });
+        }
+
+        // Xóa refreshToken từ database
+        await refreshTokenModel.deleteOne({ token: refreshToken });
+
+        logger.info(`User logged out successfully`);
+        res.status(200).json({
+            success: true,
+            message: 'Đăng xuất thành công',
+        });
+    } catch (error) {
+        logger.error('Logout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
+    login,
+    refreshTokenUser,
+    logout,
 };
