@@ -1,5 +1,8 @@
 import logger from '../utils/logger.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const validateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];

@@ -6,8 +6,8 @@ import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import proxy from 'express-http-proxy';
-
 import logger from './utils/logger.js';
+import validateToken from './middlewares/authMiddleware.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 dotenv.config();
@@ -39,7 +39,7 @@ const rateLimitOptions = rateLimit({
     }),
 });
 
-app.use(rateLimitOptions);
+// app.use(rateLimitOptions);
 
 app.use((req, res, next) => {
     logger.info(`Received ${req.method} request to ${req.url}`);
@@ -67,7 +67,7 @@ app.use(
     proxy(process.env.AUTH_SERVICE_URL, {
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-            proxyReqOpts.headers['Content-Type'] = 'application/json';
+            proxyReqOpts.headers['content-type'] = 'application/json';
             return proxyReqOpts;
         },
         userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
@@ -80,10 +80,40 @@ app.use(
     }),
 );
 
+// Setting up proxy for our event service
+app.use(
+    '/v1/events',
+    validateToken,
+    proxy(process.env.EVENT_SERVICE_URL, {
+        ...proxyOptions,
+        proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+            proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
+            if (
+                !srcReq.headers['content-type'].startsWith(
+                    'multipart/form-data',
+                )
+            ) {
+                proxyReqOpts.headers['content-type'] = 'application/json';
+            }
+
+            return proxyReqOpts;
+        },
+        userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+            logger.info(
+                'Response received from event service:',
+                proxyRes.statusCode,
+            );
+            return proxyResData;
+        },
+        parseReqBody: false,
+    }),
+);
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
     logger.info(`🚀 API Gateway running on port ${PORT}`);
     logger.info(`🚀 Auth Service running on ${process.env.AUTH_SERVICE_URL}`);
+    logger.info(`🚀 Event Service running on ${process.env.EVENT_SERVICE_URL}`);
     logger.info(`Redis URL: ${process.env.REDIS_URL}`);
 });
