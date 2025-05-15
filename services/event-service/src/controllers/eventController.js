@@ -3,6 +3,14 @@ import logger from '../utils/logger.js';
 import { validateCreateEvent } from '../utils/validation.js';
 import { deleteMultipleCloudinaryImages } from '../providers/cloudinaryProvider.js';
 
+async function invalidateEventCache(req) {
+    const keys = await req.redisClient.keys('events:*');
+    if (keys.length > 0) {
+        await req.redisClient.del(keys);
+        logger.info('Invalidate event cache');
+    }
+}
+
 const createEvent = async (req, res) => {
     logger.info('Create event controller');
     let uploadedImages = [];
@@ -70,6 +78,8 @@ const createEvent = async (req, res) => {
         }
 
         const event = await eventModel.create(eventData);
+        await invalidateEventCache(req);
+
         logger.info('Event created successfully');
         return res.status(201).json({
             success: true,
@@ -89,6 +99,92 @@ const createEvent = async (req, res) => {
     }
 };
 
+const getAllEvents = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+
+        const cacheKey = `events:${page}:${limit}`;
+        const cachedEvents = await req.redisClient.get(cacheKey);
+
+        if (cachedEvents) {
+            logger.info('Get all events from cache');
+            return res.status(200).json(JSON.parse(cachedEvents));
+        }
+
+        const [events, totalNoOfEvents] = await Promise.all([
+            eventModel
+                .find()
+                .sort({ createdAt: -1 })
+                .skip(startIndex)
+                .limit(limit),
+            eventModel.countDocuments(),
+        ]);
+
+        const result = {
+            success: true,
+            events,
+            currentPage: page,
+            totalPages: Math.ceil(totalNoOfEvents / limit),
+            totalEvents: totalNoOfEvents,
+        };
+
+        // Cache the result for 5 minutes
+        await req.redisClient.setex(cacheKey, 300, JSON.stringify(result));
+        logger.info('Get all events from database');
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get all events error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+const getEventById = async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        const cacheKey = `event:${eventId}`;
+        const cachedEvent = await req.redisClient.get(cacheKey);
+
+        if (cachedEvent) {
+            logger.info('Get event by id from cache');
+            return res.status(200).json({
+                success: true,
+                data: JSON.parse(cachedEvent),
+            });
+        }
+
+        const event = await eventModel.findById(eventId);
+
+        if (!event) {
+            logger.error('Event not found');
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(event));
+        logger.info('Get event by id from database');
+
+        return res.status(200).json({
+            success: true,
+            data: event,
+        });
+    } catch (error) {
+        logger.error('Get event by id error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
+    getAllEvents,
+    getEventById,
 };

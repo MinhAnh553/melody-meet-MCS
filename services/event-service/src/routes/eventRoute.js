@@ -15,6 +15,9 @@ Router.route('/create').post(
 );
 
 // Get all events
-// Router.route('/').get(eventController.getAllEvents);
+Router.route('/all-events').get(eventController.getAllEvents);
+
+// Get event by id
+Router.route('/:id').get(eventController.getEventById);
 
 export default Router;
