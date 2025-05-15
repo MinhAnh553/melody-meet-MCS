@@ -11,6 +11,7 @@ import { connectDB } from './config/database.js';
 import eventRoutes from './routes/eventRoute.js';
 import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
+import { connectRabbitMQ } from './providers/rabbitmqProvider.js';
 
 dotenv.config();
 const app = express();
@@ -85,9 +86,19 @@ app.use(
 // Error handling middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-    logger.info(`🚀 Event Service running on port ${PORT}`);
-});
+async function startServer() {
+    try {
+        await connectRabbitMQ();
+        app.listen(PORT, () => {
+            logger.info(`🚀 Event Service running on port ${PORT}`);
+        });
+    } catch (error) {
+        logger.error('Error starting server:', error);
+        process.exit(1);
+    }
+}
+
+startServer();
 
 // Unhandled promise rejection
 process.on('unhandledRejection', (reason, promise) => {
