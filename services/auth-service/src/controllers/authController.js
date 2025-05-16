@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 import otpModel from '../models/otpModel.js';
-import refreshTokenModel from '../models/refreshTokenModel.js';
 import mailTemplate from '../templates/mailTemplate.js';
 import emailProvider from '../providers/emailProvider.js';
 import logger from '../utils/logger.js';
@@ -128,13 +127,6 @@ const verifyAndRegister = async (req, res) => {
         // Generate tokens
         const tokens = generateTokens(newUser);
 
-        // Lưu refresh token vào database
-        await refreshTokenModel.create({
-            token: tokens.refreshToken,
-            userId: newUser._id,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        });
-
         logger.info(`User registered successfully: ${email}`);
         res.status(201).json({
             success: true,
@@ -186,18 +178,8 @@ const login = async (req, res) => {
             });
         }
 
-        // Xóa refreshToken cũ
-        await refreshTokenModel.deleteOne({ userId: user._id });
-
         // Generate tokens
         const tokens = generateTokens(user);
-
-        // Lưu refresh token vào database
-        await refreshTokenModel.create({
-            token: tokens.refreshToken,
-            userId: user._id,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        });
 
         logger.info(`User logged in successfully: ${email}`);
         res.status(200).json({
@@ -235,7 +217,6 @@ const refreshToken = async (req, res) => {
             });
         }
 
-        // Bước 1: Verify JWT trước
         let decoded;
         try {
             decoded = verifyRefreshToken(refreshToken);
@@ -246,34 +227,6 @@ const refreshToken = async (req, res) => {
             });
         }
 
-        // Bước 2: Tìm token trong DB
-        const refreshTokenRecord = await refreshTokenModel.findOne({
-            token: refreshToken,
-        });
-
-        if (!refreshTokenRecord) {
-            return res.status(403).json({
-                success: false,
-                message: 'Refresh token không hợp lệ hoặc đã bị thu hồi',
-            });
-        }
-
-        // Bước 3: So khớp userId
-        if (refreshTokenRecord.userId.toString() !== decoded.userId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Refresh token không khớp với người dùng',
-            });
-        }
-
-        // Bước 4: Kiểm tra thời hạn
-        if (refreshTokenRecord.expiresAt < new Date()) {
-            return res.status(403).json({
-                success: false,
-                message: 'Refresh token đã hết hạn',
-            });
-        }
-
         const user = await userModel.findById(decoded.userId);
         if (!user) {
             return res.status(404).json({
@@ -281,17 +234,7 @@ const refreshToken = async (req, res) => {
                 message: 'Người dùng không tồn tại',
             });
         }
-
-        // Bước 5: Xoá token cũ và tạo mới
-        await refreshTokenModel.deleteOne({ userId: user._id });
-
         const tokens = generateTokens(user);
-
-        await refreshTokenModel.create({
-            token: tokens.refreshToken,
-            userId: user._id,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày
-        });
 
         return res.status(200).json({
             success: true,
@@ -299,9 +242,15 @@ const refreshToken = async (req, res) => {
         });
     } catch (error) {
         logger.error('Refresh token error:', error);
-        return res.status(500).json({
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token đã hết hạn',
+            });
+        }
+        return res.status(403).json({
             success: false,
-            message: 'Lỗi server khi xử lý refresh token',
+            message: 'Refresh token không hợp lệ',
         });
     }
 };
@@ -318,9 +267,6 @@ const logout = async (req, res) => {
                 message: 'Refresh token là bắt buộc',
             });
         }
-
-        // Xóa refreshToken từ database
-        await refreshTokenModel.deleteOne({ token: refreshToken });
 
         logger.info(`User logged out successfully`);
         res.status(200).json({
