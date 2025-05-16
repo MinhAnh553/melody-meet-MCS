@@ -1,0 +1,283 @@
+.ticketsContainer {
+    padding: 1rem 0;
+}
+
+.pageTitle {
+    margin-bottom: 1.5rem;
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.searchFilter {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.searchInput {
+    min-width: 250px;
+}
+
+.tableActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionButton {
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.viewButton {
+    color: var(--secondary-color);
+}
+
+.editButton {
+    color: var(--warning-color);
+}
+
+.deleteButton {
+    color: var(--danger-color);
+}
+
+.actionButton:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.statusBadge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 50rem;
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.statusBadgeAvailable {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: var(--success-color);
+}
+
+.statusBadgeSold {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: var(--danger-color);
+}
+
+.statusBadgeReserved {
+    background-color: rgba(243, 156, 18, 0.2);
+    color: var(--warning-color);
+}
+
+.ticketTable {
+    min-width: 800px;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.ticketGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.ticketCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ticketCard:hover {
+    transform: translateY(-5px);
+}
+
+.ticketCardImage {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.ticketCardContent {
+    padding: 1.5rem;
+}
+
+.ticketCardTitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ticketCardInfo {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.ticketCardDetails {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.ticketCardPrice {
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+.ticketCardActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.formGroup {
+    margin-bottom: 1rem;
+}
+
+.formLabel {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.ticketFormGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .ticketFormGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.imagePreview {
+    width: 100%;
+    max-width: 300px;
+    height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    background-color: var(--dark-bg);
+    border: 1px dashed var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.imagePreviewLabel {
+    cursor: pointer;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.modalTitle {
+    color: var(--text-light);
+}
+
+.modalFooter {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.ticketDetailsCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.ticketDetailsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.ticketDetailsTitle {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.ticketDetailsEvent {
+    color: var(--text-secondary);
+}
+
+.ticketDetailsInfo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .ticketDetailsInfo {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ticketStatsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .ticketStatsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ticketStatCard {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.ticketStatValue {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.ticketStatLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}

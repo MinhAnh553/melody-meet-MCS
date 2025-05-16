@@ -1,0 +1,167 @@
+.dashboardContainer {
+    padding: 1rem 0;
+}
+
+.pageTitle {
+    margin-bottom: 1.5rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.statCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.statCard:hover {
+    transform: translateY(-5px);
+}
+
+.statIcon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    align-self: flex-start;
+}
+
+.statValue {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.statLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.revenueIcon {
+    color: var(--success-color);
+}
+
+.userIcon {
+    color: var(--secondary-color);
+}
+
+.eventIcon {
+    color: var(--warning-color);
+}
+
+.orderIcon {
+    color: var(--danger-color);
+}
+
+.chartsContainer {
+    /* display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem; */
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 992px) {
+    .chartsContainer {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chartCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.chartTitle {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+}
+
+.recentActivitiesCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.activityItem {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.activityItem:last-child {
+    border-bottom: none;
+}
+
+.activityIcon {
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activityIconSuccess {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: var(--success-color);
+}
+
+.activityIconWarning {
+    background-color: rgba(243, 156, 18, 0.2);
+    color: var(--warning-color);
+}
+
+.activityIconDanger {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: var(--danger-color);
+}
+
+.activityIconInfo {
+    background-color: rgba(52, 152, 219, 0.2);
+    color: var(--secondary-color);
+}
+
+.activityContent {
+    flex: 1;
+}
+
+.activityTitle {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.activityTime {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.upcomingEventsCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.eventsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}

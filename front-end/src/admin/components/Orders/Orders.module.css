@@ -1,0 +1,323 @@
+.ordersContainer {
+    padding: 1rem 0;
+}
+
+.pageTitle {
+    margin-bottom: 1.5rem;
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.searchFilter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.searchInput {
+    min-width: 350px;
+    flex: 1;
+}
+
+.searchFilter select {
+    width: auto;
+}
+
+.tableActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionButton {
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.viewButton {
+    color: var(--secondary-color);
+}
+
+.editButton {
+    color: var(--warning-color);
+}
+
+.deleteButton {
+    color: var(--danger-color);
+}
+
+.actionButton:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.statusBadge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 50rem;
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: var(--warning-color);
+}
+
+.statusBadgeCompleted {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    color: var(--success-color);
+}
+
+.statusBadgeCancelled {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    color: var(--danger-color);
+}
+
+.orderTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.orderTable thead {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: bold;
+}
+
+.orderTable th,
+.orderTable td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.orderTable tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.orderTable th {
+    cursor: pointer;
+    position: relative;
+}
+
+.orderTable th:hover {
+    background-color: #ececec;
+}
+
+.orderTable th::after {
+    content: ' ▼';
+    font-size: 12px;
+    color: #666;
+    margin-left: 5px;
+    visibility: hidden;
+}
+
+.orderTable th:hover::after {
+    visibility: visible;
+}
+
+.orderTable td {
+    color: #555;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.orderDetailsCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.orderDetailsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.orderInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.orderIDLabel {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.orderID {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.orderDate {
+    color: var(--text-secondary);
+}
+
+.orderStatusContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.orderTotal {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.orderTotalLabel {
+    color: var(--text-secondary);
+}
+
+.orderDetailsSection {
+    margin-bottom: 2rem;
+}
+
+.orderDetailsSectionTitle {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.orderUserInfo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .orderUserInfo {
+        grid-template-columns: 1fr;
+    }
+}
+
+.infoItem {
+    margin-bottom: 1rem;
+}
+
+.infoLabel {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.infoValue {
+    font-weight: 500;
+}
+
+.ticketItem {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.ticketImage {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-right: 1rem;
+}
+
+.ticketInfo {
+    flex: 1;
+}
+
+.ticketTitle {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.ticketDetails {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.ticketPrice {
+    font-weight: 500;
+    margin-left: 1rem;
+}
+
+.orderActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.paymentInfo {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.paymentInfoTitle {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.paymentMethod {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.paymentIcon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.orderSummary {
+    margin-top: 2rem;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.summaryDivider {
+    border-top: 1px solid var(--border-color);
+    margin: 1rem 0;
+}
+
+.summaryTotal {
+    font-weight: bold;
+    font-size: 1.1rem;
+}

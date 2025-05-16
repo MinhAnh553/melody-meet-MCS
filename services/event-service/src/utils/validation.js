@@ -73,6 +73,10 @@ export const validateCreateEvent = Joi.object({
             }),
         }),
     ),
+    startTime: Joi.date().required().messages({
+        'date.base': 'Ngày bắt đầu phải là ngày',
+        'any.required': 'Ngày bắt đầu là bắt buộc',
+    }),
     endTime: Joi.date().required().messages({
         'date.base': 'Ngày kết thúc phải là ngày',
         'any.required': 'Ngày kết thúc là bắt buộc',

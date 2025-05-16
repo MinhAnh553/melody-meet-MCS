@@ -2,6 +2,11 @@ import eventModel from '../models/eventModel.js';
 import logger from '../utils/logger.js';
 import { validateCreateEvent } from '../utils/validation.js';
 import { deleteMultipleCloudinaryImages } from '../providers/cloudinaryProvider.js';
+import {
+    cacheEventData,
+    getEventData,
+    deleteEventData,
+} from '../config/redis.js';
 
 async function invalidateEventCache(req) {
     const keys = await req.redisClient.keys('events:*');
@@ -11,8 +16,9 @@ async function invalidateEventCache(req) {
     }
 }
 
+// [POST] /events/create
 const createEvent = async (req, res) => {
-    logger.info('Create event controller');
+    logger.info('Request to create event');
     let uploadedImages = [];
 
     try {
@@ -40,7 +46,7 @@ const createEvent = async (req, res) => {
             await deleteMultipleCloudinaryImages(uploadedImages);
             return res.status(400).json({
                 success: false,
-                message: 'Dữ liệu ticketTypes không hợp lệ',
+                message: 'Dữ liệu không hợp lệ',
             });
         }
 
@@ -99,6 +105,7 @@ const createEvent = async (req, res) => {
     }
 };
 
+// [GET] /events/all-events
 const getAllEvents = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -130,8 +137,8 @@ const getAllEvents = async (req, res) => {
             totalEvents: totalNoOfEvents,
         };
 
-        // Cache the result for 5 minutes
-        await req.redisClient.setex(cacheKey, 300, JSON.stringify(result));
+        // Cache the result for 60 minutes
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
         logger.info('Get all events from database');
         return res.status(200).json(result);
     } catch (error) {
@@ -143,6 +150,7 @@ const getAllEvents = async (req, res) => {
     }
 };
 
+// [GET] /events/:id
 const getEventById = async (req, res) => {
     try {
         const eventId = req.params.id;
@@ -158,8 +166,7 @@ const getEventById = async (req, res) => {
         }
 
         const event = await eventModel.findById(eventId);
-
-        if (!event) {
+        if (!event || event.status == 'pending' || event.status == 'rejected') {
             logger.error('Event not found');
             return res.status(404).json({
                 success: false,
@@ -183,8 +190,78 @@ const getEventById = async (req, res) => {
     }
 };
 
+// [POST] /events/save-draft
+const saveEventDraft = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const draftData = req.body;
+
+        await cacheEventData(userId, draftData);
+        logger.info('Event draft saved successfully');
+
+        return res.status(200).json({
+            success: true,
+            message: 'Draft saved successfully',
+        });
+    } catch (error) {
+        logger.error('Save event draft error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// [GET] /events/get-draft
+const getEventDraft = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const draftData = await getEventData(userId);
+
+        if (!draftData) {
+            return res.status(404).json({
+                success: false,
+                message: 'No draft found',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: draftData,
+        });
+    } catch (error) {
+        logger.error('Get event draft error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// [DELETE] /events/delete-draft
+const deleteEventDraft = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        await deleteEventData(userId);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Draft deleted successfully',
+        });
+    } catch (error) {
+        logger.error('Delete event draft error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
     getEventById,
+    saveEventDraft,
+    getEventDraft,
+    deleteEventDraft,
 };

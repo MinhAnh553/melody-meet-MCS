@@ -1,0 +1,265 @@
+.usersContainer {
+    padding: 1rem 0;
+}
+
+.pageTitle {
+    margin-bottom: 1.5rem;
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.searchFilter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.searchInput {
+    min-width: 350px;
+    flex: 1;
+}
+
+.searchFilter select {
+    width: auto;
+}
+
+.tableActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionButton {
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.viewButton {
+    color: var(--secondary-color);
+}
+
+.editButton {
+    color: var(--warning-color);
+}
+
+.editButton:hover {
+    background: rgba(243, 156, 18, 0.2);
+}
+
+.deleteButton {
+    color: var(--danger-color);
+}
+
+.actionButton:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.userTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.userTable thead {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: bold;
+}
+
+.userTable th,
+.userTable td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.userTable tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.userTable th {
+    cursor: pointer;
+    position: relative;
+}
+
+.userTable th:hover {
+    background-color: #ececec;
+}
+
+.userTable th::after {
+    content: ' ▼';
+    font-size: 12px;
+    color: #666;
+    margin-left: 5px;
+    visibility: hidden;
+}
+
+.userTable th:hover::after {
+    visibility: visible;
+}
+
+.userTable td {
+    color: #555;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.userRoleBadge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 50rem;
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.userRoleAdmin {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: var(--danger-color);
+}
+
+.userRoleUser {
+    background-color: rgba(52, 152, 219, 0.2);
+    color: var(--secondary-color);
+}
+
+.userRoleOrganizer {
+    background-color: rgba(243, 156, 18, 0.2);
+    color: var(--warning-color);
+}
+
+.userFormGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .userFormGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.formGroup {
+    margin-bottom: 1rem;
+}
+
+.formLabel {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.formControl {
+    height: 45px;
+    padding: 8px 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    width: 100%;
+}
+
+.modalTitle {
+    color: var(--text-light);
+}
+
+.modalFooter {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.userInfoCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.userProfileHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.userProfileAvatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-right: 1.5rem;
+}
+
+.userProfileInfo {
+    flex: 1;
+}
+
+.userProfileName {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.userProfileEmail {
+    color: var(--text-secondary);
+}
+
+.userStatsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.userStatCard {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.userStatValue {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.userStatLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}

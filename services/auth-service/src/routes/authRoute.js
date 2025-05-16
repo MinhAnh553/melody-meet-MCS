@@ -1,19 +1,15 @@
 import express from 'express';
 import authController from '../controllers/authController.js';
+import { authenticateToken } from '../middlewares/authMiddleware.js';
 
 const Router = express.Router();
 
-// Registration flow
+// Auth routes
 Router.route('/register/send-code').post(authController.sendVerificationCode);
 Router.route('/register/verify').post(authController.verifyAndRegister);
-
-// Login flow
 Router.route('/login').post(authController.login);
-
-// Refresh token
-Router.route('/refresh-token').post(authController.refreshTokenUser);
-
-// Logout
-Router.route('/logout').post(authController.logout);
+Router.route('/refresh-token').post(authController.refreshToken);
+Router.route('/logout').post(authenticateToken, authController.logout);
+Router.route('/account').get(authenticateToken, authController.getAccount);
 
 export default Router;

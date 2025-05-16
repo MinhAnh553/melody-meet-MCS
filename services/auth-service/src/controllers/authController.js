@@ -12,6 +12,7 @@ import {
     validateVerify,
     validateLogin,
 } from '../utils/validation.js';
+import { generateTokens, verifyRefreshToken } from '../utils/jwt.js';
 
 dotenv.config();
 
@@ -125,19 +126,11 @@ const verifyAndRegister = async (req, res) => {
         await otpModel.deleteOne({ email });
 
         // Generate tokens
-        const accessToken = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
-            expiresIn: '1h',
-        });
+        const tokens = generateTokens(newUser);
 
-        const refreshToken = jwt.sign(
-            { userId: newUser._id },
-            REFRESH_TOKEN_SECRET,
-            { expiresIn: '7d' },
-        );
-
-        // Save refresh token to database
+        // Lưu refresh token vào database
         await refreshTokenModel.create({
-            token: refreshToken,
+            token: tokens.refreshToken,
             userId: newUser._id,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
@@ -146,8 +139,8 @@ const verifyAndRegister = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Đăng ký thành công!',
-            accessToken,
-            refreshToken,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
         });
     } catch (error) {
         logger.error('Verification code error:', error);
@@ -194,23 +187,14 @@ const login = async (req, res) => {
         }
 
         // Xóa refreshToken cũ
-        await refreshTokenModel.deleteMany({ userId: user._id });
+        await refreshTokenModel.deleteOne({ userId: user._id });
 
         // Generate tokens
-        const accessToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
-            expiresIn: '1h',
-        });
+        const tokens = generateTokens(user);
 
-        // Generate refresh token
-        const refreshToken = jwt.sign(
-            { userId: user._id },
-            REFRESH_TOKEN_SECRET,
-            { expiresIn: '7d' },
-        );
-
-        // Save refresh token to database
+        // Lưu refresh token vào database
         await refreshTokenModel.create({
-            token: refreshToken,
+            token: tokens.refreshToken,
             userId: user._id,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
@@ -219,8 +203,16 @@ const login = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Đăng nhập thành công',
-            accessToken,
-            refreshToken,
+            user: {
+                _id: user._id,
+                name: user.name,
+                phone: user.phone,
+                email: user.email,
+                address: user.address,
+                role: user.role,
+            },
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
         });
     } catch (error) {
         logger.error('Login error:', error);
@@ -232,84 +224,84 @@ const login = async (req, res) => {
 };
 
 // Refresh token
-const refreshTokenUser = async (req, res) => {
-    logger.info(`Refresh token request received`);
+const refreshToken = async (req, res) => {
     try {
         const { refreshToken } = req.body;
+
         if (!refreshToken) {
-            logger.error('Validation error: Refresh token is required');
             return res.status(400).json({
                 success: false,
                 message: 'Refresh token là bắt buộc',
             });
         }
 
-        // Verify refresh token
-        let decodedToken;
+        // Bước 1: Verify JWT trước
+        let decoded;
         try {
-            decodedToken = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
-        } catch (err) {
-            logger.error('Invalid refresh token signature');
-            return res.status(401).json({
+            decoded = verifyRefreshToken(refreshToken);
+        } catch (error) {
+            return res.status(403).json({
                 success: false,
                 message: 'Refresh token không hợp lệ',
             });
         }
 
-        const storedToken = await refreshTokenModel.findOne({
+        // Bước 2: Tìm token trong DB
+        const refreshTokenRecord = await refreshTokenModel.findOne({
             token: refreshToken,
         });
-        if (!storedToken || storedToken.expiresAt < new Date()) {
-            logger.error('Invalid or expired refresh token');
-            return res.status(401).json({
+
+        if (!refreshTokenRecord) {
+            return res.status(403).json({
                 success: false,
-                message: 'Refresh token không hợp lệ hoặc đã hết hạn',
+                message: 'Refresh token không hợp lệ hoặc đã bị thu hồi',
             });
         }
 
-        const user = await userModel.findById(storedToken.userId);
+        // Bước 3: So khớp userId
+        if (refreshTokenRecord.userId.toString() !== decoded.userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Refresh token không khớp với người dùng',
+            });
+        }
+
+        // Bước 4: Kiểm tra thời hạn
+        if (refreshTokenRecord.expiresAt < new Date()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Refresh token đã hết hạn',
+            });
+        }
+
+        const user = await userModel.findById(decoded.userId);
         if (!user) {
-            logger.error('User not found');
             return res.status(404).json({
                 success: false,
                 message: 'Người dùng không tồn tại',
             });
         }
 
-        // Generate new access token
-        const accessToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
-            expiresIn: '1h',
-        });
+        // Bước 5: Xoá token cũ và tạo mới
+        await refreshTokenModel.deleteOne({ userId: user._id });
 
-        // Generate new refresh token
-        const newRefreshToken = jwt.sign(
-            { userId: user._id },
-            REFRESH_TOKEN_SECRET,
-            { expiresIn: '7d' },
-        );
+        const tokens = generateTokens(user);
 
-        // Xóa refreshToken cũ
-        await refreshTokenModel.deleteOne({ _id: storedToken._id });
-
-        // Save new refresh token to database
         await refreshTokenModel.create({
-            token: newRefreshToken,
+            token: tokens.refreshToken,
             userId: user._id,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày
         });
 
-        logger.info(`New refresh token generated and saved`);
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            message: 'Refresh token đã được cập nhật',
-            accessToken,
-            refreshToken: newRefreshToken,
+            data: tokens,
         });
     } catch (error) {
         logger.error('Refresh token error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Lỗi server khi xử lý refresh token',
         });
     }
 };
@@ -344,10 +336,26 @@ const logout = async (req, res) => {
     }
 };
 
+// Get account
+const getAccount = async (req, res) => {
+    logger.info(`Get account request received`);
+    try {
+        const user = await userModel.findById(req.user.userId);
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        logger.error('Get account error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
     login,
-    refreshTokenUser,
+    refreshToken,
     logout,
+    getAccount,
 };
