@@ -40,6 +40,11 @@ const createEvent = (data) => {
     return axios.post(URL_API, data);
 };
 
+const getMyEvents = (page = 1, limit = 10, status = 'approved', searchKey) => {
+    const URL_API = `${API_URL}/events/my?query=${searchKey}&page=${page}&limit=${limit}&status=${status}`;
+    return axios.get(URL_API);
+};
+
 const updateEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}`;
     return axios.patch(URL_API, data);
@@ -127,11 +132,6 @@ const getOrderTickets = (id) => {
 
 const getAllOrders = () => {
     const URL_API = `${API_URL}/order/all-orders`;
-    return axios.get(URL_API);
-};
-
-const getMyEvents = (page = 1, limit = 5, status = 'approved', searchKey) => {
-    const URL_API = `${API_URL}/event/my?query=${searchKey}&page=${page}&limit=${limit}&status=${status}`;
     return axios.get(URL_API);
 };
 

@@ -17,6 +17,12 @@ Router.route('/create').post(
 // Get all events
 Router.route('/all-events').get(eventController.getAllEvents);
 
+// Get my events
+Router.route('/my').get(
+    authMiddleware.authenticateRequest,
+    eventController.getMyEvents,
+);
+
 // Get event by id
 Router.route('/:id').get(eventController.getEventById);
 

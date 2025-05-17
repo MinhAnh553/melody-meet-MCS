@@ -185,8 +185,68 @@ const getEventById = async (req, res) => {
     }
 };
 
+// [GET] /events/my
+const getMyEvents = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+        const status = req.query.status || 'pending';
+        const searchKey = req.query.query || '';
+        const cacheKey = `events:my:${userId}:${page}:${limit}:${status}:${searchKey}`;
+        const cachedEvents = await req.redisClient.get(cacheKey);
+
+        if (cachedEvents) {
+            logger.info('Get my events from cache');
+            return res.status(200).json(JSON.parse(cachedEvents));
+        }
+
+        const events = await eventModel
+            .find({
+                createdBy: userId,
+                status,
+                $or: [
+                    { name: { $regex: searchKey, $options: 'i' } },
+                    { organizer: { $regex: searchKey, $options: 'i' } },
+                ],
+            })
+            .sort({ createdAt: -1 })
+            .skip(startIndex)
+            .limit(limit);
+
+        const totalNoOfEvents = await eventModel.countDocuments({
+            createdBy: userId,
+            status,
+            $or: [
+                { name: { $regex: searchKey, $options: 'i' } },
+                { organizer: { $regex: searchKey, $options: 'i' } },
+            ],
+        });
+
+        const result = {
+            success: true,
+            events,
+            currentPage: page,
+            totalPages: Math.ceil(totalNoOfEvents / limit),
+            totalEvents: totalNoOfEvents,
+        };
+
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
+        logger.info('Get my events from database');
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get my events error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
     getEventById,
+    getMyEvents,
 };

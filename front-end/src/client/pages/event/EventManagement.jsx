@@ -19,7 +19,7 @@ const EventManagement = () => {
 
     // Phân trang
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(5);
+    const [limit, setLimit] = useState(10);
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -30,33 +30,28 @@ const EventManagement = () => {
     const [searchKey, setSearchKey] = useState('');
 
     useEffect(() => {
-        fetchEvents('approved');
-
+        fetchEvents(activeTab);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [page]);
+    }, [page, activeTab]);
 
     const handleUpcoming = () => {
         setActiveTab('approved');
         setPage(1);
-        fetchEvents('approved');
     };
 
     const handlePast = () => {
-        setActiveTab('past');
+        setActiveTab('event_over');
         setPage(1);
-        fetchEvents('event_over');
     };
 
     const handlePending = () => {
         setActiveTab('pending');
         setPage(1);
-        fetchEvents('pending');
     };
 
     const handleRejected = () => {
         setActiveTab('rejected');
         setPage(1);
-        fetchEvents('rejected');
     };
 
     const handleSearch = (value) => {
@@ -137,7 +132,9 @@ const EventManagement = () => {
                         Sắp tới
                     </Button>
                     <Button
-                        variant={activeTab === 'past' ? 'success' : 'dark'}
+                        variant={
+                            activeTab === 'event_over' ? 'success' : 'dark'
+                        }
                         onClick={handlePast}
                         className="me-2"
                         style={{ border: '1px solid #444' }}
@@ -217,8 +214,8 @@ const EventManagement = () => {
                                             >
                                                 <div
                                                     style={{
-                                                        maxWidth: '300px',
-                                                        maxHeight: '300px',
+                                                        width: '350px',
+                                                        height: '200px',
                                                     }}
                                                 >
                                                     <img
@@ -226,6 +223,8 @@ const EventManagement = () => {
                                                         src={event.background}
                                                         alt={event.name}
                                                         style={{
+                                                            width: '100%',
+                                                            height: '100%',
                                                             objectFit: 'cover',
                                                         }}
                                                     />
