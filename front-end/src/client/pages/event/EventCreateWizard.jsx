@@ -32,54 +32,6 @@ const EventForm = () => {
         ticketTypes: [],
     });
 
-    // Auto-save draft every 30 seconds
-    useEffect(() => {
-        const autoSaveInterval = setInterval(() => {
-            if (
-                !isEditMode &&
-                Object.values(formData).some(
-                    (value) => value !== '' && value !== null,
-                )
-            ) {
-                saveDraft();
-            }
-        }, 30000);
-
-        return () => clearInterval(autoSaveInterval);
-    }, [formData, isEditMode]);
-
-    // Load draft on component mount
-    useEffect(() => {
-        if (!isEditMode) {
-            loadDraft();
-        }
-    }, [isEditMode]);
-
-    const saveDraft = async () => {
-        try {
-            await api.saveEventDraft(formData);
-        } catch (error) {
-            console.error('Error saving draft:', error);
-        }
-    };
-
-    const loadDraft = async () => {
-        try {
-            const response = await api.getEventDraft();
-            if (response.success && response.data) {
-                setFormData(response.data);
-                swalCustomize.Toast.fire({
-                    icon: 'info',
-                    title: 'Đã tải bản nháp trước đó',
-                });
-            }
-        } catch (error) {
-            console.error('Error loading draft:', error);
-        } finally {
-            setLoadingLocal(false);
-        }
-    };
-
     useEffect(() => {
         window.scrollTo(0, 0);
 

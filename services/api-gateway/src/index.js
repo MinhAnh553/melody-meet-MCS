@@ -88,7 +88,9 @@ app.use(
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
+
             if (
+                typeof srcReq.headers['content-type'] !== 'string' ||
                 !srcReq.headers['content-type'].startsWith(
                     'multipart/form-data',
                 )

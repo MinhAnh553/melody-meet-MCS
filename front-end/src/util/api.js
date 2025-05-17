@@ -36,7 +36,7 @@ const getAccount = () => {
 };
 
 const createEvent = (data) => {
-    const URL_API = `${API_URL}/event/create`;
+    const URL_API = `${API_URL}/events/create`;
     return axios.post(URL_API, data);
 };
 
@@ -160,22 +160,6 @@ const getDashboard = () => {
     return axios.get(URL_API);
 };
 
-// Event draft endpoints
-const saveEventDraft = async (draftData) => {
-    const response = await axios.post('/events/save-draft', draftData);
-    return response.data;
-};
-
-const getEventDraft = async () => {
-    const response = await axios.get('/events/get-draft');
-    return response.data;
-};
-
-const deleteEventDraft = async () => {
-    const response = await axios.delete('/events/delete-draft');
-    return response.data;
-};
-
 const refreshToken = (refreshToken) => {
     const URL_API = `${API_URL}/auth/refresh-token`;
     return axios.post(URL_API, { refreshToken });
@@ -211,8 +195,5 @@ export default {
     getAllUsers,
     getDashboard,
     search,
-    saveEventDraft,
-    getEventDraft,
-    deleteEventDraft,
     refreshToken,
 };

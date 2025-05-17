@@ -44,14 +44,10 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
     };
 
     const handleTicketChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        let newValue = value;
-        if (type === 'checkbox' && name === 'price') {
-            newValue = checked ? 0 : ticket.price;
-        }
+        const { name, value } = e.target;
         setTicket((prevTicket) => ({
             ...prevTicket,
-            [name]: newValue,
+            [name]: value,
         }));
     };
 
@@ -64,11 +60,11 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
             });
             return false;
         }
-        // Kiểm tra giá vé (nếu không free, giá phải có giá trị hợp lệ)
-        if (ticket.price === '' || isNaN(ticket.price)) {
+        // Kiểm tra giá vé > 0
+        if (ticket.price <= 0) {
             swalCustomize.Toast.fire({
                 icon: 'error',
-                title: 'Vui lòng nhập giá vé hợp lệ',
+                title: 'Giá vé phải lớn hơn 0',
             });
             return false;
         }
@@ -477,20 +473,6 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
                                         style={{ color: 'black' }}
                                     />
                                 </Form.Group>
-                                <Form.Check
-                                    type="checkbox"
-                                    label="Miễn phí"
-                                    id="freeTicket"
-                                    name="price"
-                                    checked={ticket.price === 0}
-                                    onChange={(e) =>
-                                        setTicket((prev) => ({
-                                            ...prev,
-                                            price: e.target.checked ? 0 : '',
-                                        }))
-                                    }
-                                    style={{ color: '#fff' }}
-                                />
                             </div>
                             <div className="col-md-3">
                                 <Form.Group className="mb-3">

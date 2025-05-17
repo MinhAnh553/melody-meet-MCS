@@ -81,4 +81,8 @@ export const validateCreateEvent = Joi.object({
         'date.base': 'Ngày kết thúc phải là ngày',
         'any.required': 'Ngày kết thúc là bắt buộc',
     }),
+    createdBy: Joi.string().required().messages({
+        'string.empty': 'Người tạo không được để trống',
+        'any.required': 'Người tạo là bắt buộc',
+    }),
 });

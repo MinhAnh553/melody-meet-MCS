@@ -20,20 +20,4 @@ Router.route('/all-events').get(eventController.getAllEvents);
 // Get event by id
 Router.route('/:id').get(eventController.getEventById);
 
-// Event draft routes
-Router.route('/save-draft').post(
-    authMiddleware.authenticateRequest,
-    eventController.saveEventDraft,
-);
-
-Router.route('/get-draft').get(
-    authMiddleware.authenticateRequest,
-    eventController.getEventDraft,
-);
-
-Router.route('/delete-draft').delete(
-    authMiddleware.authenticateRequest,
-    eventController.deleteEventDraft,
-);
-
 export default Router;
