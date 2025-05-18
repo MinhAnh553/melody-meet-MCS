@@ -386,6 +386,120 @@ const updateEvent = async (req, res) => {
     }
 };
 
+// [GET] /events
+const getEvents = async (req, res) => {
+    try {
+        const { type, status = 'approved' } = req.query;
+        const cacheKey = `events:${type}:${status}`;
+        const cachedEvents = await req.redisClient.get(cacheKey);
+
+        if (cachedEvents) {
+            logger.info('Get events from cache');
+            return res.status(200).json(JSON.parse(cachedEvents));
+        }
+
+        let events;
+        if (type == 'trending') {
+            events = await orderModel.aggregate([
+                {
+                    $match: { status: 'PAID' },
+                },
+                // Nhóm theo eventId và đếm số order của từng sự kiện
+                {
+                    $group: {
+                        _id: '$eventId',
+                        totalRevenue: { $sum: '$totalPrice' }, // Tổng doanh thu
+                    },
+                },
+
+                // Kết nối với bảng events
+                {
+                    $lookup: {
+                        from: 'events',
+                        localField: '_id',
+                        foreignField: '_id',
+                        as: 'eventDetails',
+                    },
+                },
+                { $unwind: '$eventDetails' }, // Chuyển eventDetails từ mảng thành object
+
+                // Chỉ lấy các sự kiện đã được duyệt
+                { $match: { 'eventDetails.status': 'approved' } },
+
+                // 🔽 Sắp xếp theo tổng doanh thu (giảm dần)
+                //    Nếu doanh thu bằng nhau, ưu tiên startTime gần nhất với ngày hiện tại
+                {
+                    $addFields: {
+                        startTimeDiff: {
+                            $abs: {
+                                $subtract: [
+                                    '$eventDetails.startTime',
+                                    new Date(),
+                                ],
+                            },
+                        },
+                    },
+                },
+                { $sort: { totalRevenue: -1, startTimeDiff: 1 } },
+
+                // Lấy tối đa 4 sự kiện hot nhất
+                { $limit: 4 },
+            ]);
+
+            return events.map((e) => e.eventDetails);
+        }
+
+        if (type == 'special') {
+            events = await eventModel
+                .find({ status: status })
+                .sort({ startTime: 1 })
+                .limit(8);
+        }
+
+        if (type == 'all') {
+            events = await eventModel.aggregate([
+                {
+                    $match: {
+                        status: { $in: ['approved', 'event_over'] }, // Lọc các sự kiện hợp lệ
+                    },
+                },
+                {
+                    $addFields: {
+                        sortStatus: {
+                            $cond: {
+                                if: { $eq: ['$status', 'approved'] },
+                                then: 0,
+                                else: 1,
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        sortStatus: 1, // 'approved' (0) đứng trước 'event_over' (1)
+                        startTime: 1, // Sắp xếp tăng dần theo thời gian bắt đầu
+                    },
+                },
+            ]);
+        }
+
+        const result = {
+            success: true,
+            events,
+        };
+
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
+        logger.info('Get events from database');
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get events error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -393,4 +507,5 @@ export default {
     getMyEvents,
     getEventByIdToEdit,
     updateEvent,
+    getEvents,
 };

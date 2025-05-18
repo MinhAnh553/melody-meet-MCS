@@ -60,14 +60,14 @@ const updateEvent = (eventId, data) => {
     return axios.patch(URL_API, data);
 };
 
+const getEvents = (type, status = 'approved') => {
+    const URL_API = `${API_URL}/events?type=${type}&status=${status}`;
+    return axios.get(URL_API);
+};
+
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
     return axios.patch(URL_API, { status: data });
-};
-
-const getEvents = (type, status = 'approved') => {
-    const URL_API = `${API_URL}/event?type=${type}&status=${status}`;
-    return axios.get(URL_API);
 };
 
 const getAllEvents = () => {

@@ -22,7 +22,7 @@ const EventDetail = () => {
                 setLoadingLocal(true);
                 const res = await api.getEventById(eventId);
                 if (res.success) {
-                    setEvent(res.event);
+                    setEvent(res.data);
                 } else {
                     navigate('/');
                     return swalCustomize.Toast.fire({
