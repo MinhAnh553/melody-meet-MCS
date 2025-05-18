@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema(
             email: String,
         },
         password: String,
-        refreshTokens: [String],
         role: {
             type: String,
             default: 'user',

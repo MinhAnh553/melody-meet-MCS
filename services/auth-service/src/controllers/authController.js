@@ -286,7 +286,9 @@ const logout = async (req, res) => {
 const getAccount = async (req, res) => {
     logger.info(`Get account request received`);
     try {
-        const user = await userModel.findById(req.user.userId);
+        const user = await userModel
+            .findById(req.user.userId)
+            .select('-password');
         res.status(200).json({ success: true, user });
     } catch (error) {
         logger.error('Get account error:', error);
