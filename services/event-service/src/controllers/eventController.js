@@ -1,3 +1,4 @@
+import axios from 'axios';
 import eventModel from '../models/eventModel.js';
 import logger from '../utils/logger.js';
 import { validateCreateEvent } from '../utils/validation.js';
@@ -400,53 +401,10 @@ const getEvents = async (req, res) => {
 
         let events;
         if (type == 'trending') {
-            events = await orderModel.aggregate([
-                {
-                    $match: { status: 'PAID' },
-                },
-                // Nhóm theo eventId và đếm số order của từng sự kiện
-                {
-                    $group: {
-                        _id: '$eventId',
-                        totalRevenue: { $sum: '$totalPrice' }, // Tổng doanh thu
-                    },
-                },
-
-                // Kết nối với bảng events
-                {
-                    $lookup: {
-                        from: 'events',
-                        localField: '_id',
-                        foreignField: '_id',
-                        as: 'eventDetails',
-                    },
-                },
-                { $unwind: '$eventDetails' }, // Chuyển eventDetails từ mảng thành object
-
-                // Chỉ lấy các sự kiện đã được duyệt
-                { $match: { 'eventDetails.status': 'approved' } },
-
-                // 🔽 Sắp xếp theo tổng doanh thu (giảm dần)
-                //    Nếu doanh thu bằng nhau, ưu tiên startTime gần nhất với ngày hiện tại
-                {
-                    $addFields: {
-                        startTimeDiff: {
-                            $abs: {
-                                $subtract: [
-                                    '$eventDetails.startTime',
-                                    new Date(),
-                                ],
-                            },
-                        },
-                    },
-                },
-                { $sort: { totalRevenue: -1, startTimeDiff: 1 } },
-
-                // Lấy tối đa 4 sự kiện hot nhất
-                { $limit: 4 },
-            ]);
-
-            return events.map((e) => e.eventDetails);
+            const result = await axios.get(
+                `${process.env.ORDER_SERVICE_URL}/api/orders/revenue`,
+            );
+            events = result.data.revenue;
         }
 
         if (type == 'special') {

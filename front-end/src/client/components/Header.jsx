@@ -31,17 +31,17 @@ const Header = () => {
                     >
                         <SearchBar />
                         <ul className="navbar-nav mb-2 mb-lg-0 gap-2 align-items-center">
-                            {user?.role === 'organizer' ||
-                                (user?.role === 'admin' && (
-                                    <li className="nav-item">
-                                        <Link
-                                            className="nav-link create-event"
-                                            to="/event/create"
-                                        >
-                                            Tạo sự kiện
-                                        </Link>
-                                    </li>
-                                ))}
+                            {(user?.role === 'organizer' ||
+                                user?.role === 'admin') && (
+                                <li className="nav-item">
+                                    <Link
+                                        className="nav-link create-event"
+                                        to="/event/create"
+                                    >
+                                        Tạo sự kiện
+                                    </Link>
+                                </li>
+                            )}
                             <li className="nav-item">
                                 <Link
                                     className="nav-link custom-nav-link d-flex align-items-center"
@@ -110,20 +110,22 @@ const Header = () => {
                                                     <span>Vé Đã Mua</span>
                                                 </Link>
                                             </li>
-                                            {user?.role === 'organizer' ||
-                                                (user?.role === 'admin' && (
-                                                    <li>
-                                                        <Link
-                                                            className="dropdown-item py-2 d-flex align-items-center"
-                                                            to="/event"
-                                                        >
-                                                            <i className="bi bi-calendar-event me-2 text-success fs-5" />
-                                                            <span>
-                                                                Sự Kiện Của Tôi
-                                                            </span>
-                                                        </Link>
-                                                    </li>
-                                                ))}
+
+                                            {(user?.role === 'organizer' ||
+                                                user?.role === 'admin') && (
+                                                <li>
+                                                    <Link
+                                                        className="dropdown-item py-2 d-flex align-items-center"
+                                                        to="/event"
+                                                    >
+                                                        <i className="bi bi-calendar-event me-2 text-success fs-5" />
+                                                        <span>
+                                                            Sự Kiện Của Tôi
+                                                        </span>
+                                                    </Link>
+                                                </li>
+                                            )}
+
                                             <li>
                                                 <hr className="dropdown-divider" />
                                             </li>

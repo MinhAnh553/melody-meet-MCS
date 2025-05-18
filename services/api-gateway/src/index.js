@@ -112,11 +112,36 @@ app.use(
     }),
 );
 
+// Setting up proxy for our order service
+app.use(
+    '/v1/orders',
+    validateToken,
+    proxy(process.env.ORDER_SERVICE_URL, {
+        ...proxyOptions,
+        proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+            proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
+            proxyReqOpts.headers['x-role'] = srcReq.user.role;
+
+            proxyReqOpts.headers['content-type'] = 'application/json';
+
+            return proxyReqOpts;
+        },
+        userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+            logger.info(
+                'Response received from order service:',
+                proxyRes.statusCode,
+            );
+            return proxyResData;
+        },
+    }),
+);
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
     logger.info(`🚀 API Gateway running on port ${PORT}`);
     logger.info(`🚀 Auth Service running on ${process.env.AUTH_SERVICE_URL}`);
     logger.info(`🚀 Event Service running on ${process.env.EVENT_SERVICE_URL}`);
+    logger.info(`🚀 Order Service running on ${process.env.ORDER_SERVICE_URL}`);
     logger.info(`Redis URL: ${process.env.REDIS_URL}`);
 });

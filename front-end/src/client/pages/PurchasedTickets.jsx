@@ -328,22 +328,22 @@ function PurchasedTickets() {
                         >
                             <BsTicket className="me-2 text-success" /> Vé đã mua
                         </Nav.Link>
-                        {user?.role === 'organizer' ||
-                            (user?.role === 'admin' && (
-                                <Nav.Link
-                                    className={`d-flex align-items-center p-2 rounded hover-bg ${
-                                        activeTab === 'events'
-                                            ? 'nav-ticket-active'
-                                            : ''
-                                    }`}
-                                    onClick={() =>
-                                        handleNavigation('events', '/event')
-                                    }
-                                >
-                                    <BsCalendar className="me-2" /> Sự kiện của
-                                    tôi
-                                </Nav.Link>
-                            ))}
+
+                        {(user?.role === 'organizer' ||
+                            user?.role === 'admin') && (
+                            <Nav.Link
+                                className={`d-flex align-items-center p-2 rounded hover-bg ${
+                                    activeTab === 'events'
+                                        ? 'nav-ticket-active'
+                                        : ''
+                                }`}
+                                onClick={() =>
+                                    handleNavigation('events', '/event')
+                                }
+                            >
+                                <BsCalendar className="me-2" /> Sự kiện của tôi
+                            </Nav.Link>
+                        )}
                     </Nav>
                 </Col>
 
