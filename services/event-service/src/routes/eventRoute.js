@@ -26,4 +26,20 @@ Router.route('/my').get(
 // Get event by id
 Router.route('/:id').get(eventController.getEventById);
 
+// Get event by id to edit
+Router.route('/:id/edit').get(
+    authMiddleware.authenticateRequest,
+    eventController.getEventByIdToEdit,
+);
+
+// Update event
+Router.route('/update/:id').patch(
+    authMiddleware.authenticateRequest,
+    cloudinaryProvider.fields([
+        { name: 'eventBackground', maxCount: 1 },
+        { name: 'organizerLogo', maxCount: 1 },
+    ]),
+    eventController.updateEvent,
+);
+
 export default Router;

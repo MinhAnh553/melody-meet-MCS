@@ -1,5 +1,6 @@
 import axios from 'axios';
 import api from './api';
+import swalCustomize from './swalCustomize';
 
 const instance = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -98,6 +99,26 @@ instance.interceptors.response.use(
 
         // Handle other errors
         if (error?.response?.data) {
+            // Handle unauthorized access message
+            if (
+                error.response.status === 401 &&
+                error.response.data.message ===
+                    'Bạn không có quyền truy cập vào trang này'
+            ) {
+                swalCustomize.Toast.fire({
+                    icon: 'error',
+                    title: 'Bạn không có quyền truy cập vào trang này',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                });
+
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+
+                return Promise.reject(error.response.data);
+            }
             return Promise.reject(error.response.data);
         }
         return Promise.reject(error);

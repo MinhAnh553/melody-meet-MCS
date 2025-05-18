@@ -70,7 +70,7 @@ const sensitiveEndpointsLimiter = rateLimit({
 });
 
 // Apply this sensitiveEndpointsLimiter to our routes
-app.use('/api/auth/', sensitiveEndpointsLimiter);
+// app.use('/api/auth/', sensitiveEndpointsLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);

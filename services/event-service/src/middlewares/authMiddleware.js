@@ -11,6 +11,16 @@ const authenticateRequest = (req, res, next) => {
         });
     }
 
+    const role = req.headers['x-role'];
+    if (!role || role === 'undefined' || role !== 'organizer') {
+        logger.warn('Access attempt with invalid role');
+
+        return res.status(401).json({
+            success: false,
+            message: 'Bạn không có quyền truy cập vào trang này',
+        });
+    }
+
     req.user = { userId };
     next();
 };

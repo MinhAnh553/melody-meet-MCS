@@ -355,25 +355,27 @@ const EventManagement = () => {
                                                         Đơn hàng
                                                     </Button>
                                                     {event.status !==
-                                                        'event_over' && (
-                                                        <Button
-                                                            variant="dark"
-                                                            className="d-flex align-items-center gap-2"
-                                                            style={{
-                                                                border: '1px solid #555',
-                                                                borderRadius:
-                                                                    '8px',
-                                                            }}
-                                                            onClick={() => {
-                                                                navigate(
-                                                                    `/event/${event._id}/edit`,
-                                                                );
-                                                            }}
-                                                        >
-                                                            <BsPencilSquare />
-                                                            Chỉnh sửa
-                                                        </Button>
-                                                    )}
+                                                        'event_over' &&
+                                                        event.status !==
+                                                            'approved' && (
+                                                            <Button
+                                                                variant="dark"
+                                                                className="d-flex align-items-center gap-2"
+                                                                style={{
+                                                                    border: '1px solid #555',
+                                                                    borderRadius:
+                                                                        '8px',
+                                                                }}
+                                                                onClick={() => {
+                                                                    navigate(
+                                                                        `/event/${event._id}/edit`,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <BsPencilSquare />
+                                                                Chỉnh sửa
+                                                            </Button>
+                                                        )}
                                                 </div>
                                             </Col>
                                         </Row>

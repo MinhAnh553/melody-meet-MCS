@@ -88,6 +88,7 @@ app.use(
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
+            proxyReqOpts.headers['x-role'] = srcReq.user.role;
 
             if (
                 typeof srcReq.headers['content-type'] !== 'string' ||

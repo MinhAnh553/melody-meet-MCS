@@ -1,7 +1,10 @@
 import eventModel from '../models/eventModel.js';
 import logger from '../utils/logger.js';
 import { validateCreateEvent } from '../utils/validation.js';
-import { deleteMultipleCloudinaryImages } from '../providers/cloudinaryProvider.js';
+import {
+    deleteCloudinaryImage,
+    deleteMultipleCloudinaryImages,
+} from '../providers/cloudinaryProvider.js';
 
 async function invalidateEventCache(req) {
     const keys = await req.redisClient.keys('events:*');
@@ -161,7 +164,7 @@ const getEventById = async (req, res) => {
         }
 
         const event = await eventModel.findById(eventId);
-        if (!event || event.status == 'pending' || event.status == 'rejected') {
+        if (!event) {
             logger.error('Event not found');
             return res.status(404).json({
                 success: false,
@@ -244,9 +247,150 @@ const getMyEvents = async (req, res) => {
     }
 };
 
+// [GET] /events/:id/edit
+const getEventByIdToEdit = async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        const event = await eventModel.findById(eventId);
+        if (!event) {
+            logger.error('Event not found');
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: event,
+        });
+    } catch (error) {
+        logger.error('Get event by id to edit error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// [PATCH] /events/update/:id
+const updateEvent = async (req, res) => {
+    try {
+        const data = req.body;
+        const eventId = req.params.id;
+        const event = await eventModel.findById(eventId);
+        let dataUpdate = {};
+        let uploadedImages = [];
+        if (req.files) {
+            if (
+                req.files.eventBackground &&
+                req.files.eventBackground.length > 0
+            ) {
+                if (event.background) {
+                    await deleteCloudinaryImage(event.background);
+                }
+                uploadedImages.push(req.files.eventBackground[0].path);
+                data.background = req.files.eventBackground[0].path;
+            }
+            if (req.files.organizerLogo && req.files.organizerLogo.length > 0) {
+                if (event.organizer.logo) {
+                    await deleteCloudinaryImage(event.organizer.logo);
+                }
+                uploadedImages.push(req.files.organizerLogo[0].path);
+                data.organizerLogo = req.files.organizerLogo[0].path;
+            }
+        }
+        if (!event) {
+            logger.error('Event not found');
+            if (uploadedImages.length > 0) {
+                await deleteMultipleCloudinaryImages(uploadedImages);
+            }
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        if (event.status === 'approved' || event.status === 'event_over') {
+            if (uploadedImages.length > 0) {
+                await deleteMultipleCloudinaryImages(uploadedImages);
+            }
+            return res.status(400).json({
+                success: false,
+                message: 'Sự kiện đã được duyệt hoặc đã diễn ra',
+            });
+        }
+
+        if (event.status === 'rejected') {
+            data.status = 'pending';
+        }
+
+        let ticketTypes;
+        try {
+            ticketTypes = JSON.parse(data.ticketTypes);
+        } catch (error) {
+            logger.error('Error parsing ticketTypes:', error);
+            if (uploadedImages.length > 0) {
+                await deleteMultipleCloudinaryImages(uploadedImages);
+            }
+            return res.status(400).json({
+                success: false,
+                message: 'Dữ liệu không hợp lệ',
+            });
+        }
+
+        dataUpdate = {
+            name: data.eventName || event.name,
+            background: data.background || event.background,
+            location: {
+                venueName: data.venueName || event.location.venueName,
+                province: data.province || event.location.province,
+                district: data.district || event.location.district,
+                ward: data.ward || event.location.ward,
+                address: data.address || event.location.address,
+            },
+            description: data.description || event.description,
+            organizer: {
+                logo: data.organizerLogo || event.organizer.logo,
+                name: data.organizerName || event.organizer.name,
+                info: data.organizerInfo || event.organizer.info,
+            },
+            startTime: new Date(data.startTime) || event.startTime,
+            endTime: new Date(data.endTime) || event.endTime,
+            ticketTypes: ticketTypes || event.ticketTypes,
+            status: data.status || event.status,
+            createdBy: event.createdBy || req.user.userId,
+        };
+
+        // Update event
+        const updatedEvent = await eventModel.findByIdAndUpdate(
+            eventId,
+            dataUpdate,
+            {
+                new: true,
+            },
+        );
+        await invalidateEventCache(req);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sự kiện đã được cập nhật thành công!',
+            data: updatedEvent,
+        });
+    } catch (error) {
+        logger.error('Update event error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
     getEventById,
     getMyEvents,
+    getEventByIdToEdit,
+    updateEvent,
 };

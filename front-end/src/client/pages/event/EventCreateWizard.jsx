@@ -47,10 +47,17 @@ const EventForm = () => {
             setLoadingLocal(true);
             const response = await api.getEventByIdToEdit(eventId);
             if (response.success) {
-                const eventData = response.event;
+                const eventData = response.data;
 
-                if (eventData.status === 'event_over') {
+                if (
+                    eventData.status === 'event_over' ||
+                    eventData.status === 'approved'
+                ) {
                     navigate(`/event`);
+                    swalCustomize.Toast.fire({
+                        icon: 'error',
+                        title: 'Sự kiện đã được duyệt hoặc đã diễn ra',
+                    });
                 }
 
                 // Cập nhật dữ liệu vào form

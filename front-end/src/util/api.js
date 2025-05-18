@@ -45,24 +45,24 @@ const getMyEvents = (page = 1, limit = 10, status = 'approved', searchKey) => {
     return axios.get(URL_API);
 };
 
+const getEventById = (id) => {
+    const URL_API = `${API_URL}/events/${id}`;
+    return axios.get(URL_API);
+};
+
+const getEventByIdToEdit = (id) => {
+    const URL_API = `${API_URL}/events/${id}/edit`;
+    return axios.get(URL_API);
+};
+
 const updateEvent = (eventId, data) => {
-    const URL_API = `${API_URL}/event/update/${eventId}`;
+    const URL_API = `${API_URL}/events/update/${eventId}`;
     return axios.patch(URL_API, data);
 };
 
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
     return axios.patch(URL_API, { status: data });
-};
-
-const getEventById = (id) => {
-    const URL_API = `${API_URL}/event/${id}`;
-    return axios.get(URL_API);
-};
-
-const getEventByIdToEdit = (id) => {
-    const URL_API = `${API_URL}/event/${id}/edit`;
-    return axios.get(URL_API);
 };
 
 const getEvents = (type, status = 'approved') => {

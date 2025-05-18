@@ -3,12 +3,14 @@ import { Container, Row, Col, Button, Nav, Pagination } from 'react-bootstrap';
 import { BsTicket, BsCalendar, BsChevronRight } from 'react-icons/bs';
 import QRCode from 'react-qr-code';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import noTicket from '../../assets/images/no-ticket.png';
 import api from '../../util/api';
 import TimeText from '../components/providers/TimeText';
 
 function PurchasedTickets() {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [orders, setOrders] = useState([]);
     const [loadingLocal, setLoadingLocal] = useState(true);
@@ -326,16 +328,22 @@ function PurchasedTickets() {
                         >
                             <BsTicket className="me-2 text-success" /> Vé đã mua
                         </Nav.Link>
-                        <Nav.Link
-                            className={`d-flex align-items-center p-2 rounded hover-bg ${
-                                activeTab === 'events'
-                                    ? 'nav-ticket-active'
-                                    : ''
-                            }`}
-                            onClick={() => handleNavigation('events', '/event')}
-                        >
-                            <BsCalendar className="me-2" /> Sự kiện của tôi
-                        </Nav.Link>
+                        {user?.role === 'organizer' ||
+                            (user?.role === 'admin' && (
+                                <Nav.Link
+                                    className={`d-flex align-items-center p-2 rounded hover-bg ${
+                                        activeTab === 'events'
+                                            ? 'nav-ticket-active'
+                                            : ''
+                                    }`}
+                                    onClick={() =>
+                                        handleNavigation('events', '/event')
+                                    }
+                                >
+                                    <BsCalendar className="me-2" /> Sự kiện của
+                                    tôi
+                                </Nav.Link>
+                            ))}
                     </Nav>
                 </Col>
 
