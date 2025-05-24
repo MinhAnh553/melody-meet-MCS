@@ -25,6 +25,7 @@ body {
     color: #fff;
     background-color: #27272a;
     overflow-y: scroll;
+    font-family: 'Roboto', sans-serif;
 }
 
 main {

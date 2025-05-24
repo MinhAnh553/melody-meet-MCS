@@ -99,7 +99,7 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
                         country={'vn'}
                         value={phone}
                         onChange={(phone) => setPhone(phone)}
-                        inputClass="form-control"
+                        inputClass="form-control text-dark"
                         inputStyle={{
                             width: '100%',
                             height: '48px',
