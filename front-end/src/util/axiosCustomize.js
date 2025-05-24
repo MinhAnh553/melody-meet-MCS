@@ -97,6 +97,23 @@ instance.interceptors.response.use(
             }
         }
 
+        // 404 Not Found thì hiển thị thông báo lỗi, về trang chủ
+        if (error?.response?.status === 404) {
+            swalCustomize.Toast.fire({
+                icon: 'error',
+                title: 'Không tìm thấy trang!',
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+            });
+
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+
+            return Promise.reject(error.response.data);
+        }
+
         // Handle other errors
         if (error?.response?.data) {
             // Handle unauthorized access message

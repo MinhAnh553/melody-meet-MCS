@@ -1,12 +1,12 @@
 import axios from 'axios';
 import eventModel from '../models/eventModel.js';
+import ticketTypeModel from '../models/ticketTypeModel.js';
 import logger from '../utils/logger.js';
 import { validateCreateEvent } from '../utils/validation.js';
 import {
     deleteCloudinaryImage,
     deleteMultipleCloudinaryImages,
 } from '../providers/cloudinaryProvider.js';
-
 async function invalidateEventCache(req) {
     const keys = await req.redisClient.keys('events:*');
     if (keys.length > 0) {
@@ -83,13 +83,19 @@ const createEvent = async (req, res) => {
         }
 
         const event = await eventModel.create(eventData);
+        await ticketTypeModel.create(
+            ticketTypes.map((ticketType) => ({
+                ...ticketType,
+                eventId: event._id,
+            })),
+        );
+
         await invalidateEventCache(req);
 
         logger.info('Event created successfully');
         return res.status(201).json({
             success: true,
             message: 'Sự kiện đã được tạo thành công!',
-            data: event,
         });
     } catch (error) {
         logger.error('Create event error:', error);
@@ -164,7 +170,11 @@ const getEventById = async (req, res) => {
             });
         }
 
-        const event = await eventModel.findById(eventId);
+        const event = await eventModel.findOne({
+            _id: eventId,
+            status: { $in: ['approved', 'event_over'] }, // Only fetch approved or event_over events
+        });
+
         if (!event) {
             logger.error('Event not found');
             return res.status(404).json({
@@ -173,12 +183,18 @@ const getEventById = async (req, res) => {
             });
         }
 
-        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(event));
+        const eventData = event.toObject();
+        const ticketTypes = await ticketTypeModel.find({
+            eventId: eventId,
+        });
+        eventData.ticketTypes = ticketTypes;
+        // Cache the event data for 60 minutes
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(eventData));
         logger.info('Get event by id from database');
 
         return res.status(200).json({
             success: true,
-            data: event,
+            data: eventData,
         });
     } catch (error) {
         logger.error('Get event by id error:', error);
@@ -253,6 +269,7 @@ const getEventByIdToEdit = async (req, res) => {
     try {
         const eventId = req.params.id;
         const event = await eventModel.findById(eventId);
+
         if (!event) {
             logger.error('Event not found');
             return res.status(404).json({
@@ -261,9 +278,17 @@ const getEventByIdToEdit = async (req, res) => {
             });
         }
 
+        const ticketTypes = await ticketTypeModel.find({
+            eventId: eventId,
+        });
+
+        // Convert event to plain object and add ticketTypes
+        const eventData = event.toObject();
+        eventData.ticketTypes = ticketTypes;
+
         return res.status(200).json({
             success: true,
-            data: event,
+            data: eventData,
         });
     } catch (error) {
         logger.error('Get event by id to edit error:', error);
@@ -358,10 +383,19 @@ const updateEvent = async (req, res) => {
             },
             startTime: new Date(data.startTime) || event.startTime,
             endTime: new Date(data.endTime) || event.endTime,
-            ticketTypes: ticketTypes || event.ticketTypes,
             status: data.status || event.status,
             createdBy: event.createdBy || req.user.userId,
         };
+
+        // Xóa các loại vé cũ
+        await ticketTypeModel.deleteMany({ eventId: eventId });
+        // Thêm các loại vé mới
+        await ticketTypeModel.create(
+            ticketTypes.map((ticketType) => ({
+                ...ticketType,
+                eventId: eventId,
+            })),
+        );
 
         // Update event
         const updatedEvent = await eventModel.findByIdAndUpdate(
@@ -371,12 +405,12 @@ const updateEvent = async (req, res) => {
                 new: true,
             },
         );
+
         await invalidateEventCache(req);
 
         return res.status(200).json({
             success: true,
             message: 'Sự kiện đã được cập nhật thành công!',
-            data: updatedEvent,
         });
     } catch (error) {
         logger.error('Update event error:', error);
@@ -408,17 +442,26 @@ const getEvents = async (req, res) => {
         }
 
         if (type == 'special') {
-            events = await eventModel
-                .find({ status: status })
-                .sort({ startTime: 1 })
-                .limit(8);
+            events = await eventModel.aggregate([
+                { $match: { status } },
+                { $sort: { startTime: 1 } },
+                { $limit: 8 },
+                {
+                    $lookup: {
+                        from: 'tickettypes',
+                        localField: '_id',
+                        foreignField: 'eventId',
+                        as: 'ticketTypes',
+                    },
+                },
+            ]);
         }
 
         if (type == 'all') {
             events = await eventModel.aggregate([
                 {
                     $match: {
-                        status: { $in: ['approved', 'event_over'] }, // Lọc các sự kiện hợp lệ
+                        status: { $in: ['approved', 'event_over'] },
                     },
                 },
                 {
@@ -434,8 +477,17 @@ const getEvents = async (req, res) => {
                 },
                 {
                     $sort: {
-                        sortStatus: 1, // 'approved' (0) đứng trước 'event_over' (1)
-                        startTime: 1, // Sắp xếp tăng dần theo thời gian bắt đầu
+                        sortStatus: 1,
+                        startTime: 1,
+                    },
+                },
+                {
+                    // Chèn ticketTypes từ collection tickettypes
+                    $lookup: {
+                        from: 'tickettypes', // collection name (phải là lowercase, đúng tên Mongo)
+                        localField: '_id', // event._id
+                        foreignField: 'eventId', // ticketType.eventId
+                        as: 'ticketTypes',
                     },
                 },
             ]);

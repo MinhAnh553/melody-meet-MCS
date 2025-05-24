@@ -29,7 +29,24 @@ const getRevenue = async (req, res) => {
 
             // Chỉ lấy các sự kiện đã được duyệt
             { $match: { 'eventDetails.status': 'approved' } },
-
+            {
+                $lookup: {
+                    from: 'tickettypes',
+                    localField: '_id',
+                    foreignField: 'eventId',
+                    as: 'ticketTypes',
+                },
+            },
+            {
+                $addFields: {
+                    'eventDetails.ticketTypes': '$ticketTypes',
+                    startTimeDiff: {
+                        $abs: {
+                            $subtract: ['$eventDetails.startTime', new Date()],
+                        },
+                    },
+                },
+            },
             // 🔽 Sắp xếp theo tổng doanh thu (giảm dần)
             //    Nếu doanh thu bằng nhau, ưu tiên startTime gần nhất với ngày hiện tại
             {
@@ -64,6 +81,42 @@ const getRevenue = async (req, res) => {
     }
 };
 
+const createOrder = async (req, res) => {
+    logger.info('Create order');
+    try {
+        const { eventId, items, totalPrice, buyerInfo } = req.body;
+        const userId = req.user.userId;
+        const orderId = `${
+            Number(await orderModel.countDocuments()) + 1
+        }${Number(String(Date.now()).slice(-6))}`;
+        const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        const newOrder = new orderModel({
+            userId,
+            buyerInfo,
+            eventId,
+            orderId,
+            totalPrice,
+            status: 'PENDING',
+            expiredAt,
+        });
+        await newOrder.save();
+        logger.info(`Order created: ${newOrder._id}`);
+
+        return res.status(200).json({
+            success: true,
+            orderId: newOrder._id,
+            message: 'Tạo đơn hàng thành công!',
+        });
+    } catch (error) {
+        logger.error('Create order error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
 export default {
     getRevenue,
+    createOrder,
 };

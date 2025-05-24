@@ -18,7 +18,7 @@ const storage = new CloudinaryStorage({
     cloudinary,
     params: {
         folder: 'event_images',
-        allowed_formats: ['jpg', 'png', 'jpeg'],
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     },
 });
 

@@ -70,6 +70,11 @@ const updateUserAddress = (data) => {
     return axios.patch(URL_API, data);
 };
 
+const createOrder = (data) => {
+    const URL_API = `${API_URL}/orders/create`;
+    return axios.post(URL_API, data);
+};
+
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
     return axios.patch(URL_API, { status: data });
@@ -83,11 +88,6 @@ const getAllEvents = () => {
 const updateUser = (userId, data) => {
     const URL_API = `${API_URL}/user/update/${userId}`;
     return axios.patch(URL_API, data);
-};
-
-const createOrder = (data) => {
-    const URL_API = `${API_URL}/order/create`;
-    return axios.post(URL_API, data);
 };
 
 const cancelOrder = (id) => {
