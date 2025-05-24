@@ -142,38 +142,65 @@ const EventDetail = () => {
                                 {lowestPrice}
                             </p>
 
-                            <div
-                                style={{
-                                    display: 'inline-block',
-                                    cursor:
-                                        event.status === 'event_over' ||
-                                        !isAuthenticated
-                                            ? 'not-allowed'
-                                            : 'pointer',
-                                }}
-                            >
-                                <button
-                                    className="btn btn-success btn-lg mt-2"
-                                    onClick={handleBuyNow}
-                                    disabled={
-                                        event.status === 'event_over' ||
-                                        !isAuthenticated
-                                    }
+                            {/* Nếu tất cả hết vé thì hiển thị hết vé */}
+                            {sortedTickets.every(
+                                (ticket) => ticket.totalQuantity <= 0,
+                            ) && (
+                                <div
                                     style={{
-                                        backgroundColor:
-                                            event.status === 'event_over' ||
-                                            !isAuthenticated
-                                                ? '#ccc'
-                                                : '',
+                                        display: 'inline-block',
+                                        cursor: 'not-allowed',
                                     }}
                                 >
-                                    {event.status === 'event_over'
-                                        ? 'Sự kiện đã kết thúc'
-                                        : !isAuthenticated
-                                        ? 'Đăng nhập để mua vé'
-                                        : 'Mua vé ngay'}
-                                </button>
-                            </div>
+                                    <button
+                                        className="btn btn-success btn-lg mt-2"
+                                        disabled={true}
+                                        style={{
+                                            backgroundColor: '#ccc',
+                                        }}
+                                    >
+                                        Đã hết vé
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Nếu còn vé thì hiển thị nút mua vé */}
+                            {sortedTickets.some(
+                                (ticket) => ticket.totalQuantity > 0,
+                            ) && (
+                                <div
+                                    style={{
+                                        display: 'inline-block',
+                                        cursor:
+                                            event.status === 'event_over' ||
+                                            !isAuthenticated
+                                                ? 'not-allowed'
+                                                : 'pointer',
+                                    }}
+                                >
+                                    <button
+                                        className="btn btn-success btn-lg mt-2"
+                                        onClick={handleBuyNow}
+                                        disabled={
+                                            event.status === 'event_over' ||
+                                            !isAuthenticated
+                                        }
+                                        style={{
+                                            backgroundColor:
+                                                event.status === 'event_over' ||
+                                                !isAuthenticated
+                                                    ? '#ccc'
+                                                    : '',
+                                        }}
+                                    >
+                                        {event.status === 'event_over'
+                                            ? 'Sự kiện đã kết thúc'
+                                            : !isAuthenticated
+                                            ? 'Đăng nhập để mua vé'
+                                            : 'Mua vé ngay'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Cột phải */}

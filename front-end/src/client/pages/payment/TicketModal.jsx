@@ -161,49 +161,68 @@ const TicketModal = ({ show, onHide, event }) => {
                                                 </td>
                                                 <td>
                                                     <div className="quantity-group d-flex justify-content-center align-items-center">
-                                                        <button
-                                                            className="btn btn-outline-light btn-sm rounded-circle me-2"
-                                                            onClick={() =>
-                                                                handleDecrement(
-                                                                    index,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                quantity <= 0
-                                                            }
-                                                        >
-                                                            <i className="bi bi-dash"></i>
-                                                        </button>
-                                                        <input
-                                                            type="number"
-                                                            min={0}
-                                                            max={
-                                                                ticket.maxPerUser
-                                                            }
-                                                            value={quantity}
-                                                            onChange={(e) =>
-                                                                handleQuantityChange(
-                                                                    index,
-                                                                    +e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            className="quantity-input"
-                                                        />
-                                                        <button
-                                                            className="btn btn-outline-light btn-sm rounded-circle ms-2"
-                                                            onClick={() =>
-                                                                handleIncrement(
-                                                                    index,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                quantity >=
-                                                                ticket.maxPerUser
-                                                            }
-                                                        >
-                                                            <i className="bi bi-plus"></i>
-                                                        </button>
+                                                        {/* Nếu hết vé thì hiển hết vé */}
+                                                        {ticket.totalQuantity <=
+                                                            0 && (
+                                                            <span className="text-danger">
+                                                                Hết vé
+                                                            </span>
+                                                        )}
+                                                        {/* Nếu còn vé thì hiển thị nút tăng/giảm */}
+                                                        {ticket.totalQuantity >
+                                                            0 && (
+                                                            <>
+                                                                <button
+                                                                    className="btn btn-outline-light btn-sm rounded-circle me-2"
+                                                                    onClick={() =>
+                                                                        handleDecrement(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        quantity <=
+                                                                        0
+                                                                    }
+                                                                >
+                                                                    <i className="bi bi-dash"></i>
+                                                                </button>
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    max={
+                                                                        ticket.maxPerUser
+                                                                    }
+                                                                    value={
+                                                                        quantity
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        handleQuantityChange(
+                                                                            index,
+                                                                            +e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    className="quantity-input"
+                                                                />
+                                                                <button
+                                                                    className="btn btn-outline-light btn-sm rounded-circle ms-2"
+                                                                    onClick={() =>
+                                                                        handleIncrement(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        quantity >=
+                                                                        ticket.maxPerUser
+                                                                    }
+                                                                >
+                                                                    <i className="bi bi-plus"></i>
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
