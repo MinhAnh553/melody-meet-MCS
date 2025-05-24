@@ -65,6 +65,11 @@ const getEvents = (type, status = 'approved') => {
     return axios.get(URL_API);
 };
 
+const updateUserAddress = (data) => {
+    const URL_API = `${API_URL}/auth/user/update-address`;
+    return axios.patch(URL_API, data);
+};
+
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
     return axios.patch(URL_API, { status: data });
@@ -73,11 +78,6 @@ const updateStatusEvent = (eventId, data) => {
 const getAllEvents = () => {
     const URL_API = `${API_URL}/event/all-events`;
     return axios.get(URL_API);
-};
-
-const updateUserInfo = (data) => {
-    const URL_API = `${API_URL}/user/update`;
-    return axios.patch(URL_API, data);
 };
 
 const updateUser = (userId, data) => {
@@ -177,7 +177,7 @@ export default {
     getEventByIdToEdit,
     getEvents,
     getAllEvents,
-    updateUserInfo,
+    updateUserAddress,
     updateUser,
     createOrder,
     cancelOrder,

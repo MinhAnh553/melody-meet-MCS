@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import PhoneInput from 'react-phone-input-2';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { Modal } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
+import 'react-phone-input-2/lib/bootstrap.css';
 import swalCustomize from '../../../util/swalCustomize';
 import api from '../../../util/api';
 import { useLoading } from '../../context/LoadingContext';
@@ -31,6 +34,13 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
             });
         }
 
+        if (!isValidPhoneNumber('+' + phone)) {
+            return swalCustomize.Toast.fire({
+                icon: 'error',
+                title: 'Số điện thoại không hợp lệ!',
+            });
+        }
+
         try {
             // showLoading();
             const buyerInfo = {
@@ -39,7 +49,7 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
                 email,
             };
             // Gọi API update user
-            const res = await api.updateUserInfo(buyerInfo);
+            const res = await api.updateUserAddress(buyerInfo);
             if (res.success) {
                 // Thành công => gọi onConfirm => tiếp tục PayOS
                 updateUser({
@@ -85,16 +95,19 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
 
                 <div className="mb-3">
                     <label className="form-label">Số điện thoại</label>
-                    <input
-                        type="text"
-                        className="form-control text-dark"
-                        maxLength="10"
-                        placeholder="Nhập số điện thoại"
+                    <PhoneInput
+                        country={'vn'}
                         value={phone}
-                        onInput={(e) =>
-                            (e.target.value = e.target.value.replace(/\D/g, ''))
-                        }
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(phone) => setPhone(phone)}
+                        inputClass="form-control"
+                        inputStyle={{
+                            width: '100%',
+                            height: '48px',
+                            padding: '0 60px',
+                            paddingTop: '3px',
+                        }}
+                        containerStyle={{ width: '100%' }}
+                        enableSearch={true}
                     />
                 </div>
 

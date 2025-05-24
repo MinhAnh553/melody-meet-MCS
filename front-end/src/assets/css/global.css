@@ -666,3 +666,7 @@ header .form-control {
         display: none;
     }
 }
+
+.react-tel-input .country-list .country-name {
+    color: black;
+}

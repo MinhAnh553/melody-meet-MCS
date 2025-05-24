@@ -299,6 +299,34 @@ const getAccount = async (req, res) => {
     }
 };
 
+// Update user address
+const updateUserAddress = async (req, res) => {
+    logger.info(`Update user address request received`);
+    try {
+        const data = req.body;
+        const user = await userModel.updateOne(
+            { _id: req.user.userId },
+            {
+                $set: {
+                    address: {
+                        ...data,
+                    },
+                },
+            },
+        );
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật thông tin tài khoản thành công',
+        });
+    } catch (error) {
+        logger.error('Update user address error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -306,4 +334,5 @@ export default {
     refreshToken,
     logout,
     getAccount,
+    updateUserAddress,
 };

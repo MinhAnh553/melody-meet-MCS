@@ -12,4 +12,10 @@ Router.route('/refresh-token').post(authController.refreshToken);
 Router.route('/logout').post(authenticateToken, authController.logout);
 Router.route('/account').get(authenticateToken, authController.getAccount);
 
+// User routes
+Router.route('/user/update-address').patch(
+    authenticateToken,
+    authController.updateUserAddress,
+);
+
 export default Router;
