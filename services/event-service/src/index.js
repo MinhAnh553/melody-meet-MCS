@@ -11,14 +11,15 @@ import { connectDB } from './config/database.js';
 import eventRoutes from './routes/eventRoute.js';
 import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
-import { connectRabbitMQ } from './providers/rabbitmqProvider.js';
+import { connectRabbitMQ, consumeEvent } from './providers/rabbitmqProvider.js';
+import { handleOrderExpired } from './handlers/orderEventHandler.js';
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3002;
 // Connect to database
 await connectDB();
-const redisClient = new Redis(process.env.REDIS_URI);
+const redisClient = new Redis(process.env.REDIS_URL);
 
 // Middleware
 app.use(helmet());
@@ -89,6 +90,10 @@ app.use(errorHandler);
 async function startServer() {
     try {
         await connectRabbitMQ();
+
+        // Consume events from RabbitMQ
+        await consumeEvent('order.expired', handleOrderExpired);
+
         app.listen(PORT, () => {
             logger.info(`🚀 Event Service running on port ${PORT}`);
         });

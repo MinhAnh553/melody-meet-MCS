@@ -11,6 +11,14 @@ const orderSchema = new mongoose.Schema(
         eventId: mongoose.Schema.Types.ObjectId,
         orderId: String,
         totalPrice: Number,
+        tickets: [
+            {
+                ticketId: mongoose.Schema.Types.ObjectId,
+                name: String,
+                quantity: Number,
+                price: Number,
+            },
+        ],
         status: {
             type: String,
             // enum: ['pending', 'paid', 'cancell'],

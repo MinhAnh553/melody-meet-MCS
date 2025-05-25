@@ -45,4 +45,14 @@ Router.route('/update/:id').patch(
     eventController.updateEvent,
 );
 
+// Order event
+Router.route('/order/:id').post(
+    authMiddleware.authenticateRequest,
+    cloudinaryProvider.fields([
+        { name: 'eventBackground', maxCount: 1 },
+        { name: 'organizerLogo', maxCount: 1 },
+    ]),
+    eventController.createOrder,
+);
+
 export default Router;

@@ -1,5 +1,6 @@
 import orderModel from '../models/orderModel.js';
 import logger from '../utils/logger.js';
+import { addOrderExpireJob } from '../providers/queueProvider.js';
 
 const getRevenue = async (req, res) => {
     try {
@@ -84,8 +85,7 @@ const getRevenue = async (req, res) => {
 const createOrder = async (req, res) => {
     logger.info('Create order');
     try {
-        const { eventId, items, totalPrice, buyerInfo } = req.body;
-        const userId = req.user.userId;
+        const { userId, eventId, tickets, totalPrice, buyerInfo } = req.body;
         const orderId = `${
             Number(await orderModel.countDocuments()) + 1
         }${Number(String(Date.now()).slice(-6))}`;
@@ -97,16 +97,21 @@ const createOrder = async (req, res) => {
             eventId,
             orderId,
             totalPrice,
+            tickets,
             status: 'PENDING',
             expiredAt,
         });
         await newOrder.save();
         logger.info(`Order created: ${newOrder._id}`);
 
+        // Thêm job hết hạn đơn hàng
+        await addOrderExpireJob(newOrder._id, tickets);
+
         return res.status(200).json({
             success: true,
             orderId: newOrder._id,
-            message: 'Tạo đơn hàng thành công!',
+            message:
+                'Tạo đơn hàng thành công! Vui lòng thanh toán trong 15 phút!',
         });
     } catch (error) {
         logger.error('Create order error:', error);
@@ -116,6 +121,7 @@ const createOrder = async (req, res) => {
         });
     }
 };
+
 export default {
     getRevenue,
     createOrder,

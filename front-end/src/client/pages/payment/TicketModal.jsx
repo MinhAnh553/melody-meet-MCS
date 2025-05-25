@@ -75,12 +75,12 @@ const TicketModal = ({ show, onHide, event }) => {
                 }))
                 .filter((item) => item.quantity >= 1); // Lọc những ticket có quantity >= 1
 
-            const res = await api.createOrder({
-                eventId: event._id,
-                items,
-                totalPrice,
-                buyerInfo,
-            });
+            const formData = new FormData();
+            formData.append('items', JSON.stringify(items));
+            formData.append('totalPrice', totalPrice);
+            formData.append('buyerInfo', JSON.stringify(buyerInfo));
+
+            const res = await api.createOrder(event._id, formData);
             if (res.success) {
                 window.location.href = `/order/${res.orderId}`;
             } else {

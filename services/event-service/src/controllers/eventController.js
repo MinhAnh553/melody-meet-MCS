@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import eventModel from '../models/eventModel.js';
 import ticketTypeModel from '../models/ticketTypeModel.js';
 import logger from '../utils/logger.js';
@@ -510,6 +511,105 @@ const getEvents = async (req, res) => {
     }
 };
 
+// [POST] /events/order/:id
+const createOrder = async (req, res) => {
+    logger.info('Create order');
+    try {
+        const userId = req.user.userId;
+        const eventId = req.params.id;
+        const data = req.body;
+        const tickets = JSON.parse(data.items);
+        const event = await eventModel.findById(eventId);
+
+        if (!event) {
+            logger.error('Event not found');
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        if (event.status !== 'approved') {
+            logger.error('Event is not approved');
+            return res.status(400).json({
+                success: false,
+                message: 'Sự kiện chưa được duyệt',
+            });
+        }
+
+        if (event.startTime < new Date()) {
+            logger.error('Event has already started');
+            return res.status(400).json({
+                success: false,
+                message: 'Sự kiện đã bắt đầu',
+            });
+        }
+
+        // Check if tickets are valid
+        if (!Array.isArray(tickets) || tickets.length === 0) {
+            logger.error('No tickets provided');
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng cung cấp ít nhất một loại vé',
+            });
+        }
+
+        // Số lượng vé không được vượt quá số lượng vé còn lại
+        for (const item of tickets) {
+            const ticketType = await ticketTypeModel.findById(item.ticketId);
+            if (!ticketType) {
+                logger.error(`Ticket type not found: ${item.ticketId}`);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Loại vé không tồn tại',
+                });
+            }
+            if (
+                item.quantity >
+                ticketType.totalQuantity - ticketType.quantitySold
+            ) {
+                logger.error(
+                    `Not enough tickets for type: ${item.ticketTypeId}`,
+                );
+                return res.status(400).json({
+                    success: false,
+                    message: `Số lượng vé không đủ cho loại vé ${ticketType.name}`,
+                });
+            }
+            // Cập nhật số lượng vé đã bán
+            ticketType.quantitySold += item.quantity;
+            await ticketType.save();
+        }
+
+        // Gọi đến order-service để tạo đơn hàng
+        const response = await axios.post(
+            `${process.env.ORDER_SERVICE_URL}/api/orders/create`,
+            {
+                userId,
+                eventId,
+                tickets,
+                totalPrice: data.totalPrice,
+                buyerInfo: JSON.parse(data.buyerInfo),
+            },
+        );
+
+        const orderId = response.data.orderId;
+
+        return res.status(201).json({
+            success: true,
+            orderId,
+            message:
+                'Tạo đơn hàng thành công! Vui lòng thanh toán trong 15 phút!',
+        });
+    } catch (error) {
+        logger.error('Create order error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -518,4 +618,5 @@ export default {
     getEventByIdToEdit,
     updateEvent,
     getEvents,
+    createOrder,
 };

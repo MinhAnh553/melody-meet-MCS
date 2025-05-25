@@ -11,19 +11,19 @@ const EventManagement = () => {
     const location = useLocation();
     const [nameEvent, setNameEvent] = useState('');
 
-    useEffect(() => {
-        const fetchEvent = async () => {
-            try {
-                const res = await api.getEventById(eventId);
-                if (res.success) {
-                    setNameEvent(res.event.name);
-                }
-            } catch (error) {
-                console.error('Lỗi khi lấy dữ liệu doanh thu:', error);
-            }
-        };
-        if (eventId) fetchEvent();
-    }, [eventId]);
+    // useEffect(() => {
+    //     const fetchEvent = async () => {
+    //         try {
+    //             const res = await api.getEventById(eventId);
+    //             if (res.success) {
+    //                 setNameEvent(res.event.name);
+    //             }
+    //         } catch (error) {
+    //             console.error('Lỗi khi lấy dữ liệu doanh thu:', error);
+    //         }
+    //     };
+    //     if (eventId) fetchEvent();
+    // }, [eventId]);
 
     return (
         <div className="d-flex flex-column flex-md-row min-vh-100">

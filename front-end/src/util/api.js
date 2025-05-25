@@ -70,8 +70,8 @@ const updateUserAddress = (data) => {
     return axios.patch(URL_API, data);
 };
 
-const createOrder = (data) => {
-    const URL_API = `${API_URL}/orders/create`;
+const createOrder = (eventId, data) => {
+    const URL_API = `${API_URL}/events/order/${eventId}`;
     return axios.post(URL_API, data);
 };
 

@@ -7,9 +7,6 @@ const Router = express.Router();
 Router.route('/revenue').get(orderController.getRevenue);
 
 // Tạo đơn hàng
-Router.route('/create').post(
-    authMiddleware.authenticateRequest,
-    orderController.createOrder,
-);
+Router.route('/create').post(orderController.createOrder);
 
 export default Router;

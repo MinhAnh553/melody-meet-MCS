@@ -17,7 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 // Connect to database
 await connectDB();
-const redisClient = new Redis(process.env.REDIS_URI);
+const redisClient = new Redis(process.env.REDIS_URL);
 
 // Middleware
 app.use(helmet());

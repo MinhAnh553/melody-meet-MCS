@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cors from 'cors';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
-import Redis from 'ioredis';
 import { rateLimit } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 
@@ -11,13 +10,15 @@ import { connectDB } from './config/database.js';
 import orderRoutes from './routes/orderRoute.js';
 import logger from './utils/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
+import { connectRabbitMQ } from './providers/rabbitmqProvider.js';
+import { redisClient, closeConnections } from './providers/queueProvider.js';
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3003;
+
 // Connect to database
 await connectDB();
-const redisClient = new Redis(process.env.REDIS_URI);
 
 // Middleware
 app.use(helmet());
@@ -38,19 +39,6 @@ const rateLimiter = new RateLimiterRedis({
     duration: 1,
 });
 
-// app.use(async (req, res, next) => {
-//     try {
-//         await rateLimiter.consume(req.ip);
-//         next();
-//     } catch (err) {
-//         logger.warn('Rate limit exceeded for IP:', req.ip);
-//         res.status(429).json({
-//             success: false,
-//             message: 'Too many requests',
-//         });
-//     }
-// });
-
 // IP based rate limiting for sensitive endpoints
 const sensitiveEndpointsLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -69,18 +57,38 @@ const sensitiveEndpointsLimiter = rateLimit({
     }),
 });
 
-// Apply this sensitiveEndpointsLimiter to our routes
-// app.use('/api/event/', sensitiveEndpointsLimiter);
-
 // Routes
 app.use('/api/orders', orderRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-    logger.info(`🚀 Order Service running on port ${PORT}`);
+async function startServer() {
+    try {
+        await connectRabbitMQ();
+        app.listen(PORT, () => {
+            logger.info(`🚀 Order Service running on port ${PORT}`);
+        });
+    } catch (error) {
+        logger.error('Error starting server:', error);
+        process.exit(1);
+    }
+}
+
+// Xử lý tắt server
+process.on('SIGTERM', async () => {
+    logger.info('SIGTERM received. Closing connections...');
+    await closeConnections();
+    process.exit(0);
 });
+
+process.on('SIGINT', async () => {
+    logger.info('SIGINT received. Closing connections...');
+    await closeConnections();
+    process.exit(0);
+});
+
+startServer();
 
 // Unhandled promise rejection
 process.on('unhandledRejection', (reason, promise) => {
