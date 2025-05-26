@@ -1,6 +1,7 @@
 import orderModel from '../models/orderModel.js';
 import logger from '../utils/logger.js';
 import { addOrderExpireJob } from '../providers/queueProvider.js';
+import { publishEvent } from '../providers/rabbitmqProvider.js';
 
 const getRevenue = async (req, res) => {
     try {
@@ -122,7 +123,83 @@ const createOrder = async (req, res) => {
     }
 };
 
+const getOrderById = async (req, res) => {
+    logger.info('Get order by ID');
+    try {
+        const { id } = req.params;
+        const order = await orderModel.findById(id).populate('eventId');
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            order,
+            message: 'Lấy đơn hàng thành công',
+        });
+    } catch (error) {
+        logger.error('Get order by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// Hủy đơn hàng
+const cancelOrder = async (req, res) => {
+    logger.info('Cancel order');
+    try {
+        const { orderId } = req.body;
+        const order = await orderModel.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found',
+            });
+        }
+
+        if (order.status !== 'PENDING') {
+            return res.status(400).json({
+                success: false,
+                message: 'Chỉ có thể hủy đơn hàng đang chờ thanh toán',
+            });
+        }
+
+        order.status = 'CANCELED';
+        await order.save();
+
+        // Xóa job hết hạn đơn hàng nếu có
+        await addOrderExpireJob(order._id, [], true); // true để xóa job
+        logger.info(`Order canceled: ${order._id}`);
+
+        // Publish event to release tickets back to inventory
+        await publishEvent('order.expired', {
+            orderId: order._id,
+            tickets: order.tickets,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Đơn hàng đã được hủy thành công',
+        });
+    } catch (error) {
+        logger.error('Cancel order error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     getRevenue,
     createOrder,
+    getOrderById,
+    cancelOrder,
 };

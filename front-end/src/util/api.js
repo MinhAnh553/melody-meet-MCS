@@ -75,29 +75,30 @@ const createOrder = (eventId, data) => {
     return axios.post(URL_API, data);
 };
 
-const updateStatusEvent = (eventId, data) => {
-    const URL_API = `${API_URL}/event/update/${eventId}/status`;
-    return axios.patch(URL_API, { status: data });
-};
-
 const getAllEvents = () => {
     const URL_API = `${API_URL}/event/all-events`;
     return axios.get(URL_API);
 };
 
-const updateUser = (userId, data) => {
-    const URL_API = `${API_URL}/user/update/${userId}`;
-    return axios.patch(URL_API, data);
+const getOrder = (id) => {
+    const URL_API = `${API_URL}/orders/${id}`;
+    return axios.get(URL_API);
 };
 
 const cancelOrder = (id) => {
-    const URL_API = `${API_URL}/order/cancel`;
+    const URL_API = `${API_URL}/orders/cancel`;
     return axios.post(URL_API, id);
 };
 
-const getOrder = (id) => {
-    const URL_API = `${API_URL}/order/${id}`;
-    return axios.get(URL_API);
+// Chưa sử dụng
+const updateStatusEvent = (eventId, data) => {
+    const URL_API = `${API_URL}/event/update/${eventId}/status`;
+    return axios.patch(URL_API, { status: data });
+};
+
+const updateUser = (userId, data) => {
+    const URL_API = `${API_URL}/user/update/${userId}`;
+    return axios.patch(URL_API, data);
 };
 
 const updateStatusOrder = (orderId, data) => {
@@ -122,11 +123,6 @@ const getOrderByOrderId = (orderId) => {
 
 const getMyOrders = () => {
     const URL_API = `${API_URL}/order/my`;
-    return axios.get(URL_API);
-};
-
-const getOrderTickets = (id) => {
-    const URL_API = `${API_URL}/order/ticket/${id}`;
     return axios.get(URL_API);
 };
 
@@ -187,7 +183,6 @@ export default {
     updateStatusOrder,
     getOrderByOrderId,
     getMyOrders,
-    getOrderTickets,
     getMyEvents,
     getOrdersByEventId,
     getEventSummary,

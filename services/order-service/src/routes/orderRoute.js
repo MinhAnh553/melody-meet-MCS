@@ -9,4 +9,16 @@ Router.route('/revenue').get(orderController.getRevenue);
 // Tạo đơn hàng
 Router.route('/create').post(orderController.createOrder);
 
+// Lấy đơn hàng theo ID
+Router.route('/:id').get(
+    authMiddleware.authenticateRequest,
+    orderController.getOrderById,
+);
+
+// Hủy đơn hàng
+Router.route('/cancel').post(
+    authMiddleware.authenticateRequest,
+    orderController.cancelOrder,
+);
+
 export default Router;

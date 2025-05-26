@@ -2,6 +2,7 @@ import { Queue, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import logger from '../utils/logger.js';
 import { publishEvent } from './rabbitmqProvider.js';
+import orderModel from '../models/orderModel.js';
 
 // Cấu hình Redis cho BullMQ
 const redisOptions = {
@@ -23,6 +24,20 @@ const orderExpireWorker = new Worker(
     async (job) => {
         const { orderId, tickets } = job.data;
         try {
+            // Chuyển trạng thái đơn hàng thành "CANCELED"
+            const order = await orderModel.findById(orderId);
+            if (!order) {
+                logger.error(`Order ${orderId} not found`);
+                throw new Error(`Order ${orderId} not found`);
+            }
+
+            if (order.status !== 'PENDING') {
+                logger.warn(`Order ${orderId} is not in PENDING status`);
+                return;
+            }
+            order.status = 'CANCELED';
+            await order.save();
+
             // Publish event to release tickets back to inventory
             await publishEvent('order.expired', {
                 orderId,

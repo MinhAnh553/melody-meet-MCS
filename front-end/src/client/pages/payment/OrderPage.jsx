@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import sweetalert2 from 'sweetalert2';
+import { motion } from 'framer-motion';
 
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
@@ -40,16 +41,19 @@ function OrderPage() {
             const res = await api.getOrder(orderId);
             if (res.success) {
                 setOrder(res.order);
+                setTickets(res.order.tickets);
                 // Tính thời gian còn lại = expiredAt - now
                 const diff =
                     new Date(res.order.expiredAt).getTime() - Date.now();
                 setTimeLeft(diff > 0 ? diff : 0);
-            } else if (res.reason === 'expired') {
-                swalCustomize.Toast.fire({
-                    icon: 'error',
-                    title: 'Đơn hàng đã hết hạn!',
-                });
-                navigate(`/event/${res.eventId || ''}`);
+
+                if (res.order.status === 'CANCELED') {
+                    swalCustomize.Toast.fire({
+                        icon: 'error',
+                        title: 'Đơn hàng đã bị hủy!',
+                    });
+                    navigate(`/event/${res.order.eventId || ''}`);
+                }
             } else if (res.payment === true) {
                 swalCustomize.Toast.fire({
                     icon: 'success',
@@ -67,25 +71,6 @@ function OrderPage() {
             console.error(err);
         }
     };
-
-    // Lấy danh sách vé từ server
-    useEffect(() => {
-        const fetchTickets = async () => {
-            showLoading();
-            try {
-                const res = await api.getOrderTickets(orderId);
-                if (res.success) {
-                    setTickets(res.tickets);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                hideLoading();
-            }
-        };
-
-        fetchTickets();
-    }, [orderId]);
 
     // Đồng hồ đếm ngược
     useEffect(() => {
@@ -276,7 +261,8 @@ function OrderPage() {
                             {order.buyerInfo?.name || 'Chưa cập nhật'}
                         </div>
                         <div className="mb-3">
-                            <strong>Số điện thoại:</strong>{' '}
+                            <strong>Số điện thoại:</strong>
+                            {' +'}
                             {order.buyerInfo?.phone || 'Chưa cập nhật'}
                         </div>
                         <div className="mb-3">
@@ -289,13 +275,21 @@ function OrderPage() {
                         {renderTicketTable()}
 
                         <hr />
-                        <h4 className="mb-3">Chọn phương thức thanh toán</h4>
-                        <button
-                            className="btn btn-success w-100"
-                            onClick={handleChoosePayOS}
-                        >
-                            Thanh toán qua mã QR
-                        </button>
+                        {/* Payment Method */}
+                        <div>
+                            <h5 className="mb-3">
+                                Chọn phương thức thanh toán
+                            </h5>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="btn btn-success w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                                onClick={handleChoosePayOS}
+                            >
+                                <i className="bi bi-qr-code"></i>
+                                <span>Thanh toán qua mã QR</span>
+                            </motion.button>
+                        </div>
                     </div>
                 </div>
             </div>
