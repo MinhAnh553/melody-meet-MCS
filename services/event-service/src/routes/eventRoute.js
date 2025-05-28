@@ -26,6 +26,9 @@ Router.route('/my').get(
 // Get event
 Router.route('/').get(eventController.getEvents);
 
+// Search
+Router.route('/search').get(eventController.searchEvents);
+
 // Get event by id
 Router.route('/:id').get(eventController.getEventById);
 

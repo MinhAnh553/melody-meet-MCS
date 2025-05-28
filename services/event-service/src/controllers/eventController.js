@@ -611,6 +611,46 @@ const createOrder = async (req, res) => {
     }
 };
 
+// [GET] /events/search?query=abc
+const searchEvents = async (req, res) => {
+    try {
+        const { query = '' } = req.query;
+        const cacheKey = `events:search:${query}`;
+        const cachedEvents = await req.redisClient.get(cacheKey);
+
+        if (cachedEvents) {
+            logger.info('Get search events from cache');
+            return res.status(200).json(JSON.parse(cachedEvents));
+        }
+
+        // Tìm kiếm sự kiện theo tên
+        const events = await eventModel
+            .find({
+                status: { $in: ['approved', 'event_over'] },
+                name: { $regex: query, $options: 'i' },
+            })
+            .sort({ startTime: 1 })
+            .select('_id name background');
+
+        const result = {
+            success: true,
+            events,
+        };
+
+        // Cache kết quả trong 1 giờ
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
+        logger.info('Get search events from database');
+
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Search events error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -620,4 +660,5 @@ export default {
     updateEvent,
     getEvents,
     createOrder,
+    searchEvents,
 };

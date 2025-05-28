@@ -75,8 +75,8 @@ const createOrder = (eventId, data) => {
     return axios.post(URL_API, data);
 };
 
-const getAllEvents = () => {
-    const URL_API = `${API_URL}/event/all-events`;
+const search = (searchQuery) => {
+    const URL_API = `${API_URL}/events/search?query=${searchQuery}`;
     return axios.get(URL_API);
 };
 
@@ -111,6 +111,11 @@ const getMyOrders = () => {
 };
 
 // Chưa sử dụng
+const getAllEvents = () => {
+    const URL_API = `${API_URL}/event/all-events`;
+    return axios.get(URL_API);
+};
+
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
     return axios.patch(URL_API, { status: data });
@@ -138,11 +143,6 @@ const getOrdersByEventId = (id) => {
 
 const getEventSummary = (id) => {
     const URL_API = `${API_URL}/event/${id}/summary`;
-    return axios.get(URL_API);
-};
-
-const search = (searchQuery) => {
-    const URL_API = `${API_URL}/event/search?query=${searchQuery}`;
     return axios.get(URL_API);
 };
 
