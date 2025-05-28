@@ -436,6 +436,54 @@ const createTicketsForOrder = async (order) => {
     }
 };
 
+const getMyOrders = async (req, res) => {
+    logger.info('Get my orders');
+    try {
+        const { userId } = req.user;
+        const orders = await orderModel.find({ userId, status: 'PAID' });
+
+        // Lấy thông tin sự kiện cho mỗi đơn hàng
+        const ordersWithEventInfo = await Promise.all(
+            orders.map(async (order) => {
+                try {
+                    const eventResponse = await axios.get(
+                        `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+                    );
+                    if (eventResponse.data.success) {
+                        return {
+                            ...order.toObject(),
+                            eventName: eventResponse.data.data.name,
+                            startTime: eventResponse.data.data.startTime,
+                            endTime: eventResponse.data.data.endTime,
+                            location: eventResponse.data.data.location,
+                            background: eventResponse.data.data.background,
+                        };
+                    }
+                    return order;
+                } catch (error) {
+                    logger.error(
+                        `Error fetching event info for order ${order._id}:`,
+                        error,
+                    );
+                    return order;
+                }
+            }),
+        );
+
+        return res.status(200).json({
+            success: true,
+            orders: ordersWithEventInfo,
+            message: 'Lấy danh sách đơn hàng thành công',
+        });
+    } catch (error) {
+        logger.error('Get my orders error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     getRevenue,
     createOrder,
@@ -445,4 +493,5 @@ export default {
     cancelOrder,
     selectPaymentMethod,
     webhookHandler,
+    getMyOrders,
 };

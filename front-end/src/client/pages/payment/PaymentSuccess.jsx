@@ -165,7 +165,7 @@ function PaymentSuccess() {
                                     </h4>
                                     <div className={styles['event-details']}>
                                         <i className="bi bi-geo-alt-fill"></i>
-                                        {'   '}
+                                        {''}
                                         <span className="fw-bold text-success">
                                             {event.location.venueName}
                                         </span>
@@ -176,10 +176,9 @@ function PaymentSuccess() {
                                             {event.location.district},{' '}
                                             {event.location.province}
                                         </span>
-
                                         <br />
                                         <i className="bi bi-clock"></i>
-                                        {'  '}
+                                        {''}
                                         <span className="fw-bold text-success">
                                             <TimeText event={event} />
                                         </span>

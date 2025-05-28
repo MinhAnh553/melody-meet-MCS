@@ -12,6 +12,12 @@ Router.route('/create').post(orderController.createOrder);
 // Webhook
 Router.route('/webhook').post(orderController.webhookHandler);
 
+// Lấy danh sách đơn hàng của user
+Router.route('/my').get(
+    authMiddleware.authenticateRequest,
+    orderController.getMyOrders,
+);
+
 // Lấy đơn hàng theo ID
 Router.route('/:id').get(
     authMiddleware.authenticateRequest,

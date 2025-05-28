@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import noTicket from '../../assets/images/no-ticket.png';
 import api from '../../util/api';
 import TimeText from '../components/providers/TimeText';
+import styles from './PurchasedTickets.module.css';
 
 function PurchasedTickets() {
     const navigate = useNavigate();
@@ -117,7 +118,7 @@ function PurchasedTickets() {
                     return (
                         <div
                             key={order._id}
-                            className="mb-3 p-3 bg-light text-dark rounded shadow-sm"
+                            className="mb-4 p-3 bg-light text-dark rounded shadow-sm"
                             style={{ transition: 'transform 0.2s' }}
                         >
                             {/* Header đơn hàng */}
@@ -139,12 +140,13 @@ function PurchasedTickets() {
                                             textOverflow: 'ellipsis',
                                         }}
                                     >
-                                        Đơn hàng #{order.orderId} | {order.name}
+                                        Đơn hàng #{order.orderCode} |{' '}
+                                        {order.eventName}
                                     </h5>
 
                                     {/* Hiển thị trên mobile/tablet: Đơn hàng #123: */}
                                     <h5 className="fw-bold mb-1 d-block d-md-none">
-                                        Đơn hàng #{order.orderId}
+                                        Đơn hàng #{order.orderCode}
                                     </h5>
                                 </div>
                                 <i
@@ -160,75 +162,197 @@ function PurchasedTickets() {
                             <div
                                 className="transition-panel"
                                 style={{
-                                    maxHeight: isExpanded ? '1000px' : '0px',
+                                    maxHeight: isExpanded ? '10000px' : '0px',
                                     overflow: 'hidden',
                                     transition: 'max-height 0.3s ease',
                                 }}
                             >
                                 <hr />
+                                {/* Thông tin sự kiện */}
+                                <div className={styles['event-info']}>
+                                    <div className="row align-items-center mb-4">
+                                        <div className="col-md-3 text-center mb-3 mb-md-0">
+                                            <img
+                                                src={order.background}
+                                                alt={order.eventName}
+                                                className="img-fluid rounded"
+                                                style={{
+                                                    maxHeight: '150px',
+                                                    objectFit: 'cover',
+                                                    width: '100%',
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="col-md-9">
+                                            <h4
+                                                className={
+                                                    styles['event-title']
+                                                }
+                                            >
+                                                {order.eventName}
+                                            </h4>
+                                            <div
+                                                className={
+                                                    styles['event-details']
+                                                }
+                                            >
+                                                <div className="mb-2">
+                                                    <i className="bi bi-geo-alt-fill"></i>
+                                                    {'   '}
+                                                    <span className="fw-bold text-success">
+                                                        {
+                                                            order.location
+                                                                .venueName
+                                                        }
+                                                    </span>
+                                                    <br />
+                                                    <span
+                                                        style={{
+                                                            marginLeft: '22px',
+                                                        }}
+                                                    >
+                                                        {order.location.address}
+                                                        , {order.location.ward},{' '}
+                                                        {
+                                                            order.location
+                                                                .district
+                                                        }
+                                                        ,{' '}
+                                                        {
+                                                            order.location
+                                                                .province
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <i className="bi bi-clock"></i>
+                                                    {'   '}
+                                                    <span className="fw-bold text-success">
+                                                        <TimeText
+                                                            event={order}
+                                                        />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {order.tickets?.map((ticket, idx) => {
                                     const subTotal =
                                         ticket.price * ticket.quantity;
                                     return (
-                                        <React.Fragment key={ticket._id || idx}>
-                                            <div className="row align-items-center bg-white text-dark rounded p-3 mb-3">
-                                                {/* Hình ảnh */}
-                                                <div className="col-12 col-md-3 mb-3 mb-md-0 text-center">
-                                                    <img
-                                                        src={order.image}
-                                                        alt={ticket.name}
-                                                        className="img-fluid rounded"
-                                                        style={{
-                                                            maxHeight: '120px',
-                                                            objectFit:
-                                                                'contain',
-                                                        }}
-                                                    />
-                                                </div>
-
-                                                {/* Thông tin vé */}
-                                                <div className="col-12 col-md-6">
-                                                    <div className="col-12 d-md-none">
-                                                        <div className="fw-bold">
-                                                            Sự kiện:{' '}
-                                                            <span className="text-primary">
-                                                                "{order.name}"
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="fw-bold">
-                                                        Vé: {ticket.name}
-                                                    </div>
-                                                    <div className="text-primary fw-bold">
+                                        <div
+                                            key={ticket._id || idx}
+                                            className={styles['ticket-card']}
+                                        >
+                                            <div
+                                                className={
+                                                    styles['ticket-header']
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles['ticket-title']
+                                                    }
+                                                >
+                                                    <h5 className="mb-0">
+                                                        {ticket.name}
+                                                    </h5>
+                                                    <small className="text-muted">
                                                         Số lượng:{' '}
-                                                        {ticket.quantity}
-                                                    </div>
-                                                    <div className="text-danger fw-bold">
-                                                        Giá:{' '}
-                                                        {ticket.price === 0
-                                                            ? 'Miễn phí'
-                                                            : `${subTotal.toLocaleString()} đ`}
-                                                    </div>
-                                                    <div className="text-success fw-bold">
-                                                        Thời gian diễn ra:{' '}
-                                                        <TimeText
-                                                            event={order}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* QR Code */}
-                                                <div className="col-12 col-md-3 text-center mt-3 mt-md-0">
-                                                    <QRCode
-                                                        value={`${ticket.ticketId}`}
-                                                        size={100}
-                                                        bgColor="#ffffff"
-                                                        fgColor="#000000"
-                                                        level="H"
-                                                    />
+                                                        {ticket.quantity} vé
+                                                    </small>
                                                 </div>
                                             </div>
-                                        </React.Fragment>
+                                            <div
+                                                className={
+                                                    styles['ticket-body']
+                                                }
+                                            >
+                                                {Array.from({
+                                                    length: ticket.quantity,
+                                                }).map((_, ticketIndex) => (
+                                                    <div
+                                                        key={ticketIndex}
+                                                        className={
+                                                            styles[
+                                                                'ticket-item'
+                                                            ]
+                                                        }
+                                                    >
+                                                        <div
+                                                            className={
+                                                                styles[
+                                                                    'ticket-info'
+                                                                ]
+                                                            }
+                                                        >
+                                                            <div
+                                                                className={
+                                                                    styles[
+                                                                        'ticket-code'
+                                                                    ]
+                                                                }
+                                                            >
+                                                                Mã vé:{' '}
+                                                                {
+                                                                    order.orderCode
+                                                                }
+                                                                {idx + 1}
+                                                                {ticketIndex +
+                                                                    1}
+                                                            </div>
+                                                            <div
+                                                                className={
+                                                                    styles[
+                                                                        'ticket-price'
+                                                                    ]
+                                                                }
+                                                            >
+                                                                {ticket.price.toLocaleString(
+                                                                    'vi-VN',
+                                                                )}{' '}
+                                                                đ
+                                                            </div>
+                                                        </div>
+                                                        <div
+                                                            className={
+                                                                styles[
+                                                                    'ticket-qr'
+                                                                ]
+                                                            }
+                                                        >
+                                                            <QRCode
+                                                                value={`${
+                                                                    order.orderCode
+                                                                }${idx + 1}${
+                                                                    ticketIndex +
+                                                                    1
+                                                                }`}
+                                                                size={80}
+                                                                bgColor="#ffffff"
+                                                                fgColor="#000000"
+                                                                level="H"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <div
+                                                    className={
+                                                        styles['ticket-total']
+                                                    }
+                                                >
+                                                    <span>Tổng tiền:</span>
+                                                    <span>
+                                                        {subTotal.toLocaleString(
+                                                            'vi-VN',
+                                                        )}{' '}
+                                                        đ
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     );
                                 })}
                             </div>

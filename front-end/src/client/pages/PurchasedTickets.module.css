@@ -149,27 +149,24 @@
     font-size: 1.2rem;
 }
 
-.event-info {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+/* Thêm đường cắt cho vé */
+.ticket-item::before,
+.ticket-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 50%;
+    transform: translateY(-50%);
 }
 
-.event-title {
-    color: #2c3e50;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+.ticket-item::before {
+    left: -10px;
 }
 
-.event-details {
-    color: #495057;
-    line-height: 1.8;
-}
-
-.event-details i {
-    color: #4caf50;
-    margin-right: 0.5rem;
+.ticket-item::after {
+    right: -10px;
 }
