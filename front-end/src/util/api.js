@@ -100,6 +100,11 @@ const getOrderByOrderCode = (orderCode) => {
     return axios.get(URL_API);
 };
 
+const checkStatusOrder = (id) => {
+    const URL_API = `${API_URL}/orders/${id}/check-status`;
+    return axios.get(URL_API);
+};
+
 // Chưa sử dụng
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
@@ -114,11 +119,6 @@ const updateUser = (userId, data) => {
 const updateStatusOrder = (orderId, data) => {
     const URL_API = `${API_URL}/order/update/${orderId}/status`;
     return axios.patch(URL_API, { status: data });
-};
-
-const checkOrder = (data) => {
-    const URL_API = `${API_URL}/order/check-order`;
-    return axios.post(URL_API, data);
 };
 
 const getMyOrders = () => {
@@ -179,7 +179,7 @@ export default {
     cancelOrder,
     getOrder,
     selectPayment,
-    checkOrder,
+    checkStatusOrder,
     updateStatusOrder,
     getOrderByOrderCode,
     getMyOrders,

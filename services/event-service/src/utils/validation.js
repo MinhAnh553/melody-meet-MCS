@@ -67,10 +67,7 @@ export const validateCreateEvent = Joi.object({
                 'number.base': 'Số lượng vé tối đa mỗi người phải là số',
                 'any.required': 'Số lượng vé tối đa mỗi người là bắt buộc',
             }),
-            description: Joi.string().required().messages({
-                'string.empty': 'Thông tin vé không được để trống',
-                'any.required': 'Thông tin vé là bắt buộc',
-            }),
+            description: Joi.string().allow('').allow(null),
         }),
     ),
     startTime: Joi.date().required().messages({

@@ -182,6 +182,32 @@ const getOrderByOrderCode = async (req, res) => {
     }
 };
 
+const checkStatusOrder = async (req, res) => {
+    logger.info('Get order by order code');
+    try {
+        const { id } = req.params;
+        const order = await orderModel.findById(id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Đơn hàng không tồn tại',
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            status: order.status,
+            message: 'Lấy trạng thái đơn hàng thành công!',
+        });
+    } catch (error) {
+        logger.error('Get order by order code error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 // Hủy đơn hàng
 const cancelOrder = async (req, res) => {
     logger.info('Cancel order');
@@ -402,6 +428,7 @@ export default {
     getRevenue,
     createOrder,
     getOrderById,
+    checkStatusOrder,
     getOrderByOrderCode,
     cancelOrder,
     selectPaymentMethod,

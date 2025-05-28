@@ -24,6 +24,9 @@ Router.route('/order-code/:orderCode').get(
     orderController.getOrderByOrderCode,
 );
 
+// Check status
+Router.route('/:id/check-status').get(orderController.checkStatusOrder);
+
 // Hủy đơn hàng
 Router.route('/cancel').post(
     authMiddleware.authenticateRequest,

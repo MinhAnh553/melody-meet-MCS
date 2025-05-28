@@ -28,7 +28,7 @@ function OrderPage() {
         fetchData();
 
         const interval = setInterval(() => {
-            fetchOrder();
+            checkStatus();
         }, 5000);
 
         return () => {
@@ -48,18 +48,47 @@ function OrderPage() {
                 setTimeLeft(diff > 0 ? diff : 0);
 
                 if (res.order.status === 'CANCELED') {
+                    navigate(`/event/${res.order.eventId || ''}`);
                     swalCustomize.Toast.fire({
                         icon: 'error',
                         title: 'Đơn hàng đã bị hủy!',
                     });
-                    navigate(`/event/${res.order.eventId || ''}`);
+                } else if (res.order.status === 'PAID') {
+                    navigate(`/my-tickets`);
+                    swalCustomize.Toast.fire({
+                        icon: 'success',
+                        title: 'Đơn hàng đã được thanh toán!',
+                    });
                 }
-            } else if (res.payment === true) {
+            } else {
+                navigate('/');
                 swalCustomize.Toast.fire({
-                    icon: 'success',
-                    title: 'Thanh toán thành công!',
+                    icon: 'error',
+                    title: 'Không tìm thấy đơn hàng!',
                 });
-                navigate(`/my-tickets`);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const checkStatus = async () => {
+        try {
+            const res = await api.checkStatusOrder(orderId);
+            if (res.success) {
+                if (res.status === 'CANCELED') {
+                    navigate(`/event/${order.eventId || ''}`);
+                    swalCustomize.Toast.fire({
+                        icon: 'error',
+                        title: 'Đơn hàng đã bị hủy!',
+                    });
+                } else if (res.status === 'PAID') {
+                    navigate(`/my-tickets`);
+                    swalCustomize.Toast.fire({
+                        icon: 'success',
+                        title: 'Đơn hàng đã được thanh toán!',
+                    });
+                }
             } else {
                 navigate('/');
                 swalCustomize.Toast.fire({
