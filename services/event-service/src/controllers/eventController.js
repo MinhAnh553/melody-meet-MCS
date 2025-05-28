@@ -8,6 +8,7 @@ import {
     deleteCloudinaryImage,
     deleteMultipleCloudinaryImages,
 } from '../providers/cloudinaryProvider.js';
+
 async function invalidateEventCache(req) {
     const keys = await req.redisClient.keys('events:*');
     if (keys.length > 0) {

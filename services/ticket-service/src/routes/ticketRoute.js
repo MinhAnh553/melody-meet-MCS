@@ -3,6 +3,6 @@ import ticketController from '../controllers/ticketController.js';
 
 const Router = express.Router();
 
-Router.route('/create').post(ticketController.sendVerificationCode);
+Router.route('/bulk').post(ticketController.createBulkTicket);
 
 export default Router;

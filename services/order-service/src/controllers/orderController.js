@@ -8,6 +8,11 @@ import { publishEvent } from '../providers/rabbitmqProvider.js';
 import payosProvider from '../providers/payosProvider.js';
 import axios from 'axios';
 
+async function invalidateEventCacheById(req, eventId) {
+    await req.redisClient.del(`event:${eventId}`);
+    logger.info('Invalidate event cache');
+}
+
 const getRevenue = async (req, res) => {
     try {
         let revenue;
@@ -358,13 +363,15 @@ const webhookHandler = async (req, res) => {
             });
         }
 
-        // Nếu webhook có code '00' và success true => thanh toán thành công
-        if (code === '00' && req.body.success === true) {
+        // Nếu webhook có success true => thanh toán thành công
+        if (req.body.success === true) {
             order.status = 'PAID';
             // Tạo vé cho người dùng
             await createTicketsForOrder(order);
             // Xóa job hết hạn đơn hàng
             await deleteOrderExpireJob(order._id);
+            // Xóa cache event đó
+            await invalidateEventCacheById(req, order.eventId);
         } else {
             order.status = 'CANCELED';
             // Xóa job hết hạn đơn hàng
@@ -391,9 +398,12 @@ const webhookHandler = async (req, res) => {
 const createTicketsForOrder = async (order) => {
     try {
         const tickets = [];
+        let typeIndex = 1;
         for (const ticket of order.tickets) {
             for (let i = 0; i < ticket.quantity; i++) {
+                const ticketCode = `${order.orderCode}${typeIndex}${i + 1}`;
                 tickets.push({
+                    ticketCode,
                     userId: order.userId,
                     eventId: order.eventId,
                     orderId: order._id,
@@ -401,13 +411,15 @@ const createTicketsForOrder = async (order) => {
                     used: false,
                     usedAt: null,
                     createdAt: new Date(),
+                    updatedAt: new Date(),
                 });
             }
+            typeIndex++;
         }
 
         // Gọi API tạo vé
         const response = await axios.post(
-            `${process.env.TICKET_SERVICE_URL}/tickets/bulk`,
+            `${process.env.TICKET_SERVICE_URL}/api/tickets/bulk`,
             { tickets },
         );
 

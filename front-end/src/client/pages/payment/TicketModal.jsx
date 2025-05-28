@@ -84,7 +84,6 @@ const TicketModal = ({ show, onHide, event }) => {
             if (res.success) {
                 window.location.href = `/orders/${res.orderId}`;
             } else {
-                // console.log('Thất bại');
                 return swalCustomize.Toast.fire({
                     icon: 'error',
                     title: res.message || 'Tạo đơn hàng thất bại!',
@@ -93,7 +92,7 @@ const TicketModal = ({ show, onHide, event }) => {
         } catch (error) {
             return swalCustomize.Toast.fire({
                 icon: 'error',
-                title: 'Server Error!',
+                title: error.message || 'Server Error!',
             });
         } finally {
             hideLoading();
@@ -142,15 +141,6 @@ const TicketModal = ({ show, onHide, event }) => {
                                                     <strong>
                                                         {ticket.name}
                                                     </strong>
-                                                    <div
-                                                        className="text-muted"
-                                                        style={{
-                                                            fontSize: '0.9rem',
-                                                        }}
-                                                    >
-                                                        (Tối đa{' '}
-                                                        {ticket.maxPerUser} vé)
-                                                    </div>
                                                 </td>
                                                 <td>
                                                     {ticket.price === 0
@@ -162,14 +152,16 @@ const TicketModal = ({ show, onHide, event }) => {
                                                 <td>
                                                     <div className="quantity-group d-flex justify-content-center align-items-center">
                                                         {/* Nếu hết vé thì hiển hết vé */}
-                                                        {ticket.totalQuantity <=
+                                                        {ticket.totalQuantity -
+                                                            ticket.quantitySold <=
                                                             0 && (
                                                             <span className="text-danger">
                                                                 Hết vé
                                                             </span>
                                                         )}
                                                         {/* Nếu còn vé thì hiển thị nút tăng/giảm */}
-                                                        {ticket.totalQuantity >
+                                                        {ticket.totalQuantity -
+                                                            ticket.quantitySold >
                                                             0 && (
                                                             <>
                                                                 <button
@@ -189,9 +181,11 @@ const TicketModal = ({ show, onHide, event }) => {
                                                                 <input
                                                                     type="number"
                                                                     min={0}
-                                                                    max={
-                                                                        ticket.maxPerUser
-                                                                    }
+                                                                    max={Math.min(
+                                                                        ticket.maxPerUser,
+                                                                        ticket.totalQuantity -
+                                                                            ticket.quantitySold,
+                                                                    )}
                                                                     value={
                                                                         quantity
                                                                     }
@@ -216,7 +210,11 @@ const TicketModal = ({ show, onHide, event }) => {
                                                                     }
                                                                     disabled={
                                                                         quantity >=
-                                                                        ticket.maxPerUser
+                                                                        Math.min(
+                                                                            ticket.maxPerUser,
+                                                                            ticket.totalQuantity -
+                                                                                ticket.quantitySold,
+                                                                        )
                                                                     }
                                                                 >
                                                                     <i className="bi bi-plus"></i>
@@ -267,7 +265,13 @@ const TicketModal = ({ show, onHide, event }) => {
                                         className="text-white mb-2"
                                         style={{ fontSize: '0.9rem' }}
                                     >
-                                        (Tối đa {ticket.maxPerUser} vé)
+                                        (Tối đa{' '}
+                                        {Math.min(
+                                            ticket.maxPerUser,
+                                            ticket.totalQuantity -
+                                                ticket.quantitySold,
+                                        )}{' '}
+                                        vé)
                                     </div>
                                     <div className="quantity-group d-flex justify-content-center align-items-center">
                                         <button
@@ -282,7 +286,11 @@ const TicketModal = ({ show, onHide, event }) => {
                                         <input
                                             type="number"
                                             min={0}
-                                            max={ticket.maxPerUser}
+                                            max={Math.min(
+                                                ticket.maxPerUser,
+                                                ticket.totalQuantity -
+                                                    ticket.quantitySold,
+                                            )}
                                             value={quantity}
                                             onChange={(e) =>
                                                 handleQuantityChange(
@@ -298,7 +306,12 @@ const TicketModal = ({ show, onHide, event }) => {
                                                 handleIncrement(index)
                                             }
                                             disabled={
-                                                quantity >= ticket.maxPerUser
+                                                quantity >=
+                                                Math.min(
+                                                    ticket.maxPerUser,
+                                                    ticket.totalQuantity -
+                                                        ticket.quantitySold,
+                                                )
                                             }
                                         >
                                             <i className="bi bi-plus"></i>

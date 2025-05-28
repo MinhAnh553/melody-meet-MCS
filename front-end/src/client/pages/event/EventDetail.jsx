@@ -144,7 +144,10 @@ const EventDetail = () => {
 
                             {/* Nếu tất cả hết vé thì hiển thị hết vé */}
                             {sortedTickets.every(
-                                (ticket) => ticket.totalQuantity <= 0,
+                                (ticket) =>
+                                    ticket.totalQuantity -
+                                        ticket.quantitySold <=
+                                    0,
                             ) && (
                                 <div
                                     style={{
@@ -166,7 +169,9 @@ const EventDetail = () => {
 
                             {/* Nếu còn vé thì hiển thị nút mua vé */}
                             {sortedTickets.some(
-                                (ticket) => ticket.totalQuantity > 0,
+                                (ticket) =>
+                                    ticket.totalQuantity - ticket.quantitySold >
+                                    0,
                             ) && (
                                 <div
                                     style={{

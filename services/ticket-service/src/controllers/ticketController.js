@@ -1,29 +1,29 @@
 import ticketModel from '../models/ticketModel.js';
 import logger from '../utils/logger.js';
-import { validateRegister } from '../utils/validation.js';
+import { validateCreateBulkTicket } from '../utils/validation.js';
 
-const sendVerificationCode = async (req, res) => {
-    const { email, password, confirmPassword } = req.body;
-
+const createBulkTicket = async (req, res) => {
     try {
-        // Validate input
-        const { error } = validateRegister.validate(req.body);
+        const { error } = validateCreateBulkTicket.validate(req.body);
         if (error) {
-            logger.error('Validation error:', error);
             return res.status(400).json({
                 success: false,
                 message: error.details[0].message,
             });
         }
 
-        logger.info(`Verification code sent to ${email}`);
-        res.status(200).json({
+        const { tickets } = req.body;
+        const createdTickets = await ticketModel.insertMany(tickets);
+
+        logger.info(`Created ${createdTickets.length} tickets`);
+        return res.status(201).json({
             success: true,
-            message: 'Mã xác minh đã được gửi đến email của bạn',
+            tickets: createdTickets,
+            message: 'Tạo vé thành công',
         });
     } catch (error) {
-        logger.error('Send verification code error:', error);
-        res.status(500).json({
+        logger.error('Create bulk ticket error:', error);
+        return res.status(500).json({
             success: false,
             message: 'Internal server error',
         });
@@ -31,5 +31,5 @@ const sendVerificationCode = async (req, res) => {
 };
 
 export default {
-    sendVerificationCode,
+    createBulkTicket,
 };

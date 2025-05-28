@@ -58,7 +58,14 @@ const sensitiveEndpointsLimiter = rateLimit({
 });
 
 // Routes
-app.use('/api/orders', orderRoutes);
+app.use(
+    '/api/orders',
+    (req, res, next) => {
+        req.redisClient = redisClient;
+        next();
+    },
+    orderRoutes,
+);
 
 // Error handling middleware
 app.use(errorHandler);
