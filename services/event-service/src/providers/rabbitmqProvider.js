@@ -5,21 +5,39 @@ let connection = null;
 let channel = null;
 
 const EXCHANGE_NAME = 'event_exchange';
+const RECONNECT_INTERVAL = 5000; // 5 giây
 
 async function connectRabbitMQ() {
     try {
         connection = await amqp.connect(process.env.RABBITMQ_URL);
+        connection.on('error', (err) => {
+            logger.error('RabbitMQ connection error:', err);
+        });
+
+        connection.on('close', () => {
+            logger.warn('RabbitMQ connection closed. Reconnecting...');
+            setTimeout(connectRabbitMQ, RECONNECT_INTERVAL);
+        });
+
         channel = await connection.createChannel();
+
+        channel.on('error', (err) => {
+            logger.error('RabbitMQ channel error:', err);
+        });
+
+        channel.on('close', () => {
+            logger.warn('RabbitMQ channel closed.');
+        });
 
         await channel.assertExchange(EXCHANGE_NAME, 'topic', {
             durable: false,
         });
-        logger.info('Connected to RabbitMQ');
+        logger.info('✅ Connected to RabbitMQ');
 
         return channel;
     } catch (error) {
-        logger.error('Error connecting to RabbitMQ:', error);
-        throw error;
+        logger.error('❌ Error connecting to RabbitMQ:', error);
+        setTimeout(connectRabbitMQ, RECONNECT_INTERVAL); // retry
     }
 }
 
