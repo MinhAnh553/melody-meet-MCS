@@ -87,10 +87,10 @@ instance.interceptors.response.use(
                 return instance(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
-                // Clear tokens and redirect to login
+                // Clear tokens and redirect to /
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
-                window.location.href = '/login';
+                window.location.href = '/';
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;

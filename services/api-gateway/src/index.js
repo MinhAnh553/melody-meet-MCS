@@ -83,12 +83,37 @@ app.use(
 // Setting up proxy for our event service
 app.use(
     '/v1/events',
-    validateToken,
+    (req, res, next) => {
+        // Danh sách các pattern route không cần xác thực
+        const publicPatterns = [
+            '/v1/events/all-events', // Exact match
+            /^\/v1\/events\?/, // Query parameters
+            /^\/v1\/events\/[^\/]+$/, // /v1/events/:id
+        ];
+
+        // Kiểm tra nếu route hiện tại match với bất kỳ pattern nào
+        const isPublicRoute = publicPatterns.some((pattern) => {
+            if (pattern instanceof RegExp) {
+                return pattern.test(req.originalUrl);
+            }
+            return pattern === req.originalUrl;
+        });
+
+        if (isPublicRoute) {
+            return next();
+        }
+
+        // Nếu không phải public route, áp dụng validateToken
+        validateToken(req, res, next);
+    },
     proxy(process.env.EVENT_SERVICE_URL, {
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-            proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
-            proxyReqOpts.headers['x-role'] = srcReq.user.role;
+            // Chỉ thêm headers user nếu request đã được xác thực
+            if (srcReq.user) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
+                proxyReqOpts.headers['x-role'] = srcReq.user.role;
+            }
 
             if (
                 typeof srcReq.headers['content-type'] !== 'string' ||
