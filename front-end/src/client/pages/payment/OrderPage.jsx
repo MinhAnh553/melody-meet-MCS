@@ -137,16 +137,11 @@ function OrderPage() {
             if (res.success) {
                 // Redirect sang payUrl
                 window.location.href = res.payUrl;
-            } else if (res.reason === 'expired') {
-                swalCustomize.Toast.fire({
-                    icon: 'error',
-                    title: 'Đơn hàng đã hết hạn!',
-                });
-                navigate(`/event/${order?.eventId || ''}`);
             } else {
                 swalCustomize.Toast.fire({
                     icon: 'error',
-                    title: res.message || 'Chọn thanh toán thất bại!',
+                    title:
+                        res.message || 'Lỗi khi chọn phương thức thanh toán!',
                 });
                 navigate(`/event/${order?.eventId || ''}`);
             }
@@ -227,7 +222,7 @@ function OrderPage() {
                 >
                     <div className="card-body">
                         <h2 className="card-title text-center mb-4">
-                            Đơn Hàng #{order.orderId}
+                            Đơn Hàng #{order.orderCode}
                         </h2>
 
                         <div className="mb-3">

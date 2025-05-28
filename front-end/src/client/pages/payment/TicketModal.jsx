@@ -82,7 +82,7 @@ const TicketModal = ({ show, onHide, event }) => {
 
             const res = await api.createOrder(event._id, formData);
             if (res.success) {
-                window.location.href = `/order/${res.orderId}`;
+                window.location.href = `/orders/${res.orderId}`;
             } else {
                 // console.log('Thất bại');
                 return swalCustomize.Toast.fire({

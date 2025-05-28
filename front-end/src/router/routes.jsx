@@ -22,6 +22,7 @@ import TicketsList from '../admin/components/Tickets/TicketsList.jsx';
 import UsersList from '../admin/components/Users/UsersList.jsx';
 import ProtectedAdminRoute from '../admin/components/ProtectedAdminRoute.jsx';
 import AllEvents from '../client/pages/home/AllEvents.jsx';
+import PaymentCancel from '../client/pages/payment/PaymentCancel.jsx';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -166,7 +167,7 @@ const AnimatedRoutes = () => {
                         }
                     />
                 </Route>
-                <Route path="/order">
+                <Route path="/orders">
                     <Route
                         path="payment-success"
                         element={
@@ -178,6 +179,20 @@ const AnimatedRoutes = () => {
                                 transition={{ duration: 0.5 }}
                             >
                                 <PaymentSuccess />
+                            </motion.div>
+                        }
+                    />
+                    <Route
+                        path="payment-cancel"
+                        element={
+                            <motion.div
+                                variants={pageVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                transition={{ duration: 0.5 }}
+                            >
+                                <PaymentCancel />
                             </motion.div>
                         }
                     />

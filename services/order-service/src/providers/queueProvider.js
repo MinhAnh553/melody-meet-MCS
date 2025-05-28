@@ -82,6 +82,22 @@ const addOrderExpireJob = async (orderId, tickets) => {
     }
 };
 
+// Hàm xóa job hết hạn đơn hàng
+const deleteOrderExpireJob = async (orderId) => {
+    try {
+        const jobs = await orderExpireQueue.getJobs(['delayed', 'waiting']);
+        for (const job of jobs) {
+            if (job.data.orderId === orderId) {
+                await job.remove();
+                logger.info(`Deleted expire job for order ${orderId}`);
+            }
+        }
+    } catch (error) {
+        logger.error('Error deleting expire job:', error);
+        throw error;
+    }
+};
+
 // Hàm đóng kết nối
 const closeConnections = async () => {
     await orderExpireQueue.close();
@@ -89,4 +105,10 @@ const closeConnections = async () => {
     await redisClient.quit();
 };
 
-export { redisClient, orderExpireQueue, addOrderExpireJob, closeConnections };
+export {
+    redisClient,
+    orderExpireQueue,
+    addOrderExpireJob,
+    deleteOrderExpireJob,
+    closeConnections,
+};

@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema(
             phone: String,
         },
         eventId: mongoose.Schema.Types.ObjectId,
-        orderId: String,
+        orderCode: String,
         totalPrice: Number,
         tickets: [
             {
@@ -21,8 +21,8 @@ const orderSchema = new mongoose.Schema(
         ],
         status: {
             type: String,
-            // enum: ['pending', 'paid', 'cancell'],
-            default: 'pending',
+            enum: ['PENDING', 'PAID', 'CANCELED', 'EXPIRED'],
+            default: 'PENDING',
         },
         expiredAt: Date,
         createdAt: { type: Date, default: Date.now },

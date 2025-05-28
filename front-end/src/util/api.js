@@ -90,6 +90,16 @@ const cancelOrder = (id) => {
     return axios.post(URL_API, id);
 };
 
+const selectPayment = (id, method) => {
+    const URL_API = `${API_URL}/orders/${id}/select-payment?method=${method}`;
+    return axios.get(URL_API);
+};
+
+const getOrderByOrderCode = (orderCode) => {
+    const URL_API = `${API_URL}/orders/order-code/${orderCode}`;
+    return axios.get(URL_API);
+};
+
 // Chưa sử dụng
 const updateStatusEvent = (eventId, data) => {
     const URL_API = `${API_URL}/event/update/${eventId}/status`;
@@ -106,19 +116,9 @@ const updateStatusOrder = (orderId, data) => {
     return axios.patch(URL_API, { status: data });
 };
 
-const selectPayment = (id, method) => {
-    const URL_API = `${API_URL}/order/${id}/select-payment?method=${method}`;
-    return axios.post(URL_API);
-};
-
 const checkOrder = (data) => {
     const URL_API = `${API_URL}/order/check-order`;
     return axios.post(URL_API, data);
-};
-
-const getOrderByOrderId = (orderId) => {
-    const URL_API = `${API_URL}/order/success/${orderId}`;
-    return axios.get(URL_API);
 };
 
 const getMyOrders = () => {
@@ -181,7 +181,7 @@ export default {
     selectPayment,
     checkOrder,
     updateStatusOrder,
-    getOrderByOrderId,
+    getOrderByOrderCode,
     getMyOrders,
     getMyEvents,
     getOrdersByEventId,

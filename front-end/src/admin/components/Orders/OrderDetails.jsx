@@ -44,7 +44,7 @@ const OrderDetails = ({ order }) => {
             <div className={styles.orderDetailsHeader}>
                 <div className={styles.orderInfo}>
                     <div className={styles.orderIDLabel}>Mã đơn hàng</div>
-                    <div className={styles.orderID}>{order.orderId}</div>
+                    <div className={styles.orderID}>{order.orderCode}</div>
 
                     <div className={styles.orderDate}>
                         Ngày đặt: {formatDateTime(order.createdAt)}

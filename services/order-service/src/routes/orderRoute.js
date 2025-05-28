@@ -9,16 +9,31 @@ Router.route('/revenue').get(orderController.getRevenue);
 // Tạo đơn hàng
 Router.route('/create').post(orderController.createOrder);
 
+// Webhook
+Router.route('/webhook').post(orderController.webhookHandler);
+
 // Lấy đơn hàng theo ID
 Router.route('/:id').get(
     authMiddleware.authenticateRequest,
     orderController.getOrderById,
 );
 
+// Lấy đơn hàng theo orderCode
+Router.route('/order-code/:orderCode').get(
+    authMiddleware.authenticateRequest,
+    orderController.getOrderByOrderCode,
+);
+
 // Hủy đơn hàng
 Router.route('/cancel').post(
     authMiddleware.authenticateRequest,
     orderController.cancelOrder,
+);
+
+// Phương thức thanh toán
+Router.route('/:id/select-payment').get(
+    authMiddleware.authenticateRequest,
+    orderController.selectPaymentMethod,
 );
 
 export default Router;
