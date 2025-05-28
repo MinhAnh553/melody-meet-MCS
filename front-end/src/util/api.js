@@ -40,11 +40,6 @@ const createEvent = (data) => {
     return axios.post(URL_API, data);
 };
 
-const getMyEvents = (page = 1, limit = 10, status = 'approved', searchKey) => {
-    const URL_API = `${API_URL}/events/my?query=${searchKey}&page=${page}&limit=${limit}&status=${status}`;
-    return axios.get(URL_API);
-};
-
 const getEventById = (id) => {
     const URL_API = `${API_URL}/events/${id}`;
     return axios.get(URL_API);
@@ -107,6 +102,12 @@ const checkStatusOrder = (id) => {
 
 const getMyOrders = () => {
     const URL_API = `${API_URL}/orders/my`;
+    return axios.get(URL_API);
+};
+
+// organizer
+const getMyEvents = (page = 1, limit = 10, status = 'approved', searchKey) => {
+    const URL_API = `${API_URL}/events/organizer/my?query=${searchKey}&page=${page}&limit=${limit}&status=${status}`;
     return axios.get(URL_API);
 };
 

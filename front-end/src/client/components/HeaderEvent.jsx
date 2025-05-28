@@ -17,8 +17,9 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
     return (
         <div className="header">
             <div className="w-100 step-container gap-2 flex-wrap">
-                {(location.pathname === '/event/create' ||
-                    location.pathname === `/event/${eventId}/edit`) && (
+                {(location.pathname === '/organizer/event/create' ||
+                    location.pathname ===
+                        `/organizer/event/${eventId}/edit`) && (
                     <>
                         {steps.map((label, index) => {
                             const stepNumber = index + 1;
@@ -95,7 +96,7 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                     </>
                 )}
 
-                {location.pathname === '/event' && (
+                {location.pathname === '/organizer/event' && (
                     <div className="text-light d-flex align-items-center">
                         <h3 className="mb-0">Sự kiện của tôi</h3>
                     </div>
@@ -113,11 +114,11 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                 )}
 
                 <ul className="navbar-nav mb-md-2 mb-lg-0 ms-md-auto gap-2 flex-row align-items-center justify-content-end">
-                    {location.pathname !== '/event/create' && (
+                    {location.pathname !== '/organizer/event/create' && (
                         <li className="nav-item">
                             <Link
                                 className="nav-link create-event"
-                                to="/event/create"
+                                to="/organizer/event/create"
                             >
                                 Tạo sự kiện
                             </Link>
@@ -233,7 +234,7 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                                 <li>
                                     <Link
                                         className="dropdown-item py-2 d-flex align-items-center"
-                                        to="/event"
+                                        to="/organizer/event"
                                     >
                                         <i className="bi bi-calendar-event me-2 text-success fs-5" />
                                         <span>Sự Kiện Của Tôi</span>

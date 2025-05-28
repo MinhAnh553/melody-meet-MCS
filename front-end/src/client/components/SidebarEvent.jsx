@@ -33,7 +33,7 @@ const SidebarEvent = () => {
                         }`}
                         onClick={(e) => {
                             e.preventDefault(); // Ngăn reload trang
-                            handleNavigation('event', '/event');
+                            handleNavigation('event', '/organizer/event');
                         }}
                     >
                         <i className="bi bi-calendar-event me-2"></i>

@@ -77,8 +77,8 @@ const AnimatedRoutes = () => {
                         />
                     </Route>
                 </Route>
-                <Route path="event" element={<ProtectedRoute />}>
-                    <Route element={<EventManagementLayout />}>
+                <Route path="organizer" element={<ProtectedRoute />}>
+                    <Route path="event" element={<EventManagementLayout />}>
                         <Route
                             index
                             element={

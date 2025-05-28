@@ -331,7 +331,7 @@ const EventManagement = () => {
                                                         }}
                                                         onClick={() => {
                                                             navigate(
-                                                                `/event/${event._id}/summary`,
+                                                                `/organizer/event/${event._id}/summary`,
                                                             );
                                                         }}
                                                     >
@@ -347,7 +347,7 @@ const EventManagement = () => {
                                                         }}
                                                         onClick={() => {
                                                             navigate(
-                                                                `/event/${event._id}/orders`,
+                                                                `/organizer/event/${event._id}/orders`,
                                                             );
                                                         }}
                                                     >
@@ -368,7 +368,7 @@ const EventManagement = () => {
                                                                 }}
                                                                 onClick={() => {
                                                                     navigate(
-                                                                        `/event/${event._id}/edit`,
+                                                                        `/organizer/event/${event._id}/edit`,
                                                                     );
                                                                 }}
                                                             >

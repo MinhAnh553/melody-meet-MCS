@@ -36,7 +36,7 @@ const Header = () => {
                                 <li className="nav-item">
                                     <Link
                                         className="nav-link create-event"
-                                        to="/event/create"
+                                        to="/organizer/event/create"
                                     >
                                         Tạo sự kiện
                                     </Link>
@@ -116,7 +116,7 @@ const Header = () => {
                                                 <li>
                                                     <Link
                                                         className="dropdown-item py-2 d-flex align-items-center"
-                                                        to="/event"
+                                                        to="/organizer/event"
                                                     >
                                                         <i className="bi bi-calendar-event me-2 text-success fs-5" />
                                                         <span>

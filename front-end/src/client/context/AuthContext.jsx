@@ -32,10 +32,10 @@ const authReducer = (state, action) => {
                 isAuthenticated: false,
                 user: null,
             };
-        case UPDATE_USER: // Thêm case này
+        case UPDATE_USER:
             return {
                 ...state,
-                user: { ...state.user, ...action.payload }, // Cập nhật thông tin user
+                user: { ...state.user, ...action.payload },
             };
         default:
             return state;
@@ -50,13 +50,20 @@ const initialState = {
 
 export const AuthProvider = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
-    const { showLoading, hideLoading } = useLoading(); // Sử dụng loading context
+    const { showLoading, hideLoading } = useLoading();
     const [loading, setLoading] = useState(true);
+
     // Fetch user khi tải lại trang
     useEffect(() => {
         const fetchUser = async () => {
-            // showLoading(); // Bật loading
             try {
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    dispatch({ type: LOGOUT });
+                    setLoading(false);
+                    return;
+                }
+
                 const res = await api.getAccount();
                 if (res.success) {
                     dispatch({
@@ -70,6 +77,8 @@ export const AuthProvider = ({ children }) => {
                             address: res.user.address,
                         },
                     });
+                } else {
+                    dispatch({ type: LOGOUT });
                 }
             } catch (error) {
                 console.error(error);
@@ -78,17 +87,16 @@ export const AuthProvider = ({ children }) => {
                 setTimeout(() => {
                     setLoading(false);
                 }, 300);
+                // setLoading(false);
             }
         };
 
-        if (localStorage.getItem('access_token')) {
-            fetchUser();
-        }
+        fetchUser();
     }, []);
 
     // Hàm login tối ưu với useCallback
     const login = useCallback(async (email, password) => {
-        showLoading(); // Bật loading
+        showLoading();
         try {
             const res = await api.login(email, password);
             if (res.success) {
@@ -123,8 +131,7 @@ export const AuthProvider = ({ children }) => {
             document.querySelector('.modal-backdrop')?.remove();
             document.body.classList.remove('modal-open');
             document.body.style = '';
-
-            hideLoading(); // Tắt loading
+            hideLoading();
         }
     }, []);
 

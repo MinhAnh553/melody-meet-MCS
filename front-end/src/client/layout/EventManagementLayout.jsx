@@ -37,8 +37,9 @@ const EventManagement = () => {
             <div className="flex-grow-1">
                 <main style={{ maxWidth: '100%' }}>
                     {/* HeaderEvent hiển thị nếu không phải trang tạo/sửa */}
-                    {location.pathname !== '/event/create' &&
-                        location.pathname !== `/event/${eventId}/edit` && (
+                    {location.pathname !== '/organizer/event/create' &&
+                        location.pathname !==
+                            `/organizer/event/${eventId}/edit` && (
                             <HeaderEvent name={nameEvent} />
                         )}
                     <Outlet />

@@ -462,7 +462,10 @@ function PurchasedTickets() {
                                         : ''
                                 }`}
                                 onClick={() =>
-                                    handleNavigation('events', '/event')
+                                    handleNavigation(
+                                        'events',
+                                        '/organizer/event',
+                                    )
                                 }
                             >
                                 <BsCalendar className="me-2" /> Sự kiện của tôi
