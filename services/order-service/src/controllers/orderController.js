@@ -440,7 +440,9 @@ const getMyOrders = async (req, res) => {
     logger.info('Get my orders');
     try {
         const { userId } = req.user;
-        const orders = await orderModel.find({ userId, status: 'PAID' });
+        const orders = await orderModel
+            .find({ userId, status: 'PAID' })
+            .sort({ createdAt: -1 });
 
         // Lấy thông tin sự kiện cho mỗi đơn hàng
         const ordersWithEventInfo = await Promise.all(
