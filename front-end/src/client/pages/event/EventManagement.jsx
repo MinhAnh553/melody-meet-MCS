@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import {
     BsSearch,
@@ -16,6 +16,7 @@ const EventManagement = () => {
     const [loadingLocal, setLoadingLocal] = useState(true);
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
+    const isFirstMount = useRef(true);
 
     // Phân trang
     const [page, setPage] = useState(1);
@@ -28,11 +29,7 @@ const EventManagement = () => {
 
     // Tìm kiếm
     const [searchKey, setSearchKey] = useState('');
-
-    useEffect(() => {
-        fetchEvents(activeTab);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [page, activeTab]);
+    const location = useLocation();
 
     const handleUpcoming = () => {
         setActiveTab('approved');
@@ -58,9 +55,27 @@ const EventManagement = () => {
         setSearchKey(value);
     };
 
+    // Xử lý state từ navigation
     useEffect(() => {
+        if (location.state?.activeTab) {
+            setActiveTab(location.state.activeTab);
+            setPage(1);
+            // Xóa state sau khi sử dụng
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
+
+    // Fetch data khi page, activeTab hoặc searchKey thay đổi
+    useEffect(() => {
+        // Bỏ qua lần mount đầu tiên nếu có state từ navigation
+        if (isFirstMount.current && location.state?.activeTab) {
+            isFirstMount.current = false;
+            return;
+        }
+
         fetchEvents(activeTab);
-    }, [searchKey]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [page, activeTab, searchKey]);
 
     const fetchEvents = async (status) => {
         setLoadingLocal(true);
@@ -70,16 +85,12 @@ const EventManagement = () => {
                 setEvents(res.events);
                 setTotal(res.totalEvents);
                 setTotalPages(res.totalPages);
-
-                // setPage(res.currentPage);
                 setLimit(res.limit);
             } else {
                 setEvents([]);
                 setTotal(0);
                 setTotalPages(1);
             }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             console.log('MinhAnh553: fetchEvents -> error', error);
         } finally {

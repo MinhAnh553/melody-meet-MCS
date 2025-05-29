@@ -5,7 +5,7 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 const Router = express.Router();
 
 // Create event
-Router.route('/create').post(
+Router.route('/organizer/create').post(
     authMiddleware.authenticateRequest,
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },

@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
+import { registerLocale } from 'react-datepicker';
+import vi from 'date-fns/locale/vi';
+import 'react-datepicker/dist/react-datepicker.css';
 import styles from '../../styles/EventManagement.module.css';
 import swalCustomize from '../../../util/swalCustomize';
 import api from '../../../util/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
+
+// Đăng ký locale tiếng Việt
+registerLocale('vi', vi);
 
 const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
     const { showLoading, hideLoading } = useLoading();
@@ -284,7 +291,12 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
                     icon: 'success',
                     title: res.message,
                 });
-                navigate('/event', { state: { createSuccess: true } });
+                navigate('/organizer/event', {
+                    state: {
+                        createSuccess: true,
+                        activeTab: 'pending',
+                    },
+                });
             } else {
                 return swalCustomize.Toast.fire({
                     icon: 'error',
@@ -317,15 +329,45 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
                             <label className="form-label">
                                 Thời gian bắt đầu
                             </label>
-                            <input
-                                type="datetime-local"
+                            <DatePicker
+                                selected={
+                                    data.startTime
+                                        ? new Date(data.startTime)
+                                        : null
+                                }
+                                onChange={(date) =>
+                                    updateData({ startTime: date })
+                                }
+                                showTimeSelect
+                                dateFormat="dd/MM/yyyy HH:mm"
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                timeCaption="Thời gian"
                                 className="form-control text-black"
-                                name="startTime"
-                                value={formatDateTimeLocal(data.startTime)}
-                                onChange={(e) =>
-                                    updateData({
-                                        startTime: e.target.value,
-                                    })
+                                placeholderText="Chọn thời gian bắt đầu"
+                                minDate={new Date()}
+                                locale="vi"
+                                isClearable
+                                popperClassName="react-datepicker-dark"
+                                popperPlacement="bottom-start"
+                                // popperModifiers={[
+                                //     {
+                                //         name: 'offset',
+                                //         options: {
+                                //             offset: [0, 8],
+                                //         },
+                                //     },
+                                // ]}
+                                calendarClassName="react-datepicker-dark"
+                                wrapperClassName="w-100"
+                                customInput={
+                                    <input
+                                        className="form-control text-black"
+                                        style={{
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                        }}
+                                    />
                                 }
                             />
                         </div>
@@ -333,15 +375,47 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
                             <label className="form-label">
                                 Thời gian kết thúc
                             </label>
-                            <input
-                                type="datetime-local"
+                            <DatePicker
+                                selected={
+                                    data.endTime ? new Date(data.endTime) : null
+                                }
+                                onChange={(date) =>
+                                    updateData({ endTime: date })
+                                }
+                                showTimeSelect
+                                dateFormat="dd/MM/yyyy HH:mm"
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                timeCaption="Thời gian"
                                 className="form-control text-black"
-                                name="endTime"
-                                value={formatDateTimeLocal(data.endTime)}
-                                onChange={(e) =>
-                                    updateData({
-                                        endTime: e.target.value,
-                                    })
+                                placeholderText="Chọn thời gian kết thúc"
+                                minDate={
+                                    data.startTime
+                                        ? new Date(data.startTime)
+                                        : new Date()
+                                }
+                                locale="vi"
+                                isClearable
+                                popperClassName="react-datepicker-dark"
+                                popperPlacement="bottom-start"
+                                // popperModifiers={[
+                                //     {
+                                //         name: 'offset',
+                                //         options: {
+                                //             offset: [0, 8],
+                                //         },
+                                //     },
+                                // ]}
+                                calendarClassName="react-datepicker-dark"
+                                wrapperClassName="w-100"
+                                customInput={
+                                    <input
+                                        className="form-control text-black"
+                                        style={{
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                        }}
+                                    />
                                 }
                             />
                         </div>
@@ -592,6 +666,52 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <style>
+                {`
+                    .react-datepicker-dark {
+                        background-color: #343a40 !important;
+                        border-color: #444 !important;
+                        color: #fff !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__header {
+                        background-color: #2c3136 !important;
+                        border-bottom: 1px solid #444 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__current-month,
+                    .react-datepicker-dark .react-datepicker__day-name,
+                    .react-datepicker-dark .react-datepicker__day {
+                        color: #fff !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__day:hover {
+                        background-color: #444 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__day--selected {
+                        background-color: #28a745 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__time-container {
+                        border-left: 1px solid #444 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__time-box {
+                        background-color: #343a40 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__time-list-item {
+                        color: #fff !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__time-list-item:hover {
+                        background-color: #444 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__time-list-item--selected {
+                        background-color: #28a745 !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__navigation {
+                        border-color: #fff !important;
+                    }
+                    .react-datepicker-dark .react-datepicker__navigation:hover {
+                        border-color: #28a745 !important;
+                    }
+                `}
+            </style>
         </>
     );
 };
