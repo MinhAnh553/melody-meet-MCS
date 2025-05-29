@@ -59,14 +59,14 @@ const OrderList = () => {
 
     // Lọc theo searchTerm & status
     const filteredOrders = orders.filter((order) => {
-        // 1. Kiểm tra searchTerm (tìm trong orderId, userId, eventId)
+        // 1. Kiểm tra searchTerm (tìm trong orderCode, email người mua)
         const matchesSearch =
-            order.orderId.toString().includes(searchTerm) ||
-            order.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.eventId.toLowerCase().includes(searchTerm.toLowerCase());
+            order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.buyerInfo.email
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase());
 
         // 2. Kiểm tra statusFilter
-        // (status = 'PAID', 'CANCELED', 'PENDING'...)
         const matchesStatus =
             statusFilter === 'all' || order.status === statusFilter;
 
@@ -76,11 +76,11 @@ const OrderList = () => {
     // Sắp xếp
     const sortedOrders = [...filteredOrders].sort((a, b) => {
         switch (sortBy) {
-            case 'orderId':
-                // Sắp xếp theo orderId (mã đơn hàng) - dạng số
+            case 'orderCode':
+                // Sắp xếp theo mã đơn hàng
                 return sortOrder === 'asc'
-                    ? a.orderId - b.orderId
-                    : b.orderId - a.orderId;
+                    ? a.orderCode.localeCompare(b.orderCode)
+                    : b.orderCode.localeCompare(a.orderCode);
             case 'totalPrice':
                 // Sắp xếp theo tổng tiền
                 return sortOrder === 'asc'
@@ -121,7 +121,6 @@ const OrderList = () => {
     };
 
     // Badge trạng thái
-    // status = 'PAID', 'CANCELED', 'PENDING', ...
     const getStatusBadge = (status) => {
         switch (status) {
             case 'PAID':
@@ -208,16 +207,16 @@ const OrderList = () => {
                                 <tr>
                                     <th
                                         onClick={() =>
-                                            handleSortChange('orderId')
+                                            handleSortChange('orderCode')
                                         }
                                         style={{ cursor: 'pointer' }}
                                     >
                                         Mã ĐH{' '}
-                                        {sortBy === 'orderId' &&
+                                        {sortBy === 'orderCode' &&
                                             (sortOrder === 'asc' ? '↑' : '↓')}
                                     </th>
-                                    <th>Người dùng</th>
-                                    <th>Sự kiện</th>
+                                    <th>Người mua</th>
+                                    <th>Số vé</th>
                                     <th
                                         onClick={() =>
                                             handleSortChange('totalPrice')
@@ -245,10 +244,14 @@ const OrderList = () => {
                             <tbody>
                                 {currentOrders.map((order) => (
                                     <tr key={order._id}>
-                                        <td>{order.orderId}</td>
-                                        <td>{order.infoUser.email}</td>
+                                        <td>{order.orderCode}</td>
+                                        <td>{order.buyerInfo.email}</td>
                                         <td>
-                                            {truncateText(order.eventName, 30)}
+                                            {order.tickets.reduce(
+                                                (sum, ticket) =>
+                                                    sum + ticket.quantity,
+                                                0,
+                                            )}
                                         </td>
                                         <td>
                                             {formatCurrency(order.totalPrice)}

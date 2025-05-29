@@ -60,27 +60,30 @@
 }
 
 .statusBadge {
-    padding: 0.35rem 0.65rem;
-    border-radius: 50rem;
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-align: center;
-}
-
-.statusBadgePending {
-    background-color: rgba(243, 156, 18, 0.2) !important;
-    color: var(--warning-color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .statusBadgeCompleted {
     background-color: rgba(46, 204, 113, 0.2) !important;
     color: var(--success-color);
+    border: 1px solid rgba(46, 204, 113, 0.3);
 }
 
 .statusBadgeCancelled {
     background-color: rgba(231, 76, 60, 0.2) !important;
     color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: var(--warning-color);
+    border: 1px solid rgba(243, 156, 18, 0.3);
 }
 
 .orderTable {
@@ -148,110 +151,124 @@
 }
 
 .orderDetailsCard {
-    background-color: var(--dark-card-bg);
-    border-radius: 8px;
-    padding: 2rem;
+    background: #2a2a2a;
+    border-radius: 15px;
+    padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.orderDetailsCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .orderDetailsHeader {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
 }
 
 .orderInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    flex: 1;
 }
 
 .orderIDLabel {
-    font-weight: 500;
-    color: var(--text-secondary);
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
 }
 
 .orderID {
+    color: #fff;
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
 }
 
 .orderDate {
-    color: var(--text-secondary);
+    color: #aaa;
+    font-size: 0.9rem;
 }
 
 .orderStatusContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-}
-
-.orderTotal {
-    font-size: 1.5rem;
-    font-weight: bold;
+    text-align: right;
 }
 
 .orderTotalLabel {
-    color: var(--text-secondary);
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.orderTotal {
+    color: #4caf50;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 10px;
 }
 
 .orderDetailsSection {
-    margin-bottom: 2rem;
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.orderDetailsSection:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .orderDetailsSectionTitle {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
 }
 
 .orderUserInfo {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-}
-
-@media (max-width: 768px) {
-    .orderUserInfo {
-        grid-template-columns: 1fr;
-    }
+    display: flex;
+    gap: 30px;
 }
 
 .infoItem {
-    margin-bottom: 1rem;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
 }
 
 .infoLabel {
-    display: block;
-    color: var(--text-secondary);
-    margin-bottom: 0.25rem;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
 }
 
 .infoValue {
-    font-weight: 500;
+    color: #fff;
+    font-size: 1rem;
 }
 
 .ticketItem {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background-color: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
-    margin-bottom: 1rem;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
 }
 
-.ticketImage {
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
-    object-fit: cover;
-    margin-right: 1rem;
+.ticketItem:hover {
+    background: rgba(255, 255, 255, 0.04);
+    transform: translateX(5px);
 }
 
 .ticketInfo {
@@ -259,18 +276,23 @@
 }
 
 .ticketTitle {
+    color: #fff;
+    font-size: 1.1rem;
     font-weight: 500;
-    margin-bottom: 0.25rem;
+    margin-bottom: 5px;
 }
 
 .ticketDetails {
-    color: var(--text-secondary);
+    color: #aaa;
     font-size: 0.9rem;
 }
 
 .ticketPrice {
-    font-weight: 500;
-    margin-left: 1rem;
+    color: #4caf50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 120px;
+    text-align: right;
 }
 
 .orderActions {
@@ -320,4 +342,27 @@
 .summaryTotal {
     font-weight: bold;
     font-size: 1.1rem;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+@media (max-width: 768px) {
+    .orderUserInfo {
+        flex-direction: column;
+    }
 }

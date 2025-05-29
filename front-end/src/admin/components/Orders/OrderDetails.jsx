@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Badge } from 'react-bootstrap';
 import styles from './Orders.module.css';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
+import api from '../../../util/api';
 
 const OrderDetails = ({ order }) => {
+    const [eventInfo, setEventInfo] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEventInfo = async () => {
+            try {
+                const res = await api.getEventById(order.eventId);
+                if (res.success) {
+                    setEventInfo(res.data);
+                }
+            } catch (error) {
+                console.error('Lỗi khi lấy thông tin sự kiện:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEventInfo();
+    }, [order.eventId]);
+
     if (!order) return null;
 
     // Trả về Badge tùy theo trạng thái "PAID", "CANCELED", "PENDING"...
@@ -38,6 +59,17 @@ const OrderDetails = ({ order }) => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="text-center my-3">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Đang tải...</span>
+                </div>
+                <p className="mt-2">Đang tải thông tin...</p>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.orderDetailsCard}>
             {/* Header */}
@@ -70,13 +102,13 @@ const OrderDetails = ({ order }) => {
                         <div className={styles.infoItem}>
                             <span className={styles.infoLabel}>Họ tên</span>
                             <span className={styles.infoValue}>
-                                {order.infoUser?.name}
+                                {order.buyerInfo?.name}
                             </span>
                         </div>
                         <div className={styles.infoItem}>
                             <span className={styles.infoLabel}>Email</span>
                             <span className={styles.infoValue}>
-                                {order.infoUser?.email}
+                                {order.buyerInfo?.email}
                             </span>
                         </div>
                     </div>
@@ -86,7 +118,7 @@ const OrderDetails = ({ order }) => {
                                 Số điện thoại
                             </span>
                             <span className={styles.infoValue}>
-                                {order.infoUser?.phone}
+                                {`+${order.buyerInfo?.phone}`}
                             </span>
                         </div>
                     </div>
@@ -94,15 +126,44 @@ const OrderDetails = ({ order }) => {
             </div>
 
             {/* Thông tin sự kiện */}
-            <div className={styles.orderDetailsSection}>
-                <h4 className={styles.orderDetailsSectionTitle}>
-                    Thông tin sự kiện
-                </h4>
-                <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Tên sự kiện</span>
-                    <span className={styles.infoValue}>{order.eventName}</span>
+            {eventInfo && (
+                <div className={styles.orderDetailsSection}>
+                    <h4 className={styles.orderDetailsSectionTitle}>
+                        Thông tin sự kiện
+                    </h4>
+                    <div className={styles.orderUserInfo}>
+                        <div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.infoLabel}>
+                                    Tên sự kiện
+                                </span>
+                                <span className={styles.infoValue}>
+                                    {eventInfo.name}
+                                </span>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.infoLabel}>
+                                    Địa điểm
+                                </span>
+                                <span className={styles.infoValue}>
+                                    {eventInfo.location.venueName}
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.infoLabel}>
+                                    Thời gian
+                                </span>
+                                <span className={styles.infoValue}>
+                                    {formatDateTime(eventInfo.startTime)} -{' '}
+                                    {formatDateTime(eventInfo.endTime)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Vé đã mua */}
             <div className={styles.orderDetailsSection}>

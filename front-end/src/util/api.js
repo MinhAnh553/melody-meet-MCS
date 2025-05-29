@@ -116,6 +116,11 @@ const getEventSummary = (id) => {
     return axios.get(URL_API);
 };
 
+const getOrdersByEventId = (id) => {
+    const URL_API = `${API_URL}/orders/event/${id}`;
+    return axios.get(URL_API);
+};
+
 // Chưa sử dụng
 const getAllEvents = () => {
     const URL_API = `${API_URL}/event/all-events`;
@@ -139,11 +144,6 @@ const updateStatusOrder = (orderId, data) => {
 
 const getAllOrders = () => {
     const URL_API = `${API_URL}/order/all-orders`;
-    return axios.get(URL_API);
-};
-
-const getOrdersByEventId = (id) => {
-    const URL_API = `${API_URL}/event/${id}/orders`;
     return axios.get(URL_API);
 };
 
