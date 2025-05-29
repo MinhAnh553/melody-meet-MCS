@@ -111,6 +111,11 @@ const getMyEvents = (page = 1, limit = 10, status = 'approved', searchKey) => {
     return axios.get(URL_API);
 };
 
+const getEventSummary = (id) => {
+    const URL_API = `${API_URL}/events/organizer/${id}/summary`;
+    return axios.get(URL_API);
+};
+
 // Chưa sử dụng
 const getAllEvents = () => {
     const URL_API = `${API_URL}/event/all-events`;
@@ -139,11 +144,6 @@ const getAllOrders = () => {
 
 const getOrdersByEventId = (id) => {
     const URL_API = `${API_URL}/event/${id}/orders`;
-    return axios.get(URL_API);
-};
-
-const getEventSummary = (id) => {
-    const URL_API = `${API_URL}/event/${id}/summary`;
     return axios.get(URL_API);
 };
 

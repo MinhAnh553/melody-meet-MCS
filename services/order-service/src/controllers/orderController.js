@@ -484,6 +484,34 @@ const getMyOrders = async (req, res) => {
     }
 };
 
+// [GET] /orders/event/:eventId
+const getOrdersByEventId = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const orders = await orderModel
+            .find({
+                eventId,
+                status: 'PAID', // Chỉ lấy đơn hàng đã thanh toán
+            })
+            .populate({
+                path: 'tickets.ticketId',
+                select: 'name price quantity quantitySold',
+            })
+            .sort({ createdAt: -1 });
+
+        return res.json({
+            success: true,
+            orders,
+        });
+    } catch (error) {
+        logger.error('Error in getOrdersByEventId:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 export default {
     getRevenue,
     createOrder,
@@ -494,4 +522,5 @@ export default {
     selectPaymentMethod,
     webhookHandler,
     getMyOrders,
+    getOrdersByEventId,
 };

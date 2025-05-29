@@ -651,6 +651,99 @@ const searchEvents = async (req, res) => {
     }
 };
 
+// [GET] /events/organizer/:eventId/summary
+const getEventSummary = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const userId = req.user.userId;
+
+        // Kiểm tra sự kiện tồn tại và thuộc về người dùng
+        const event = await eventModel.findOne({
+            _id: eventId,
+            createdBy: userId,
+        });
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    'Không tìm thấy sự kiện hoặc bạn không có quyền truy cập',
+            });
+        }
+
+        // Lấy danh sách đơn hàng từ order-service
+        const ordersResponse = await axios.get(
+            `${process.env.ORDER_SERVICE_URL}/api/orders/event/${eventId}`,
+        );
+        const orders = ordersResponse.data.orders || [];
+
+        let totalRevenue = 0;
+        let totalSold = 0;
+        let ticketDetails = [];
+        let revenueByDate = [];
+
+        // Map để lưu trữ thông tin vé theo loại
+        const ticketTypeMap = new Map();
+
+        // Xử lý từng đơn hàng
+        for (const order of orders) {
+            totalRevenue += order.totalPrice;
+            totalSold += order.tickets.reduce(
+                (sum, ticket) => sum + ticket.quantity,
+                0,
+            );
+
+            // Xử lý chi tiết vé
+            for (const ticket of order.tickets) {
+                const ticketType = await ticketTypeModel.findById(
+                    ticket.ticketId,
+                );
+                if (ticketType) {
+                    const key = ticketType._id.toString();
+                    if (!ticketTypeMap.has(key)) {
+                        ticketTypeMap.set(key, {
+                            name: ticketType.name,
+                            price: ticketType.price,
+                            quantity: ticketType.totalQuantity,
+                            quantitySold: 0,
+                        });
+                    }
+                    // Cập nhật số lượng vé đã bán
+                    ticketTypeMap.get(key).quantitySold += ticket.quantity;
+                }
+            }
+
+            // Xử lý doanh thu theo ngày
+            let date = new Date(order.createdAt).toLocaleDateString();
+            let revenue = order.totalPrice;
+
+            let index = revenueByDate.findIndex((item) => item.date === date);
+            if (index === -1) {
+                revenueByDate.push({ date, revenue });
+            } else {
+                revenueByDate[index].revenue += revenue;
+            }
+        }
+
+        // Chuyển Map thành mảng
+        ticketDetails = Array.from(ticketTypeMap.values());
+
+        return res.status(200).json({
+            success: true,
+            totalRevenue: totalRevenue || 0,
+            totalSold: totalSold || 0,
+            ticketDetails: ticketDetails.length > 0 ? ticketDetails : [],
+            revenueByDate: revenueByDate.length > 0 ? revenueByDate : [],
+        });
+    } catch (error) {
+        logger.error('Error in getEventSummary:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -661,4 +754,5 @@ export default {
     getEvents,
     createOrder,
     searchEvents,
+    getEventSummary,
 };

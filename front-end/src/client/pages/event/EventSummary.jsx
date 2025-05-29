@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Table, Container, Row, Col, ProgressBar } from 'react-bootstrap';
+import { Card, Container, Row, Col, ProgressBar } from 'react-bootstrap';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 
@@ -115,12 +115,10 @@ const EventSummary = () => {
         },
     };
 
-    const totalTickets = useMemo(() => {
-        return ticketDetails.reduce(
-            (sum, ticket) => sum + ticket.quantity + ticket.totalQuantity,
-            0,
-        );
-    }, [ticketDetails]);
+    const totalTickets = ticketDetails.reduce(
+        (sum, ticket) => sum + ticket.quantity,
+        0,
+    );
 
     // ✅ Cấu hình biểu đồ vé bán theo loại
     const ticketChartData = {
@@ -128,7 +126,7 @@ const EventSummary = () => {
         datasets: [
             {
                 label: 'Số lượng',
-                data: [totalSold, totalTickets - totalSold],
+                data: [totalSold, totalTickets],
                 backgroundColor: [
                     'rgba(46, 204, 113, 0.7)',
                     'rgba(52, 152, 219, 0.7)',
@@ -276,15 +274,13 @@ const EventSummary = () => {
                                     {ticket.price.toLocaleString()} VND
                                 </div>
                                 <div className="col-3 text-center">
-                                    {ticket.quantity} /{' '}
-                                    {ticket.totalQuantity + ticket.quantity}
+                                    {ticket.quantitySold} / {ticket.quantity}
                                 </div>
                                 <div className="col-3 text-end d-flex align-items-center gap-2">
                                     <ProgressBar
                                         now={
-                                            (ticket.quantity /
-                                                (ticket.totalQuantity +
-                                                    ticket.quantity)) *
+                                            (ticket.quantitySold /
+                                                ticket.quantity) *
                                             100
                                         }
                                         variant="warning" // Màu vàng/cam
@@ -293,9 +289,8 @@ const EventSummary = () => {
                                     />
                                     <span className="fw-bold">
                                         {(
-                                            (ticket.quantity /
-                                                (ticket.totalQuantity +
-                                                    ticket.quantity)) *
+                                            (ticket.quantitySold /
+                                                ticket.quantity) *
                                             100
                                         ).toFixed(2)}
                                         %

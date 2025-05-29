@@ -14,6 +14,12 @@ Router.route('/organizer/create').post(
     eventController.createEvent,
 );
 
+// Get event summary
+Router.route('/organizer/:eventId/summary').get(
+    authMiddleware.authenticateRequest,
+    eventController.getEventSummary,
+);
+
 // Get all events
 Router.route('/all-events').get(eventController.getAllEvents);
 

@@ -45,4 +45,7 @@ Router.route('/:id/select-payment').get(
     orderController.selectPaymentMethod,
 );
 
+// Get orders by event ID
+Router.route('/event/:eventId').get(orderController.getOrdersByEventId);
+
 export default Router;
