@@ -132,6 +132,12 @@ export const AuthProvider = ({ children }) => {
             document.body.classList.remove('modal-open');
             document.body.style = '';
             hideLoading();
+            setTimeout(() => {
+                swalCustomize.Toast.fire({
+                    icon: 'success',
+                    title: 'Đăng nhập thành công',
+                });
+            }, 100);
         }
     }, []);
 
@@ -139,6 +145,12 @@ export const AuthProvider = ({ children }) => {
     const logout = useCallback(() => {
         localStorage.removeItem('access_token');
         dispatch({ type: LOGOUT });
+        setTimeout(() => {
+            swalCustomize.Toast.fire({
+                icon: 'success',
+                title: 'Đăng xuất thành công',
+            });
+        }, 100);
     }, []);
 
     const updateUser = (updatedUserData) => {
