@@ -2,6 +2,7 @@ import logger from '../utils/logger.js';
 
 const authenticateRequest = (req, res, next) => {
     const userId = req.headers['x-user-id'];
+    const role = req.headers['x-role'];
 
     if (!userId || userId === 'undefined') {
         logger.warn('Access attempt with missing user ID');
@@ -11,7 +12,7 @@ const authenticateRequest = (req, res, next) => {
         });
     }
 
-    req.user = { userId };
+    req.user = { userId, role };
     next();
 };
 

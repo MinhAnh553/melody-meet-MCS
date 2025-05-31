@@ -327,6 +327,12 @@ const updateUserAddress = async (req, res) => {
     }
 };
 
+// Get total users
+const getTotalUsers = async (req, res) => {
+    const totalUsers = await userModel.countDocuments({ deleted: false });
+    res.status(200).json({ success: true, totalUsers });
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -335,4 +341,5 @@ export default {
     logout,
     getAccount,
     updateUserAddress,
+    getTotalUsers,
 };

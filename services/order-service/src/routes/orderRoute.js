@@ -18,6 +18,12 @@ Router.route('/my').get(
     orderController.getMyOrders,
 );
 
+// Get dashboard
+Router.route('/dashboard').get(
+    authMiddleware.authenticateRequest,
+    orderController.getDashboard,
+);
+
 // Lấy đơn hàng theo ID
 Router.route('/:id').get(
     authMiddleware.authenticateRequest,

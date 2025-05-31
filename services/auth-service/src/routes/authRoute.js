@@ -18,4 +18,6 @@ Router.route('/user/update-address').patch(
     authController.updateUserAddress,
 );
 
+Router.route('/users/total').get(authController.getTotalUsers);
+
 export default Router;

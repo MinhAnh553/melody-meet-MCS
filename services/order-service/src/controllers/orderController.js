@@ -514,6 +514,94 @@ const getOrdersByEventId = async (req, res) => {
     }
 };
 
+// [GET] /orders/dashboard
+const getDashboard = async (req, res) => {
+    try {
+        const { userId, role } = req.user;
+        if (role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền truy cập vào trang này',
+            });
+        }
+
+        const orders = await orderModel.aggregate([
+            { $match: { status: 'PAID' } },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: '$totalPrice' },
+                    countPaidOrders: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const ordersMonth = await orderModel.find({
+            status: 'PAID',
+            createdAt: { $gte: thirtyDaysAgo }, // Lọc theo thời gian
+        });
+
+        const revenueByDay = [];
+        const labels = [];
+
+        for (let i = 0; i < 30; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - (29 - i)); // Tạo nhãn ngày từ 30 ngày trước đến hôm nay
+            const formattedDate = date.toISOString().split('T')[0]; // Format YYYY-MM-DD
+            labels.push(formattedDate);
+            revenueByDay.push({ date: formattedDate, revenue: 0 }); // Khởi tạo revenue = 0
+        }
+
+        // Cộng doanh thu theo từng ngày
+        ordersMonth.forEach((order) => {
+            const orderDate = order.createdAt.toISOString().split('T')[0]; // Format YYYY-MM-DD
+            const index = labels.indexOf(orderDate); // Xác định vị trí trong mảng
+            if (index !== -1) {
+                revenueByDay[index].revenue += order.totalPrice;
+            }
+        });
+
+        // Tổng người dùng
+        const totalUsers = await axios.get(
+            `${process.env.AUTH_SERVICE_URL}/api/auth/users/total`,
+        );
+
+        // Tổng sự kiện
+        const totalEvents = await axios.get(
+            `${process.env.EVENT_SERVICE_URL}/api/events/all-events`,
+            {
+                headers: {
+                    'x-user-id': userId,
+                    'x-role': role,
+                },
+            },
+        );
+
+        const totalOrders = orders.length > 0 ? orders[0].countPaidOrders : 0;
+        const totalRevenue = orders.length > 0 ? orders[0].totalRevenue : 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalRevenue,
+                totalUsers: totalUsers.data.totalUsers,
+                totalEvents: totalEvents.data.events.length,
+                totalOrders,
+                revenueByDay,
+            },
+        });
+    } catch (error) {
+        logger.error('Error in getDashboard:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 export default {
     getRevenue,
     createOrder,
@@ -525,4 +613,5 @@ export default {
     webhookHandler,
     getMyOrders,
     getOrdersByEventId,
+    getDashboard,
 };

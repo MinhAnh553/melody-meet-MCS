@@ -121,6 +121,12 @@ const getOrdersByEventId = (id) => {
     return axios.get(URL_API);
 };
 
+// admin
+const getDashboard = () => {
+    const URL_API = `${API_URL}/orders/dashboard`;
+    return axios.get(URL_API);
+};
+
 // Chưa sử dụng
 const getAllEvents = () => {
     const URL_API = `${API_URL}/event/all-events`;
@@ -149,11 +155,6 @@ const getAllOrders = () => {
 
 const getAllUsers = () => {
     const URL_API = `${API_URL}/user/all-users`;
-    return axios.get(URL_API);
-};
-
-const getDashboard = () => {
-    const URL_API = `${API_URL}/admin/dashboard`;
     return axios.get(URL_API);
 };
 
