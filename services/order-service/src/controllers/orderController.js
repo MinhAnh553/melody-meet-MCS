@@ -93,6 +93,25 @@ const getRevenue = async (req, res) => {
     }
 };
 
+// Doanh thu sự kiện
+const getRevenueByEventId = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const orders = await orderModel.find({ eventId, status: 'PAID' });
+        const totalRevenue = orders.reduce(
+            (acc, order) => acc + order.totalPrice,
+            0,
+        );
+        return res.status(200).json({ success: true, totalRevenue });
+    } catch (error) {
+        logger.error('Get revenue by event ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 const createOrder = async (req, res) => {
     logger.info('Create order');
     try {
@@ -571,13 +590,7 @@ const getDashboard = async (req, res) => {
 
         // Tổng sự kiện
         const totalEvents = await axios.get(
-            `${process.env.EVENT_SERVICE_URL}/api/events/all-events`,
-            {
-                headers: {
-                    'x-user-id': userId,
-                    'x-role': role,
-                },
-            },
+            `${process.env.EVENT_SERVICE_URL}/api/events/admin/total-events`,
         );
 
         const totalOrders = orders.length > 0 ? orders[0].countPaidOrders : 0;
@@ -588,7 +601,7 @@ const getDashboard = async (req, res) => {
             data: {
                 totalRevenue,
                 totalUsers: totalUsers.data.totalUsers,
-                totalEvents: totalEvents.data.events.length,
+                totalEvents: totalEvents.data.totalEvents,
                 totalOrders,
                 revenueByDay,
             },
@@ -604,6 +617,7 @@ const getDashboard = async (req, res) => {
 
 export default {
     getRevenue,
+    getRevenueByEventId,
     createOrder,
     getOrderById,
     checkStatusOrder,

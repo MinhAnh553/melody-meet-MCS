@@ -20,4 +20,6 @@ Router.route('/user/update-address').patch(
 
 Router.route('/users/total').get(authController.getTotalUsers);
 
+Router.route('/users/organizer/:id').get(authController.getOrganizerInfo);
+
 export default Router;

@@ -20,13 +20,29 @@ Router.route('/organizer/:eventId/summary').get(
     eventController.getEventSummary,
 );
 
-// Get all events
-Router.route('/all-events').get(eventController.getAllEvents);
-
 // Get my events
 Router.route('/organizer/my').get(
     authMiddleware.authenticateRequest,
     eventController.getMyEvents,
+);
+
+// Get all events
+Router.route('/admin/all-events').get(
+    authMiddleware.authorizeRoles,
+    eventController.getAllEvents,
+);
+
+// Total events
+Router.route('/admin/total-events').get(eventController.getTotalEvents);
+
+// Update event status (admin only)
+Router.route('/admin/update/:id/status').put(
+    authMiddleware.authorizeRoles,
+    cloudinaryProvider.fields([
+        { name: 'eventBackground', maxCount: 1 },
+        { name: 'organizerLogo', maxCount: 1 },
+    ]),
+    eventController.updateEventStatus,
 );
 
 // Get event
@@ -34,9 +50,6 @@ Router.route('/').get(eventController.getEvents);
 
 // Search
 Router.route('/search').get(eventController.searchEvents);
-
-// Get event by id
-Router.route('/:id').get(eventController.getEventById);
 
 // Get event by id to edit
 Router.route('/:id/edit').get(
@@ -63,5 +76,8 @@ Router.route('/order/:id').post(
     ]),
     eventController.createOrder,
 );
+
+// Get event by id
+Router.route('/:id').get(eventController.getEventById);
 
 export default Router;

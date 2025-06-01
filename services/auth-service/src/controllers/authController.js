@@ -333,6 +333,12 @@ const getTotalUsers = async (req, res) => {
     res.status(200).json({ success: true, totalUsers });
 };
 
+// Get organizer info
+const getOrganizerInfo = async (req, res) => {
+    const { id } = req.params;
+    const organizer = await userModel.findById(id).select('-password');
+    res.status(200).json({ success: true, organizer });
+};
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -342,4 +348,5 @@ export default {
     getAccount,
     updateUserAddress,
     getTotalUsers,
+    getOrganizerInfo,
 };

@@ -144,6 +144,7 @@ export const AuthProvider = ({ children }) => {
     // Hàm logout tối ưu với useCallback
     const logout = useCallback(() => {
         localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         dispatch({ type: LOGOUT });
         setTimeout(() => {
             swalCustomize.Toast.fire({

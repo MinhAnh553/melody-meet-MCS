@@ -6,6 +6,9 @@ const Router = express.Router();
 // Doanh thu
 Router.route('/revenue').get(orderController.getRevenue);
 
+// Doanh thu sự kiện
+Router.route('/revenue/:eventId').get(orderController.getRevenueByEventId);
+
 // Tạo đơn hàng
 Router.route('/create').post(orderController.createOrder);
 

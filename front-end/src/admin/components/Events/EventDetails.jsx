@@ -1,6 +1,18 @@
 import React from 'react';
 import { Badge } from 'react-bootstrap';
 import DOMPurify from 'dompurify';
+import {
+    FaCalendarAlt,
+    FaMapMarkerAlt,
+    FaBuilding,
+    FaInfoCircle,
+    FaTicketAlt,
+    FaClock,
+    FaUser,
+    FaMoneyBillWave,
+    FaUsers,
+    FaExclamationCircle,
+} from 'react-icons/fa';
 
 import styles from './Events.module.css'; // Đổi sang Events.module.css nếu muốn
 import { formatDate } from '../../utils/formatters';
@@ -21,6 +33,7 @@ const EventDetails = ({ event }) => {
         organizer,
         ticketTypes,
         status,
+        rejectReason,
     } = event;
 
     // Badge trạng thái sự kiện
@@ -70,16 +83,8 @@ const EventDetails = ({ event }) => {
                 <div className={styles.orderInfo}>
                     <div className={styles.orderID}>{name}</div>
                     <div className={styles.orderDate}>
-                        {/* <strong>Bắt đầu:</strong>{' '}
-                        {startTime ? formatDate(startTime) : '...'}
-                        <br />
-                        <strong>Kết thúc:</strong>{' '}
-                        {endTime ? formatDate(endTime) : '...'} */}
-                        <i className="bi bi-clock"></i>
-                        {'  '}
-                        <span style={{ color: 'rgb(45, 194, 117)' }}>
-                            <TimeText event={event} />
-                        </span>
+                        <FaClock />
+                        <TimeText event={event} />
                     </div>
                 </div>
                 <div className={styles.orderStatusContainer}>
@@ -91,24 +96,42 @@ const EventDetails = ({ event }) => {
             {/* Ảnh nền */}
             {background && (
                 <div className={styles.orderDetailsSection}>
+                    <div className={styles.sectionHeader}>
+                        <FaCalendarAlt className={styles.sectionIcon} />
+                        <h4 className={styles.orderDetailsSectionTitle}>
+                            Hình ảnh sự kiện
+                        </h4>
+                    </div>
                     <img
                         src={background}
                         alt={name}
-                        style={{ maxWidth: '100%', borderRadius: '8px' }}
+                        className={styles.eventImage}
                     />
                 </div>
             )}
 
             {/* Thông tin địa điểm */}
             <div className={styles.orderDetailsSection}>
-                <h4 className={styles.orderDetailsSectionTitle}>Địa điểm</h4>
+                <div className={styles.sectionHeader}>
+                    <FaMapMarkerAlt className={styles.sectionIcon} />
+                    <h4 className={styles.orderDetailsSectionTitle}>
+                        Địa điểm
+                    </h4>
+                </div>
                 {location ? (
                     <div className={styles.infoItem}>
-                        <span className={styles.infoValue}>
-                            {location.address
-                                ? `${location.venueName}, ${location.address}, ${location.ward}, ${location.district}, ${location.province}`
-                                : 'Đang cập nhật'}
-                        </span>
+                        <div className={styles.infoRow}>
+                            <FaBuilding className={styles.infoIcon} />
+                            <span className={styles.infoValue}>
+                                {location.venueName}
+                            </span>
+                        </div>
+                        <div className={styles.infoRow}>
+                            <FaMapMarkerAlt className={styles.infoIcon} />
+                            <span className={styles.infoValue}>
+                                {`${location.address}, ${location.ward}, ${location.district}, ${location.province}`}
+                            </span>
+                        </div>
                     </div>
                 ) : (
                     <p>Chưa có thông tin địa điểm.</p>
@@ -117,58 +140,66 @@ const EventDetails = ({ event }) => {
 
             {/* Thông tin nhà tổ chức */}
             <div className={styles.orderDetailsSection}>
-                <h4 className={styles.orderDetailsSectionTitle}>Nhà tổ chức</h4>
+                <div className={styles.sectionHeader}>
+                    <FaUser className={styles.sectionIcon} />
+                    <h4 className={styles.orderDetailsSectionTitle}>
+                        Nhà tổ chức
+                    </h4>
+                </div>
                 {organizer ? (
                     <div className={styles.infoItem}>
-                        {/* Logo */}
                         {organizer.logo && (
-                            <div style={{ marginBottom: '1rem' }}>
+                            <div className={styles.organizerLogo}>
                                 <img
                                     src={organizer.logo}
                                     alt={organizer.name}
-                                    style={{
-                                        width: '60px',
-                                        borderRadius: '50%',
-                                    }}
                                 />
                             </div>
                         )}
-                        <span className={styles.infoLabel}>Tên đơn vị:</span>
-                        <span className={styles.infoValue}>
-                            {organizer.name}
-                        </span>
-                        <br />
-                        <span className={styles.infoLabel}>Giới thiệu:</span>
-                        <span className={styles.infoValue}>
-                            {organizer.info}
-                        </span>
+                        <div className={styles.infoRow}>
+                            <FaBuilding className={styles.infoIcon} />
+                            <span className={styles.infoValue}>
+                                {organizer.name}
+                            </span>
+                        </div>
+                        <div className={styles.infoRow}>
+                            <FaInfoCircle className={styles.infoIcon} />
+                            <span className={styles.infoValue}>
+                                {organizer.info}
+                            </span>
+                        </div>
                     </div>
                 ) : (
                     <p>Chưa có thông tin nhà tổ chức.</p>
                 )}
             </div>
 
-            {/* Mô tả sự kiện (có chứa HTML) */}
+            {/* Mô tả sự kiện */}
             <div className={styles.orderDetailsSection}>
-                <h4 className={styles.orderDetailsSectionTitle}>
-                    Giới thiệu sự kiện
-                </h4>
+                <div className={styles.sectionHeader}>
+                    <FaInfoCircle className={styles.sectionIcon} />
+                    <h4 className={styles.orderDetailsSectionTitle}>
+                        Giới thiệu sự kiện
+                    </h4>
+                </div>
                 <div
                     className={styles.richTextContent}
                     dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(description),
                     }}
-                    style={{ lineHeight: '1.6' }}
                 />
             </div>
 
             {/* Loại vé */}
             <div className={styles.orderDetailsSection}>
-                <h4 className={styles.orderDetailsSectionTitle}>
-                    Thông tin vé
-                </h4>
+                <div className={styles.sectionHeader}>
+                    <FaTicketAlt className={styles.sectionIcon} />
+                    <h4 className={styles.orderDetailsSectionTitle}>
+                        Thông tin vé
+                    </h4>
+                </div>
                 {ticketTypes && ticketTypes.length > 0 ? (
-                    <div>
+                    <div className={styles.ticketList}>
                         {ticketTypes.map((ticket) => (
                             <div key={ticket._id} className={styles.ticketItem}>
                                 <div className={styles.ticketInfo}>
@@ -176,11 +207,33 @@ const EventDetails = ({ event }) => {
                                         {ticket.name}
                                     </div>
                                     <div className={styles.ticketDetails}>
-                                        Giá:{' '}
-                                        {ticket.price?.toLocaleString() || 0}₫
-                                        {' | '}Số lượng: {ticket.totalQuantity}
-                                        {' | '}Giới Hạn Mỗi người:{' '}
-                                        {ticket.maxPerUser}
+                                        <div className={styles.ticketDetail}>
+                                            <FaMoneyBillWave
+                                                className={styles.ticketIcon}
+                                            />
+                                            <span>
+                                                {ticket.price?.toLocaleString() ||
+                                                    0}
+                                                ₫
+                                            </span>
+                                        </div>
+                                        <div className={styles.ticketDetail}>
+                                            <FaTicketAlt
+                                                className={styles.ticketIcon}
+                                            />
+                                            <span>
+                                                Số lượng: {ticket.totalQuantity}
+                                            </span>
+                                        </div>
+                                        <div className={styles.ticketDetail}>
+                                            <FaUsers
+                                                className={styles.ticketIcon}
+                                            />
+                                            <span>
+                                                Giới hạn: {ticket.maxPerUser}{' '}
+                                                vé/người
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -190,6 +243,21 @@ const EventDetails = ({ event }) => {
                     <p>Chưa có thông tin vé.</p>
                 )}
             </div>
+
+            {/* Hiển thị lý do từ chối nếu sự kiện bị từ chối */}
+            {status === 'rejected' && rejectReason && (
+                <div className={styles.rejectReasonSection}>
+                    <div className={styles.sectionHeader}>
+                        <FaExclamationCircle className={styles.sectionIcon} />
+                        <h3 className={styles.orderDetailsSectionTitle}>
+                            Lý do từ chối
+                        </h3>
+                    </div>
+                    <div className={styles.rejectReasonContent}>
+                        <p className={styles.infoValue}>{rejectReason}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

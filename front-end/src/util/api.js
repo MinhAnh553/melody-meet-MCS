@@ -127,16 +127,17 @@ const getDashboard = () => {
     return axios.get(URL_API);
 };
 
-// Chưa sử dụng
-const getAllEvents = () => {
-    const URL_API = `${API_URL}/event/all-events`;
-    return axios.get(URL_API);
+const getAllEvents = (params) => {
+    const URL_API = `${API_URL}/events/admin/all-events`;
+    return axios.get(URL_API, { params });
 };
 
 const updateStatusEvent = (eventId, data) => {
-    const URL_API = `${API_URL}/event/update/${eventId}/status`;
-    return axios.patch(URL_API, { status: data });
+    const URL_API = `${API_URL}/events/admin/update/${eventId}/status`;
+    return axios.put(URL_API, data);
 };
+
+// Chưa sử dụng
 
 const updateUser = (userId, data) => {
     const URL_API = `${API_URL}/user/update/${userId}`;

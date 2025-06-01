@@ -327,6 +327,49 @@ const EventManagement = () => {
 
                                         <hr className="my-3 border-top border-light" />
 
+                                        {/* Hiển thị lý do từ chối nếu sự kiện bị từ chối */}
+                                        {event.status === 'rejected' &&
+                                            event.rejectReason && (
+                                                <Row className="mb-3">
+                                                    <Col>
+                                                        <div
+                                                            style={{
+                                                                backgroundColor:
+                                                                    'rgba(231, 76, 60, 0.1)',
+                                                                borderRadius:
+                                                                    '8px',
+                                                                padding: '15px',
+                                                                border: '1px solid rgba(231, 76, 60, 0.2)',
+                                                            }}
+                                                        >
+                                                            <h6
+                                                                className="mb-2"
+                                                                style={{
+                                                                    color: '#e74c3c',
+                                                                    fontWeight:
+                                                                        'bold',
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-exclamation-triangle me-2"></i>
+                                                                Lý do từ chối
+                                                            </h6>
+                                                            <p
+                                                                className="mb-0"
+                                                                style={{
+                                                                    color: '#fff',
+                                                                    fontStyle:
+                                                                        'italic',
+                                                                }}
+                                                            >
+                                                                {
+                                                                    event.rejectReason
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </Col>
+                                                </Row>
+                                            )}
+
                                         <Row className="mt-3">
                                             <Col>
                                                 <div

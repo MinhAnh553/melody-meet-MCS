@@ -112,14 +112,18 @@ const createEvent = async (req, res) => {
     }
 };
 
-// [GET] /events/all-events
+// [GET] /events/admin/all-events
 const getAllEvents = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
+        const status = req.query.status;
+        const searchKey = req.query.search || '';
+        const sortBy = req.query.sortBy || 'date';
+        const sortOrder = req.query.sortOrder || 'asc';
 
-        const cacheKey = `events:${page}:${limit}`;
+        const cacheKey = `events:admin:${page}:${limit}:${status}:${searchKey}:${sortBy}:${sortOrder}`;
         const cachedEvents = await req.redisClient.get(cacheKey);
 
         if (cachedEvents) {
@@ -127,18 +131,70 @@ const getAllEvents = async (req, res) => {
             return res.status(200).json(JSON.parse(cachedEvents));
         }
 
+        // Build query
+        const query = {};
+        if (searchKey) {
+            query.$or = [
+                { name: { $regex: searchKey, $options: 'i' } },
+                { 'organizer.name': { $regex: searchKey, $options: 'i' } },
+            ];
+        }
+        // Chỉ thêm điều kiện status nếu không phải 'all'
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        // Build sort
+        const sort = {};
+        switch (sortBy) {
+            case 'name':
+                sort.name = sortOrder === 'asc' ? 1 : -1;
+                break;
+            case 'date':
+                sort.startTime = sortOrder === 'asc' ? 1 : -1;
+                break;
+            case 'revenue':
+                sort.totalRevenue = sortOrder === 'asc' ? 1 : -1;
+                break;
+            default:
+                sort.startTime = -1;
+        }
+
         const [events, totalNoOfEvents] = await Promise.all([
-            eventModel
-                .find()
-                .sort({ createdAt: -1 })
-                .skip(startIndex)
-                .limit(limit),
-            eventModel.countDocuments(),
+            eventModel.find(query).sort(sort).skip(startIndex).limit(limit),
+            eventModel.countDocuments(query),
         ]);
+
+        const eventsWithInfo = [];
+
+        //Vòng lặp để thêm thông tin người tạo sự kiện và doanh thu vào kết quả
+        for (const event of events) {
+            // Gọi API lấy thông tin người tạo sự kiện
+            const organizerInfo = await axios.get(
+                `${process.env.AUTH_SERVICE_URL}/api/auth/users/organizer/${event.createdBy}`,
+            );
+
+            // Gọi API tính toán doanh thu sự kiện
+            const revenue = await axios.get(
+                `${process.env.ORDER_SERVICE_URL}/api/orders/revenue/${event._id}`,
+            );
+
+            // Lấy ticketTypes
+            const ticketTypes = await ticketTypeModel.find({
+                eventId: event._id,
+            });
+
+            // Thêm thông tin người tạo sự kiện và doanh thu vào kết quả
+            const eventObj = event.toObject();
+            eventObj.email = organizerInfo.data.organizer.email;
+            eventObj.totalRevenue = revenue.data.totalRevenue;
+            eventObj.ticketTypes = ticketTypes;
+            eventsWithInfo.push(eventObj);
+        }
 
         const result = {
             success: true,
-            events,
+            events: eventsWithInfo,
             currentPage: page,
             totalPages: Math.ceil(totalNoOfEvents / limit),
             totalEvents: totalNoOfEvents,
@@ -147,6 +203,7 @@ const getAllEvents = async (req, res) => {
         // Cache the result for 60 minutes
         await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
         logger.info('Get all events from database');
+
         return res.status(200).json(result);
     } catch (error) {
         logger.error('Get all events error:', error);
@@ -744,6 +801,92 @@ const getEventSummary = async (req, res) => {
     }
 };
 
+// [GET] /events/admin/total-events
+const getTotalEvents = async (req, res) => {
+    try {
+        const totalEvents = await eventModel.countDocuments();
+        return res.status(200).json({
+            success: true,
+            totalEvents,
+        });
+    } catch (error) {
+        logger.error('Error in getTotalEvents:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+// [PUT] /events/:id/status - Cập nhật trạng thái sự kiện
+const updateEventStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = req.body;
+        console.log('MinhAnh553: updateEventStatus -> data', data);
+
+        // Validate status
+        const validStatuses = ['pending', 'approved', 'rejected', 'event_over'];
+        if (!validStatuses.includes(data.status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Trạng thái không hợp lệ',
+            });
+        }
+
+        // Validate reject reason when status is rejected
+        if (
+            data.status === 'rejected' &&
+            (!data.rejectReason || data.rejectReason.trim() === '')
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng cung cấp lý do từ chối',
+            });
+        }
+
+        // Chuẩn bị dữ liệu cập nhật
+        const updateData = {
+            status: data.status,
+            ...(data.status === 'rejected'
+                ? { rejectReason: data.rejectReason.trim() }
+                : { rejectReason: null }),
+        };
+
+        // Tìm và cập nhật sự kiện
+        const updatedEvent = await eventModel.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true },
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy sự kiện',
+            });
+        }
+
+        // Invalidate cache
+        await invalidateEventCache(req);
+
+        // Ghi log
+        logger.info(`Event ${id} status updated to ${data.status}`);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Cập nhật trạng thái sự kiện thành công',
+            event: updatedEvent,
+        });
+    } catch (error) {
+        logger.error('Update event status error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Lỗi khi cập nhật trạng thái sự kiện',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -755,4 +898,6 @@ export default {
     createOrder,
     searchEvents,
     getEventSummary,
+    getTotalEvents,
+    updateEventStatus,
 };

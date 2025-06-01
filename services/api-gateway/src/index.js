@@ -86,7 +86,6 @@ app.use(
     (req, res, next) => {
         // Danh sách các pattern route không cần xác thực
         const publicPatterns = [
-            '/v1/events/all-events', // Exact match
             /^\/v1\/events\?/, // Query parameters
             /^\/v1\/events\/[^\/]+$/, // /v1/events/:id
         ];
