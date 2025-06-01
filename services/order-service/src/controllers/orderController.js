@@ -615,6 +615,132 @@ const getDashboard = async (req, res) => {
     }
 };
 
+// Lấy danh sách đơn hàng của admin
+const getAllOrders = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+        const status = req.query.status;
+        const searchKey = req.query.search || '';
+        const sortBy = req.query.sortBy || 'createdAt';
+        const sortOrder = req.query.sortOrder || 'desc';
+
+        const cacheKey = `orders:admin:${page}:${limit}:${status}:${searchKey}:${sortBy}:${sortOrder}`;
+        const cachedOrders = await req.redisClient.get(cacheKey);
+
+        if (cachedOrders) {
+            logger.info('Get all orders from cache');
+            return res.status(200).json(JSON.parse(cachedOrders));
+        }
+
+        // If searchKey is present, first try to find matching events
+        let matchingEventIds = [];
+        if (searchKey) {
+            try {
+                const eventResponse = await axios.get(
+                    `${process.env.EVENT_SERVICE_URL}/api/events/search`,
+                    {
+                        params: {
+                            query: searchKey,
+                        },
+                    },
+                );
+
+                // Extract event IDs from the search results
+                matchingEventIds = eventResponse.data.events.map(
+                    (event) => event._id,
+                );
+            } catch (eventSearchError) {
+                logger.warn('Error searching events:', eventSearchError);
+            }
+        }
+
+        // Build query
+        const query = {};
+
+        // Add status filter
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        // Add search conditions
+        if (searchKey) {
+            query.$or = [
+                { orderCode: { $regex: searchKey, $options: 'i' } },
+                { 'buyerInfo.email': { $regex: searchKey, $options: 'i' } },
+            ];
+
+            // If we found matching event IDs, add them to the search
+            if (matchingEventIds.length > 0) {
+                query.$or.push({ eventId: { $in: matchingEventIds } });
+            }
+        }
+
+        // Build sort
+        const sort = {};
+        switch (sortBy) {
+            case 'orderCode':
+                sort.orderCode = sortOrder === 'asc' ? 1 : -1;
+                break;
+            case 'totalPrice':
+                sort.totalPrice = sortOrder === 'asc' ? 1 : -1;
+                break;
+            case 'createdAt':
+            default:
+                sort.createdAt = sortOrder === 'asc' ? 1 : -1;
+        }
+
+        const [orders, totalNoOfOrders] = await Promise.all([
+            orderModel.find(query).sort(sort).skip(startIndex).limit(limit),
+            orderModel.countDocuments(query),
+        ]);
+
+        const ordersWithEventInfo = [];
+
+        // Lấy thông tin sự kiện cho mỗi đơn hàng
+        for (const order of orders) {
+            try {
+                const event = await axios.get(
+                    `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+                );
+
+                const orderObj = order.toObject();
+                orderObj.eventName = event.data.data.name;
+
+                ordersWithEventInfo.push(orderObj);
+            } catch (eventError) {
+                logger.warn(
+                    `Could not fetch event info for order ${order._id}:`,
+                    eventError,
+                );
+                // Nếu không lấy được thông tin sự kiện, vẫn thêm đơn hàng vào danh sách
+                ordersWithEventInfo.push(order.toObject());
+            }
+        }
+
+        const result = {
+            success: true,
+            orders: ordersWithEventInfo,
+            currentPage: page,
+            totalPages: Math.ceil(totalNoOfOrders / limit),
+            totalOrders: totalNoOfOrders,
+        };
+
+        // Cache the result for 60 minutes
+        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
+        logger.info('Get all orders from database');
+
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Error in getAllOrders:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 export default {
     getRevenue,
     getRevenueByEventId,
@@ -628,4 +754,5 @@ export default {
     getMyOrders,
     getOrdersByEventId,
     getDashboard,
+    getAllOrders,
 };

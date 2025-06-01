@@ -137,6 +137,11 @@ const updateStatusEvent = (eventId, data) => {
     return axios.put(URL_API, data);
 };
 
+const getAllOrders = (params) => {
+    const URL_API = `${API_URL}/orders/admin/all-orders`;
+    return axios.get(URL_API, { params });
+};
+
 // Chưa sử dụng
 
 const updateUser = (userId, data) => {
@@ -147,11 +152,6 @@ const updateUser = (userId, data) => {
 const updateStatusOrder = (orderId, data) => {
     const URL_API = `${API_URL}/order/update/${orderId}/status`;
     return axios.patch(URL_API, { status: data });
-};
-
-const getAllOrders = () => {
-    const URL_API = `${API_URL}/order/all-orders`;
-    return axios.get(URL_API);
 };
 
 const getAllUsers = () => {

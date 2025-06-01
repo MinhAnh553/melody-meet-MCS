@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Table,
     Button,
@@ -7,8 +7,21 @@ import {
     Badge,
     Pagination,
     Modal,
+    Card,
+    Row,
+    Col,
+    Dropdown,
 } from 'react-bootstrap';
-import { FaSearch, FaEye, FaTimes, FaCheck } from 'react-icons/fa';
+import {
+    FaSearch,
+    FaEye,
+    FaSort,
+    FaSortUp,
+    FaSortDown,
+    FaFilter,
+    FaCheck,
+    FaTimes,
+} from 'react-icons/fa';
 import styles from './Orders.module.css';
 
 import {
@@ -26,32 +39,42 @@ import { useLoading } from '../../../client/context/LoadingContext';
 const OrdersList = () => {
     const { showLoading, hideLoading } = useLoading();
     const [loadingLocal, setLoadingLocal] = useState(true);
-    const [orders, setOrders] = useState([]);
 
-    // Các state cho tìm kiếm, lọc, sắp xếp, phân trang
+    const [orders, setOrders] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalOrders, setTotalOrders] = useState(0);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [sortBy, setSortBy] = useState('createdAt'); // Mặc định sắp xếp theo ngày tạo
+    const [sortBy, setSortBy] = useState('createdAt');
     const [sortOrder, setSortOrder] = useState('desc');
     const [currentPage, setCurrentPage] = useState(1);
 
-    // State cho Modal chi tiết
+    // Modal
     const [showOrderDetails, setShowOrderDetails] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
 
     const itemsPerPage = 10;
 
-    // Gọi API lấy danh sách orders khi component mount
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [currentPage, searchTerm, statusFilter, sortBy, sortOrder]);
 
     const fetchOrders = async () => {
         setLoadingLocal(true);
         try {
-            const res = await api.getAllOrders();
+            const res = await api.getAllOrders({
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm,
+                status: statusFilter !== 'all' ? statusFilter : undefined,
+                sortBy,
+                sortOrder,
+            });
             if (res.success) {
                 setOrders(res.orders);
+                setTotalPages(res.totalPages);
+                setTotalOrders(res.totalOrders);
             }
         } catch (error) {
             console.log('Lỗi khi gọi API getAllOrders:', error);
@@ -60,55 +83,6 @@ const OrdersList = () => {
         }
     };
 
-    // Lọc theo searchTerm & status
-    const filteredOrders = orders.filter((order) => {
-        // 1. Kiểm tra searchTerm (tìm trong orderId, userId, eventId)
-        const matchesSearch =
-            order.orderId.toString().includes(searchTerm) ||
-            order.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.eventId.toLowerCase().includes(searchTerm.toLowerCase());
-
-        // 2. Kiểm tra statusFilter
-        // (status = 'PAID', 'CANCELED', 'PENDING'...)
-        const matchesStatus =
-            statusFilter === 'all' || order.status === statusFilter;
-
-        return matchesSearch && matchesStatus;
-    });
-
-    // Sắp xếp
-    const sortedOrders = [...filteredOrders].sort((a, b) => {
-        switch (sortBy) {
-            case 'orderId':
-                // Sắp xếp theo orderId (mã đơn hàng) - dạng số
-                return sortOrder === 'asc'
-                    ? a.orderId - b.orderId
-                    : b.orderId - a.orderId;
-            case 'totalPrice':
-                // Sắp xếp theo tổng tiền
-                return sortOrder === 'asc'
-                    ? a.totalPrice - b.totalPrice
-                    : b.totalPrice - a.totalPrice;
-            case 'createdAt':
-                // Sắp xếp theo ngày tạo
-                return sortOrder === 'asc'
-                    ? new Date(a.createdAt) - new Date(b.createdAt)
-                    : new Date(b.createdAt) - new Date(a.createdAt);
-            default:
-                return 0;
-        }
-    });
-
-    // Phân trang
-    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
-    const indexOfLastOrder = currentPage * itemsPerPage;
-    const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;
-    const currentOrders = sortedOrders.slice(
-        indexOfFirstOrder,
-        indexOfLastOrder,
-    );
-
-    // Xử lý thay đổi cột sắp xếp
     const handleSortChange = (field) => {
         if (sortBy === field) {
             setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -118,19 +92,17 @@ const OrdersList = () => {
         }
     };
 
-    // Chuyển trang
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Badge trạng thái
-    // status = 'PAID', 'CANCELED', 'PENDING', ...
     const getStatusBadge = (status) => {
         switch (status) {
             case 'PAID':
                 return (
                     <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeCompleted}`}
+                        className={`${styles.statusBadge} ${styles.statusBadgePaid}`}
                     >
                         Đã thanh toán
                     </Badge>
@@ -138,7 +110,7 @@ const OrdersList = () => {
             case 'CANCELED':
                 return (
                     <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeCancelled}`}
+                        className={`${styles.statusBadge} ${styles.statusBadgeCanceled}`}
                     >
                         Đã hủy
                     </Badge>
@@ -156,7 +128,6 @@ const OrdersList = () => {
         }
     };
 
-    // Xem chi tiết đơn hàng
     const handleViewOrderDetails = (order) => {
         setSelectedOrder(order);
         setShowOrderDetails(true);
@@ -202,140 +173,203 @@ const OrdersList = () => {
         }
     };
 
+    const getSortIcon = (field) => {
+        if (sortBy !== field) return <FaSort className={styles.sortIcon} />;
+        return sortOrder === 'asc' ? (
+            <FaSortUp className={styles.sortIcon} />
+        ) : (
+            <FaSortDown className={styles.sortIcon} />
+        );
+    };
+
     return (
         <div className={styles.ordersContainer}>
-            {/* Table Header */}
-            <div className={styles.tableHeader}>
-                <div className={styles.searchFilter}>
-                    {/* Ô tìm kiếm */}
-                    <InputGroup className={styles.searchInput}>
-                        <InputGroup.Text id="search-addon">
-                            <FaSearch />
-                        </InputGroup.Text>
-                        <Form.Control
-                            placeholder="Tìm kiếm đơn hàng..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </InputGroup>
+            {/* Header Section */}
+            <Card className={styles.headerCard}>
+                <Card.Body>
+                    <Row className="align-items-center">
+                        <Col md={6}>
+                            <h2 className={styles.pageTitle}>
+                                Quản lý đơn hàng
+                            </h2>
+                            <p className={styles.pageSubtitle}>
+                                Tổng số đơn hàng: {totalOrders}
+                            </p>
+                        </Col>
+                        <Col md={6}>
+                            <div className={styles.searchFilter}>
+                                <InputGroup className={styles.searchInput}>
+                                    <InputGroup.Text>
+                                        <FaSearch />
+                                    </InputGroup.Text>
+                                    <Form.Control
+                                        placeholder="Tìm kiếm đơn hàng..."
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                    />
+                                </InputGroup>
 
-                    {/* Dropdown lọc trạng thái */}
-                    <Form.Select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            handlePageChange(1);
-                        }}
-                    >
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="PAID">Đã thanh toán</option>
-                        <option value="CANCELED">Đã hủy</option>
-                        <option value="PENDING">Đang chờ</option>
-                    </Form.Select>
-                </div>
-            </div>
+                                <Dropdown>
+                                    <Dropdown.Toggle
+                                        variant="outline-secondary"
+                                        id="status-filter"
+                                        className={styles.filterDropdown}
+                                    >
+                                        <FaFilter className="me-2" />
+                                        {statusFilter === 'all'
+                                            ? 'Tất cả trạng thái'
+                                            : statusFilter === 'PAID'
+                                            ? 'Đã thanh toán'
+                                            : statusFilter === 'PENDING'
+                                            ? 'Đang chờ'
+                                            : 'Đã hủy'}
+                                    </Dropdown.Toggle>
+
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('all');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Tất cả trạng thái
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('PAID');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Đã thanh toán
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('PENDING');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Đang chờ
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('CANCELED');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Đã hủy
+                                        </Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </div>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
 
             {/* Orders Table */}
-            {loadingLocal ? (
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
-            ) : currentOrders.length > 0 ? (
-                <>
-                    <div className={styles.tableWrapper}>
-                        <Table responsive hover className={styles.orderTable}>
-                            <thead>
-                                <tr>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('orderId')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Mã ĐH{' '}
-                                        {sortBy === 'orderId' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Người dùng</th>
-                                    <th>Sự kiện</th>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('totalPrice')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Tổng tiền{' '}
-                                        {sortBy === 'totalPrice' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Trạng thái</th>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('createdAt')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Ngày đặt{' '}
-                                        {sortBy === 'createdAt' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentOrders.map((order) => (
-                                    <tr key={order._id}>
-                                        <td>{order.orderId}</td>
-                                        <td>{order.infoUser.email}</td>
-                                        <td>
-                                            {truncateText(order.eventName, 30)}
-                                            {}
-                                        </td>
-                                        <td>
-                                            {formatCurrency(order.totalPrice)}
-                                        </td>
-                                        <td>{getStatusBadge(order.status)}</td>
-                                        <td>
-                                            {formatDateTime(order.createdAt)}
-                                        </td>
-                                        <td>
-                                            <div
-                                                className={styles.tableActions}
-                                            >
-                                                {/* Xem chi tiết */}
-                                                <Button
-                                                    variant="link"
-                                                    className={`${styles.actionButton} ${styles.viewButton}`}
-                                                    title="Xem chi tiết"
-                                                    onClick={() =>
-                                                        handleViewOrderDetails(
-                                                            order,
-                                                        )
-                                                    }
-                                                >
-                                                    <FaEye />
-                                                </Button>
-                                                {/* In đơn hàng */}
-                                                {/* <Button
-                                            variant="link"
-                                            className={`${styles.actionButton} ${styles.viewButton}`}
-                                            title="In đơn hàng"
+            <Card className={styles.tableCard}>
+                <Card.Body>
+                    {loadingLocal ? (
+                        <div className={styles.loadingContainer}>
+                            <div
+                                className="spinner-border text-primary"
+                                role="status"
+                            >
+                                <span className="visually-hidden">
+                                    Đang tải...
+                                </span>
+                            </div>
+                            <p className="mt-3">Đang tải dữ liệu...</p>
+                        </div>
+                    ) : orders.length > 0 ? (
+                        <div className={styles.tableWrapper}>
+                            <Table
+                                responsive
+                                hover
+                                className={styles.orderTable}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th
+                                            className={styles.sortableColumn}
                                             onClick={() =>
-                                                console.log(
-                                                    'Print order:',
-                                                    order.orderId,
-                                                )
+                                                handleSortChange('orderCode')
                                             }
                                         >
-                                            <FaPrint />
-                                        </Button> */}
-                                                {/* Nếu status = PENDING thì mới cho hủy */}
-                                                {order.status === 'PENDING' &&
-                                                    order.eventStatus !==
-                                                        'event_over' && (
+                                            Mã ĐH {getSortIcon('orderCode')}
+                                        </th>
+                                        <th>Người dùng</th>
+                                        <th>Sự kiện</th>
+                                        <th
+                                            className={styles.sortableColumn}
+                                            onClick={() =>
+                                                handleSortChange('totalPrice')
+                                            }
+                                        >
+                                            Tổng tiền{' '}
+                                            {getSortIcon('totalPrice')}
+                                        </th>
+                                        <th>Trạng thái</th>
+                                        <th
+                                            className={styles.sortableColumn}
+                                            onClick={() =>
+                                                handleSortChange('createdAt')
+                                            }
+                                        >
+                                            Ngày đặt {getSortIcon('createdAt')}
+                                        </th>
+                                        <th className={styles.actionColumn}>
+                                            Thao tác
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orders.map((order) => (
+                                        <tr key={order._id}>
+                                            <td>{order.orderCode}</td>
+                                            <td>{order.buyerInfo.email}</td>
+                                            <td>
+                                                {truncateText(
+                                                    order.eventName,
+                                                    30,
+                                                )}
+                                            </td>
+                                            <td>
+                                                {formatCurrency(
+                                                    order.totalPrice,
+                                                )}
+                                            </td>
+                                            <td>
+                                                {getStatusBadge(order.status)}
+                                            </td>
+                                            <td>
+                                                {formatDateTime(
+                                                    order.createdAt,
+                                                )}
+                                            </td>
+                                            <td>
+                                                <div
+                                                    className={
+                                                        styles.tableActions
+                                                    }
+                                                >
+                                                    <Button
+                                                        variant="link"
+                                                        className={`${styles.actionButton} ${styles.viewButton}`}
+                                                        title="Xem chi tiết"
+                                                        onClick={() =>
+                                                            handleViewOrderDetails(
+                                                                order,
+                                                            )
+                                                        }
+                                                    >
+                                                        <FaEye />
+                                                    </Button>
+                                                    {order.status ===
+                                                        'PENDING' && (
                                                         <>
                                                             <Button
                                                                 variant="link"
@@ -363,30 +397,23 @@ const OrdersList = () => {
                                                             </Button>
                                                         </>
                                                     )}
-
-                                                {order.status === 'CANCELED' &&
-                                                    order.eventStatus !==
-                                                        'event_over' && (
-                                                        <Button
-                                                            variant="link"
-                                                            className={`${styles.actionButton} ${styles.completeButton}`}
-                                                            title="Hoàn thành đơn hàng"
-                                                            onClick={() =>
-                                                                handleCompleteClick(
-                                                                    order._id,
-                                                                )
-                                                            }
-                                                        >
-                                                            <FaCheck />
-                                                        </Button>
-                                                    )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <BsCartX size={60} className="mb-3" />
+                            <h4>Không có đơn hàng</h4>
+                            <p>
+                                Không tìm thấy đơn hàng nào phù hợp với bộ lọc
+                                hiện tại
+                            </p>
+                        </div>
+                    )}
 
                     {/* Pagination */}
                     {totalPages > 1 && (
@@ -428,13 +455,8 @@ const OrdersList = () => {
                             </Pagination>
                         </div>
                     )}
-                </>
-            ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center my-5">
-                    <BsCartX size={60} className="mb-3" />
-                    <p className="fs-5">Không có đơn hàng</p>
-                </div>
-            )}
+                </Card.Body>
+            </Card>
 
             {/* Order Details Modal */}
             <Modal
@@ -442,30 +464,25 @@ const OrdersList = () => {
                 onHide={() => setShowOrderDetails(false)}
                 size="lg"
                 centered
+                className={styles.orderModal}
+                contentClassName={styles.modalContent}
             >
-                <Modal.Header closeButton>
+                <Modal.Header closeButton className={styles.modalHeader}>
                     <Modal.Title className={styles.modalTitle}>
                         Chi tiết đơn hàng
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body className={styles.modalBody}>
                     {selectedOrder && <OrderDetails order={selectedOrder} />}
                 </Modal.Body>
                 <Modal.Footer className={styles.modalFooter}>
                     <Button
-                        variant="secondary"
+                        variant="outline-light"
                         onClick={() => setShowOrderDetails(false)}
+                        className={styles.modalButton}
                     >
                         Đóng
                     </Button>
-                    {/* <Button
-                        variant="primary"
-                        onClick={() =>
-                            console.log('Print order:', selectedOrder?.orderId)
-                        }
-                    >
-                        In đơn hàng
-                    </Button> */}
                 </Modal.Footer>
             </Modal>
         </div>

@@ -1,198 +1,343 @@
 .ordersContainer {
-    padding: 1rem 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header Card */
+.headerCard {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(to right, #ffffff, #f8f9fa);
 }
 
 .pageTitle {
-    margin-bottom: 1.5rem;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
 }
 
-.tableHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+.pageSubtitle {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
 }
 
 .searchFilter {
     display: flex;
+    gap: 12px;
     align-items: center;
-    gap: 10px;
 }
 
 .searchInput {
-    min-width: 350px;
     flex: 1;
+    max-width: 400px;
 }
 
-.searchFilter select {
-    width: auto;
+.searchInput input {
+    border-left: none;
+    transition: all 0.3s ease;
 }
 
-.tableActions {
-    display: flex;
-    gap: 0.5rem;
+.searchInput input:focus {
+    box-shadow: none;
+    border-color: #007bff;
+    background-color: inherit;
 }
 
-.actionButton {
-    cursor: pointer;
-    background: none;
+.searchInput .input-group-text {
+    border-right: none;
+    background-color: inherit;
+    transition: all 0.3s ease;
+}
+
+.searchInput:focus-within .input-group-text {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+/* Table Card */
+.tableCard {
     border: none;
-    font-size: 1rem;
-    transition: all 0.2s;
-    padding: 0.25rem;
-    border-radius: 4px;
-}
-
-.viewButton {
-    color: var(--secondary-color);
-}
-
-.editButton {
-    color: var(--warning-color);
-}
-
-.deleteButton {
-    color: var(--danger-color);
-}
-
-.actionButton:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.statusBadge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.statusBadgeCompleted {
-    background-color: rgba(46, 204, 113, 0.2) !important;
-    color: var(--success-color);
-    border: 1px solid rgba(46, 204, 113, 0.3);
-}
-
-.statusBadgeCancelled {
-    background-color: rgba(231, 76, 60, 0.2) !important;
-    color: var(--danger-color);
-    border: 1px solid rgba(231, 76, 60, 0.3);
-}
-
-.statusBadgePending {
-    background-color: rgba(243, 156, 18, 0.2) !important;
-    color: var(--warning-color);
-    border: 1px solid rgba(243, 156, 18, 0.3);
-}
-
-.orderTable {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.orderTable thead {
-    background-color: #f8f9fa;
-    color: #333;
-    font-weight: bold;
-}
-
-.orderTable th,
-.orderTable td {
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.orderTable tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.orderTable th {
-    cursor: pointer;
-    position: relative;
-}
-
-.orderTable th:hover {
-    background-color: #ececec;
-}
-
-.orderTable th::after {
-    content: ' ▼';
-    font-size: 12px;
-    color: #666;
-    margin-left: 5px;
-    visibility: hidden;
-}
-
-.orderTable th:hover::after {
-    visibility: visible;
-}
-
-.orderTable td {
-    color: #555;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: white;
 }
 
 .tableWrapper {
     overflow-x: auto;
-    background: #fff;
-    padding: 1rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.orderTable {
+    margin-bottom: 0;
+}
+
+.orderTable thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    color: #495057;
+    font-weight: 600;
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+
+.sortableColumn {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortableColumn:hover {
+    background-color: #e9ecef;
+}
+
+.sortIcon {
+    margin-left: 4px;
+    color: #6c757d;
+}
+
+.actionColumn {
+    width: 80px;
+    text-align: center;
+}
+
+.tableActions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Status Badges */
+.statusBadge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statusBadgePaid {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    color: #2ecc71 !important;
+}
+
+.statusBadgeCanceled {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    color: #e74c3c !important;
+}
+
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: #f39c12 !important;
+}
+
+/* Action Buttons */
+.actionButton {
+    padding: 6px;
+    color: #6c757d;
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    color: #2c3e50;
+    transform: scale(1.1);
+}
+
+.viewButton:hover {
+    color: #007bff;
+}
+
+.completeButton:hover {
+    color: #28a745;
+}
+
+.deleteButton:hover {
+    color: #dc3545;
+}
+
+/* Loading State */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+/* Empty State */
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.emptyState h4 {
+    margin: 16px 0 8px;
+    color: #2c3e50;
+}
+
+.emptyState p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Pagination */
 .paginationContainer {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 2rem;
+    justify-content: center;
+    padding: 20px 0;
 }
 
-.orderDetailsCard {
-    background: #2a2a2a;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.paginationContainer .pagination {
+    margin: 0;
+}
+
+.paginationContainer .page-link {
+    color: #2c3e50;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+}
+
+.paginationContainer .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.paginationContainer .page-link:hover {
+    background-color: #e9ecef;
+    color: #2c3e50;
+}
+
+/* Modal */
+.orderModal {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modalContent {
+    background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+    color: #ffffff;
+    border: 1px solid #3a3a3a;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modalHeader {
+    border-bottom: 1px solid #3a3a3a;
+    padding: 1.25rem;
+    background: linear-gradient(90deg, #1e1e1e, #2a2a2a);
+}
+
+.modalTitle {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.modalBody {
+    padding: 1.75rem;
+    background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modalFooter {
+    border-top: 1px solid #3a3a3a;
+    padding: 1.25rem;
+    background: linear-gradient(90deg, #1e1e1e, #2a2a2a);
+}
+
+.modalButton {
+    padding: 0.6rem 1.75rem;
+    font-weight: 500;
+    border-radius: 8px;
     transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
 }
 
-.orderDetailsCard:hover {
+.modalButton:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modalButton:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .searchFilter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchInput {
+        max-width: none;
+    }
+
+    .orderTable th,
+    .orderTable td {
+        white-space: nowrap;
+    }
+}
+
+/* Order Details Styles */
+.orderDetailsCard {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 2rem;
+    color: #ffffff;
 }
 
 .orderDetailsHeader {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 20px;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 20px;
 }
 
 .orderInfo {
     flex: 1;
 }
 
-.orderIDLabel {
-    color: #888;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-}
-
 .orderID {
-    color: #fff;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 600;
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
+    color: #ffffff;
+    margin-bottom: 1rem;
 }
 
 .orderDate {
-    color: #aaa;
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #a0a0a0;
+    font-size: 0.95rem;
+}
+
+.orderDate svg {
+    color: #4a90e2;
 }
 
 .orderStatusContainer {
@@ -200,169 +345,186 @@
 }
 
 .orderTotalLabel {
-    color: #888;
+    color: #a0a0a0;
     font-size: 0.9rem;
-    margin-bottom: 5px;
-}
-
-.orderTotal {
-    color: #4caf50;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 0.5rem;
 }
 
 .orderDetailsSection {
-    margin-bottom: 25px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    padding: 20px;
-    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.orderDetailsSection:hover {
-    background: rgba(255, 255, 255, 0.05);
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionIcon {
+    font-size: 1.5rem;
+    color: #4a90e2;
 }
 
 .orderDetailsSectionTitle {
-    color: #fff;
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 1.25rem;
     font-weight: 600;
-}
-
-.orderUserInfo {
-    display: flex;
-    gap: 30px;
+    margin: 0;
 }
 
 .infoItem {
-    margin-bottom: 12px;
-    display: flex;
-    flex-direction: column;
+    color: #e0e0e0;
 }
 
-.infoLabel {
-    color: #888;
-    font-size: 0.9rem;
-    margin-bottom: 4px;
+.infoRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.infoIcon {
+    color: #4a90e2;
+    font-size: 1.1rem;
+    margin-top: 0.2rem;
 }
 
 .infoValue {
-    color: #fff;
-    font-size: 1rem;
-}
-
-.ticketItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    transition: all 0.2s ease;
-}
-
-.ticketItem:hover {
-    background: rgba(255, 255, 255, 0.04);
-    transform: translateX(5px);
-}
-
-.ticketInfo {
+    color: #ffffff;
     flex: 1;
 }
 
+.ticketList {
+    display: grid;
+    gap: 1rem;
+}
+
+.ticketItem {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
 .ticketTitle {
-    color: #fff;
+    color: #ffffff;
     font-size: 1.1rem;
     font-weight: 500;
-    margin-bottom: 5px;
+    margin-bottom: 1rem;
 }
 
 .ticketDetails {
-    color: #aaa;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.ticketDetail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #a0a0a0;
     font-size: 0.9rem;
 }
 
-.ticketPrice {
-    color: #4caf50;
-    font-size: 1.1rem;
-    font-weight: 600;
-    min-width: 120px;
-    text-align: right;
+.ticketIcon {
+    color: #4a90e2;
+    font-size: 1rem;
 }
 
-.orderActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
+/* Status Badge Styles */
+.statusBadge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
-.paymentInfo {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 1.5rem;
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: #f39c12 !important;
 }
 
-.paymentInfoTitle {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
+.statusBadgePaid {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    color: #2ecc71 !important;
 }
 
-.paymentMethod {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
+.statusBadgeCanceled {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    color: #e74c3c !important;
 }
 
-.paymentIcon {
-    font-size: 1.5rem;
-    margin-right: 1rem;
-}
-
-.orderSummary {
-    margin-top: 2rem;
-}
-
-.summaryRow {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-}
-
-.summaryDivider {
-    border-top: 1px solid var(--border-color);
-    margin: 1rem 0;
-}
-
-.summaryTotal {
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-/* Loading Animation */
-@keyframes pulse {
-    0% {
-        opacity: 0.6;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0.6;
-    }
-}
-
-.loading {
-    animation: pulse 1.5s infinite;
-}
-
+/* Responsive styles */
 @media (max-width: 768px) {
-    .orderUserInfo {
-        flex-direction: column;
+    .orderDetailsCard {
+        padding: 1.5rem;
     }
+
+    .orderDetailsHeader {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .orderStatusContainer {
+        text-align: left;
+        width: 100%;
+    }
+
+    .ticketDetails {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Add these styles to the existing CSS file */
+.totalPriceContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        145deg,
+        rgba(74, 144, 226, 0.1),
+        rgba(74, 144, 226, 0.05)
+    );
+    border: 1px solid rgba(74, 144, 226, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.totalPriceContainer:hover {
+    background: linear-gradient(
+        145deg,
+        rgba(74, 144, 226, 0.15),
+        rgba(74, 144, 226, 0.1)
+    );
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.totalPriceLabel {
+    color: #a0a0a0;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.totalPriceValue {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #4a90e2, #6a11cb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
 }

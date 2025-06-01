@@ -27,6 +27,12 @@ Router.route('/dashboard').get(
     orderController.getDashboard,
 );
 
+// Lấy danh sách đơn hàng của admin
+Router.route('/admin/all-orders').get(
+    authMiddleware.authorizeRoles,
+    orderController.getAllOrders,
+);
+
 // Lấy đơn hàng theo ID
 Router.route('/:id').get(
     authMiddleware.authenticateRequest,
