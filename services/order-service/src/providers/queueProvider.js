@@ -4,6 +4,14 @@ import logger from '../utils/logger.js';
 import { publishEvent } from './rabbitmqProvider.js';
 import orderModel from '../models/orderModel.js';
 
+async function invalidateOrderCache(req) {
+    const keys = await req.redisClient.keys('orders:*');
+    if (keys.length > 0) {
+        await req.redisClient.del(keys);
+        logger.info('Invalidate event cache');
+    }
+}
+
 // Cấu hình Redis cho BullMQ
 const redisOptions = {
     maxRetriesPerRequest: null,
@@ -43,6 +51,7 @@ const orderExpireWorker = new Worker(
                 orderId,
                 tickets,
             });
+            invalidateOrderCache(req);
             logger.info(`Order ${orderId} expired and tickets released`);
         } catch (error) {
             logger.error('Error processing expired order:', error);

@@ -13,6 +13,14 @@ async function invalidateEventCacheById(req, eventId) {
     logger.info('Invalidate event cache');
 }
 
+async function invalidateOrderCache(req) {
+    const keys = await req.redisClient.keys('orders:*');
+    if (keys.length > 0) {
+        await req.redisClient.del(keys);
+        logger.info('Invalidate event cache');
+    }
+}
+
 const getRevenue = async (req, res) => {
     try {
         let revenue;
@@ -136,6 +144,9 @@ const createOrder = async (req, res) => {
 
         // Thêm job hết hạn đơn hàng
         await addOrderExpireJob(newOrder._id, tickets);
+
+        // Xóa cache
+        invalidateOrderCache(req);
 
         return res.status(200).json({
             success: true,
@@ -265,6 +276,8 @@ const cancelOrder = async (req, res) => {
             orderId: order._id,
             tickets: order.tickets,
         });
+
+        invalidateOrderCache(req);
 
         return res.status(200).json({
             success: true,
