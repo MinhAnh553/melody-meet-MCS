@@ -13,6 +13,14 @@ async function invalidateEventCacheById(req, eventId) {
     logger.info('Invalidate event cache');
 }
 
+async function invalidateEventCache(req) {
+    const keys = await req.redisClient.keys('events:*');
+    if (keys.length > 0) {
+        await req.redisClient.del(keys);
+        logger.info('Invalidate event cache');
+    }
+}
+
 async function invalidateOrderCache(req) {
     const keys = await req.redisClient.keys('orders:*');
     if (keys.length > 0) {
@@ -404,11 +412,14 @@ const webhookHandler = async (req, res) => {
             await deleteOrderExpireJob(order._id);
             // Xóa cache event đó
             await invalidateEventCacheById(req, order.eventId);
+            await invalidateEventCache(req);
         } else {
             order.status = 'CANCELED';
             // Xóa job hết hạn đơn hàng
             await deleteOrderExpireJob(order._id);
         }
+
+        invalidateOrderCache(req);
 
         await order.save();
         logger.info(`Order ${orderCode} updated to ${order.status}`);
@@ -754,6 +765,77 @@ const getAllOrders = async (req, res) => {
     }
 };
 
+const updateStatusOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Validate input
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Trạng thái đơn hàng là bắt buộc',
+            });
+        }
+
+        // Validate status values
+        const validStatuses = ['PENDING', 'PAID', 'CANCELED', 'REFUNDED'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Trạng thái đơn hàng không hợp lệ',
+            });
+        }
+
+        // Find the order
+        const order = await orderModel.findById(id);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Đơn hàng không tồn tại',
+            });
+        }
+
+        // Check if the status change is valid
+        if (order.status === status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Trạng thái đơn hàng đã là trạng thái này',
+            });
+        }
+
+        // Update order status
+        order.status = status;
+
+        await order.save();
+
+        // Tạo vé cho người dùng
+        await createTicketsForOrder(order);
+        // Xóa job hết hạn đơn hàng
+        await deleteOrderExpireJob(order._id);
+        // Xóa cache event
+        await invalidateEventCacheById(req, order.eventId);
+        await invalidateEventCache(req);
+
+        // Invalidate order cache
+        await invalidateOrderCache(req);
+
+        logger.info(`Order ${id} status updated to ${status}`);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Cập nhật trạng thái đơn hàng thành công',
+            order,
+        });
+    } catch (error) {
+        logger.error('Update order status error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 export default {
     getRevenue,
     getRevenueByEventId,
@@ -768,4 +850,5 @@ export default {
     getOrdersByEventId,
     getDashboard,
     getAllOrders,
+    updateStatusOrder,
 };

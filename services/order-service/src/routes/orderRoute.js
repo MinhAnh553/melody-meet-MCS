@@ -33,6 +33,11 @@ Router.route('/admin/all-orders').get(
     orderController.getAllOrders,
 );
 
+Router.route('/admin/update/:id/status').patch(
+    authMiddleware.authorizeRoles,
+    orderController.updateStatusOrder,
+);
+
 // Lấy đơn hàng theo ID
 Router.route('/:id').get(
     authMiddleware.authenticateRequest,

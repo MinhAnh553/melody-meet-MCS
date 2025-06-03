@@ -51,7 +51,6 @@ const orderExpireWorker = new Worker(
                 orderId,
                 tickets,
             });
-            invalidateOrderCache(req);
             logger.info(`Order ${orderId} expired and tickets released`);
         } catch (error) {
             logger.error('Error processing expired order:', error);
