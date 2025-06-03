@@ -116,6 +116,11 @@ instance.interceptors.response.use(
 
         // Handle other errors
         if (error?.response?.data) {
+            // Handle 400 status codes as a successful response with error message
+            if (error.response.status === 400) {
+                return error.response.data;
+            }
+
             // Handle unauthorized access message
             if (
                 error.response.status === 401 &&

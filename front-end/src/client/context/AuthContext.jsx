@@ -120,24 +120,23 @@ export const AuthProvider = ({ children }) => {
                     )
                     ?.click();
             } else {
-                swalCustomize.Toast.fire({ icon: 'error', title: res.message });
+                setTimeout(() => {
+                    swalCustomize.Toast.fire({
+                        icon: 'error',
+                        title: res.message || 'Đăng nhập không thành công',
+                    });
+                }, 100);
             }
         } catch (error) {
             swalCustomize.Toast.fire({
                 icon: 'error',
-                title: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
+                title: error.message || 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
             });
         } finally {
             document.querySelector('.modal-backdrop')?.remove();
             document.body.classList.remove('modal-open');
             document.body.style = '';
             hideLoading();
-            setTimeout(() => {
-                swalCustomize.Toast.fire({
-                    icon: 'success',
-                    title: 'Đăng nhập thành công',
-                });
-            }, 100);
         }
     }, []);
 
