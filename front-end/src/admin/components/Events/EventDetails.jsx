@@ -134,7 +134,7 @@ const EventDetails = ({ event }) => {
                         </div>
                     </div>
                 ) : (
-                    <p>Chưa có thông tin địa điểm.</p>
+                    <p>Chưa có thông tin địa điểm</p>
                 )}
             </div>
 
@@ -170,7 +170,7 @@ const EventDetails = ({ event }) => {
                         </div>
                     </div>
                 ) : (
-                    <p>Chưa có thông tin nhà tổ chức.</p>
+                    <p>Chưa có thông tin nhà tổ chức</p>
                 )}
             </div>
 
@@ -240,7 +240,7 @@ const EventDetails = ({ event }) => {
                         ))}
                     </div>
                 ) : (
-                    <p>Chưa có thông tin vé.</p>
+                    <p>Chưa có thông tin vé</p>
                 )}
             </div>
 

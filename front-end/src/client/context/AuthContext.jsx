@@ -1,173 +1,74 @@
-import React, {
-    createContext,
-    useReducer,
-    useEffect,
-    useContext,
-    useCallback,
-    useState,
-} from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import swalCustomize from '../../util/swalCustomize';
 import api from '../../util/api';
-import { useLoading } from './LoadingContext'; // Import LoadingContext
 
 const AuthContext = createContext();
 
-// Action types
-const LOGIN = 'LOGIN';
-const LOGOUT = 'LOGOUT';
-const UPDATE_USER = 'UPDATE_USER';
+export function AuthProvider({ children }) {
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
 
-// Reducer để quản lý trạng thái auth
-const authReducer = (state, action) => {
-    switch (action.type) {
-        case LOGIN:
-            return {
-                ...state,
-                isAuthenticated: true,
-                user: action.payload,
-            };
-        case LOGOUT:
-            return {
-                ...state,
-                isAuthenticated: false,
-                user: null,
-            };
-        case UPDATE_USER:
-            return {
-                ...state,
-                user: { ...state.user, ...action.payload },
-            };
-        default:
-            return state;
-    }
-};
-
-// Trạng thái mặc định
-const initialState = {
-    isAuthenticated: false,
-    user: null,
-};
-
-export const AuthProvider = ({ children }) => {
-    const [state, dispatch] = useReducer(authReducer, initialState);
-    const { showLoading, hideLoading } = useLoading();
-    const [loading, setLoading] = useState(true);
-
-    // Fetch user khi tải lại trang
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const token = localStorage.getItem('access_token');
-                if (!token) {
-                    dispatch({ type: LOGOUT });
-                    setLoading(false);
-                    return;
-                }
-
+        const fetchUserData = async () => {
+            const accessToken = localStorage.getItem('accessToken');
+            if (accessToken) {
                 const res = await api.getAccount();
-                if (res.success) {
-                    dispatch({
-                        type: LOGIN,
-                        payload: {
-                            id: res.user._id,
-                            name: res.user.name,
-                            phone: res.user.phone,
-                            email: res.user.email,
-                            role: res.user.role,
-                            address: res.user.address,
-                        },
-                    });
-                } else {
-                    dispatch({ type: LOGOUT });
-                }
-            } catch (error) {
-                console.error(error);
-                dispatch({ type: LOGOUT });
-            } finally {
-                setTimeout(() => {
-                    setLoading(false);
-                }, 300);
-                // setLoading(false);
+                setUser(res.user);
+                localStorage.setItem('userInfo', JSON.stringify(res.user));
             }
         };
 
-        fetchUser();
+        fetchUserData();
     }, []);
 
-    // Hàm login tối ưu với useCallback
-    const login = useCallback(async (email, password) => {
-        showLoading();
-        try {
-            const res = await api.login(email, password);
-            if (res.success) {
-                localStorage.setItem('access_token', res.accessToken);
-                dispatch({
-                    type: LOGIN,
-                    payload: {
-                        id: res.user.id,
-                        name: res.user.name,
-                        phone: res.user.phone,
-                        email: res.user.email,
-                        address: res.user.address,
-                        role: res.user.role,
-                    },
-                });
+    const login = async (res) => {
+        setUser(res.user);
 
-                // Đóng modal đăng nhập nếu có
-                document
-                    .querySelector(
-                        '.btn-close.form-login[data-bs-dismiss="modal"]',
-                    )
-                    ?.click();
-            } else {
-                setTimeout(() => {
-                    swalCustomize.Toast.fire({
-                        icon: 'error',
-                        title: res.message || 'Đăng nhập không thành công',
-                    });
-                }, 100);
-            }
-        } catch (error) {
-            swalCustomize.Toast.fire({
-                icon: 'error',
-                title: error.message || 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
-            });
-        } finally {
-            document.querySelector('.modal-backdrop')?.remove();
-            document.body.classList.remove('modal-open');
-            document.body.style = '';
-            hideLoading();
-        }
-    }, []);
+        document
+            .querySelector('.btn-close.form-login[data-bs-dismiss="modal"]')
+            ?.click();
 
-    // Hàm logout tối ưu với useCallback
-    const logout = useCallback(() => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        dispatch({ type: LOGOUT });
-        setTimeout(() => {
-            swalCustomize.Toast.fire({
-                icon: 'success',
-                title: 'Đăng xuất thành công',
-            });
-        }, 100);
-    }, []);
+        document.querySelector('.modal-backdrop')?.remove();
+        document.body.classList.remove('modal-open');
+        document.body.style = '';
 
-    const updateUser = (updatedUserData) => {
-        dispatch({
-            type: UPDATE_USER,
-            payload: updatedUserData,
+        localStorage.setItem('accessToken', res.accessToken);
+        localStorage.setItem('refreshToken', res.refreshToken);
+        localStorage.setItem('userInfo', JSON.stringify(res.user));
+
+        swalCustomize.Toast.fire({
+            icon: 'success',
+            title: res?.message,
         });
     };
 
+    const logout = async () => {
+        // Xóa thông tin user trước
+        setUser(null);
+
+        // Sau đó xóa các token và thông tin khác
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userInfo');
+
+        // Hiển thị thông báo
+        swalCustomize.Toast.fire({
+            icon: 'success',
+            title: 'Đăng xuất thành công!',
+        });
+
+        // Cuối cùng mới navigate
+        navigate('/', { replace: true });
+    };
+
     return (
-        <AuthContext.Provider
-            value={{ ...state, login, logout, updateUser, loading }}
-        >
+        <AuthContext.Provider value={{ user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
-};
+}
 
-export const useAuth = () => useContext(AuthContext);
-export default AuthContext;
+export function useAuth() {
+    return useContext(AuthContext);
+}

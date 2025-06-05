@@ -1,46 +1,31 @@
 import logger from '../utils/logger.js';
 
-const authenticateRequest = (req, res, next) => {
-    const userId = req.headers['x-user-id'];
-    const role = req.headers['x-role'];
+const isValidPermission = (allowedRoles) => async (req, res, next) => {
+    try {
+        req.user = {
+            id: req.headers['x-user-id'],
+            role: req.headers['x-user-role'],
+        };
 
-    if (!userId || userId === 'undefined') {
-        logger.warn('Access attempt with missing user ID');
-        return res.status(401).json({
+        const userRole = req.user.role;
+        if (!userRole || !allowedRoles.includes(userRole)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền truy cập vào API này!',
+            });
+        }
+
+        next();
+    } catch (error) {
+        logger.error('Permission error:', error);
+
+        res.status(500).json({
             success: false,
-            message: 'Yêu cầu xác thực! Vui lòng đăng nhập để tiếp tục',
+            message: 'Có lỗi xảy ra khi kiểm tra quyền truy cập!',
         });
     }
-
-    req.user = { userId, role };
-    next();
-};
-
-const authorizeRoles = (req, res, next) => {
-    const userId = req.headers['x-user-id'];
-    const role = req.headers['x-role'];
-
-    if (!userId || userId === 'undefined') {
-        logger.warn('Access attempt with missing user ID');
-        return res.status(401).json({
-            success: false,
-            message: 'Yêu cầu xác thực! Vui lòng đăng nhập để tiếp tục',
-        });
-    }
-
-    if (role !== 'admin') {
-        logger.warn('Access attempt with invalid role');
-        return res.status(401).json({
-            success: false,
-            message: 'Bạn không có quyền truy cập vào trang này',
-        });
-    }
-
-    req.user = { userId };
-    next();
 };
 
 export default {
-    authenticateRequest,
-    authorizeRoles,
+    isValidPermission,
 };

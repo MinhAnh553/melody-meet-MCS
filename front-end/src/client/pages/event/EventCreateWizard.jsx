@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import HeaderEvent from '../../components/HeaderEvent';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
-import { useLoading } from '../../context/LoadingContext';
 
 const EventForm = () => {
     const [loadingLocal, setLoadingLocal] = useState(true);

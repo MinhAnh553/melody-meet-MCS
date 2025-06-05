@@ -1,14 +1,16 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.png';
 import avatar from '../../assets/images/avatar.png';
-import { useAuth } from '../context/AuthContext';
-import swalCustomize from '../../util/swalCustomize';
 import SearchBar from './SearchBar';
+import { useAuth } from '../context/AuthContext';
+import { usePermission } from '../../hooks/usePermission';
+import { permissions } from '../../config/rbacConfig';
 
 const Header = () => {
-    const { isAuthenticated, user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const { hasPermission } = usePermission(user?.role);
+
     return (
         <header className="fixed-top">
             <nav className="navbar navbar-expand-lg">
@@ -31,8 +33,7 @@ const Header = () => {
                     >
                         <SearchBar />
                         <ul className="navbar-nav mb-2 mb-lg-0 gap-2 align-items-center">
-                            {(user?.role === 'organizer' ||
-                                user?.role === 'admin') && (
+                            {hasPermission(permissions.VIEW_CREATE_EVENT) && (
                                 <li className="nav-item">
                                     <Link
                                         className="nav-link create-event"
@@ -52,7 +53,7 @@ const Header = () => {
                                 </Link>
                             </li>
                             <li>
-                                {isAuthenticated ? (
+                                {user !== null ? (
                                     // Hiển thị avatar khi đã xác thực
                                     <div className="nav-item dropdown position-relative">
                                         <div
@@ -88,7 +89,9 @@ const Header = () => {
                                             className="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1"
                                             style={{ right: 0 }}
                                         >
-                                            {user?.role === 'admin' && (
+                                            {hasPermission(
+                                                permissions.VIEW_ADMIN,
+                                            ) && (
                                                 <li>
                                                     <Link
                                                         className="dropdown-item py-2 d-flex align-items-center"
@@ -111,8 +114,9 @@ const Header = () => {
                                                 </Link>
                                             </li>
 
-                                            {(user?.role === 'organizer' ||
-                                                user?.role === 'admin') && (
+                                            {hasPermission(
+                                                permissions.VIEW_ORGANIZERS,
+                                            ) && (
                                                 <li>
                                                     <Link
                                                         className="dropdown-item py-2 d-flex align-items-center"
@@ -134,13 +138,6 @@ const Header = () => {
                                                     className="dropdown-item py-2 d-flex align-items-center text-danger action-logout"
                                                     onClick={() => {
                                                         logout();
-                                                        navigate('/');
-                                                        swalCustomize.Toast.fire(
-                                                            {
-                                                                icon: 'success',
-                                                                title: 'Đăng xuất thành công!',
-                                                            },
-                                                        );
                                                     }}
                                                 >
                                                     <i className="bi bi-box-arrow-right me-2 fs-5" />

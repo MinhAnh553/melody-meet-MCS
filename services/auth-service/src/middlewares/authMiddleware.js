@@ -1,32 +1,31 @@
-import { verifyAccessToken } from '../utils/jwt.js';
 import logger from '../utils/logger.js';
 
-export const authenticateToken = async (req, res, next) => {
+const isValidPermission = (allowedRoles) => async (req, res, next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
+        req.user = {
+            id: req.headers['x-user-id'],
+            role: req.headers['x-user-role'],
+        };
 
-        if (!token) {
-            return res.status(401).json({
+        const userRole = req.user.role;
+        if (!userRole || !allowedRoles.includes(userRole)) {
+            return res.status(403).json({
                 success: false,
-                message: 'Không tìm thấy token',
+                message: 'Bạn không có quyền truy cập vào API này!',
             });
         }
 
-        const decoded = verifyAccessToken(token);
-        req.user = decoded;
         next();
     } catch (error) {
-        logger.error('Authentication error:', error);
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({
-                success: false,
-                message: 'Token đã hết hạn',
-            });
-        }
-        return res.status(403).json({
+        logger.error('Permission error:', error);
+
+        res.status(500).json({
             success: false,
-            message: 'Token không hợp lệ',
+            message: 'Có lỗi xảy ra khi kiểm tra quyền truy cập!',
         });
     }
+};
+
+export default {
+    isValidPermission,
 };

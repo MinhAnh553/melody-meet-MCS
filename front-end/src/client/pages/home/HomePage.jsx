@@ -12,28 +12,20 @@ const HomePage = () => {
     useEffect(() => {
         const fetchData = async () => {
             setLoadingLocal(true);
-            try {
-                const trending = await fetchEvents('trending');
-                const special = await fetchEvents('special');
-                setTrendingEvent(trending || []);
-                setSpecialEvents(special || []);
-            } catch (error) {
-                console.error('Lỗi khi lấy dữ liệu sự kiện:', error);
-            } finally {
-                setLoadingLocal(false);
-            }
+
+            const trending = await fetchEvents('trending');
+            const special = await fetchEvents('special');
+            setTrendingEvent(trending || []);
+            setSpecialEvents(special || []);
+
+            setLoadingLocal(false);
         };
         fetchData();
     }, []);
 
     const fetchEvents = async (type) => {
-        try {
-            const res = await api.getEvents(type);
-            return res.success ? res.events : [];
-        } catch (error) {
-            console.log(`fetchEvents(${type}) -> error:`, error);
-            return [];
-        }
+        const res = await api.getEvents(type);
+        return res.success ? res.events : [];
     };
 
     return (

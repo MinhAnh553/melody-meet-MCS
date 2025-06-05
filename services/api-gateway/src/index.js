@@ -7,7 +7,7 @@ import { rateLimit } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import proxy from 'express-http-proxy';
 import logger from './utils/logger.js';
-import validateToken from './middlewares/authMiddleware.js';
+import authMiddleware from './middlewares/authMiddleware.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 dotenv.config();
@@ -55,7 +55,7 @@ const proxyOptions = {
         logger.error('Proxy error:', err.message);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error!',
             error: err.message,
         });
     },
@@ -64,9 +64,38 @@ const proxyOptions = {
 // Setting up proxy for our auth service
 app.use(
     '/v1/auth',
+    (req, res, next) => {
+        // Danh sách các pattern route không cần xác thực
+        const publicPatterns = [
+            '/v1/auth/register/send-code',
+            '/v1/auth/register/verify',
+            '/v1/auth/login',
+            '/v1/auth/refresh_token',
+        ];
+
+        // Kiểm tra nếu route hiện tại match với bất kỳ pattern nào
+        const isPublicRoute = publicPatterns.some((pattern) => {
+            if (pattern instanceof RegExp) {
+                return pattern.test(req.originalUrl);
+            }
+            return pattern === req.originalUrl;
+        });
+
+        if (isPublicRoute) {
+            return next();
+        }
+
+        // Nếu không phải public route, áp dụng validateToken
+        authMiddleware.isAuthorized(req, res, next);
+    },
     proxy(process.env.AUTH_SERVICE_URL, {
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+            // Chỉ thêm headers user nếu request đã được xác thực
+            if (srcReq?.jwtDecoded) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
+            }
             proxyReqOpts.headers['content-type'] = 'application/json';
             return proxyReqOpts;
         },
@@ -103,15 +132,15 @@ app.use(
         }
 
         // Nếu không phải public route, áp dụng validateToken
-        validateToken(req, res, next);
+        authMiddleware.isAuthorized(req, res, next);
     },
     proxy(process.env.EVENT_SERVICE_URL, {
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             // Chỉ thêm headers user nếu request đã được xác thực
-            if (srcReq.user) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
-                proxyReqOpts.headers['x-role'] = srcReq.user.role;
+            if (srcReq?.jwtDecoded) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
 
             if (
@@ -158,12 +187,14 @@ app.use(
 
 app.use(
     '/v1/orders',
-    validateToken,
+    authMiddleware.isAuthorized,
     proxy(process.env.ORDER_SERVICE_URL, {
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-            proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
-            proxyReqOpts.headers['x-role'] = srcReq.user.role;
+            if (srcReq?.jwtDecoded) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
+            }
 
             proxyReqOpts.headers['content-type'] = 'application/json';
 
@@ -181,12 +212,14 @@ app.use(
 
 app.use(
     '/v1/tickets',
-    validateToken,
+    authMiddleware.isAuthorized,
     proxy(process.env.TICKET_SERVICE_URL, {
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-            proxyReqOpts.headers['x-user-id'] = srcReq.user.userId;
-            proxyReqOpts.headers['x-role'] = srcReq.user.role;
+            if (srcReq?.jwtDecoded) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
+            }
 
             proxyReqOpts.headers['content-type'] = 'application/json';
 

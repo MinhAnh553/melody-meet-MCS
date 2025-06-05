@@ -15,9 +15,9 @@ import {
     FaChevronRight,
 } from 'react-icons/fa';
 import avatar from '../../../assets/images/avatar.png';
-import { useAuth } from '../../../client/context/AuthContext';
 import swalCustomize from '../../../util/swalCustomize';
 import styles from './Layout.module.css';
+import { useAuth } from '../../../client/context/AuthContext';
 
 const Layout = () => {
     const { logout } = useAuth();
@@ -150,13 +150,8 @@ const Layout = () => {
                                 <a
                                     className="dropdown-item py-2 d-flex align-items-center text-danger action-logout"
                                     href="#"
-                                    onClick={() => {
+                                    onClick={(e) => {
                                         logout();
-                                        navigate('/');
-                                        swalCustomize.Toast.fire({
-                                            icon: 'success',
-                                            title: 'Đăng xuất thành công!',
-                                        });
                                     }}
                                 >
                                     <i className="bi bi-box-arrow-right me-2 fs-5" />

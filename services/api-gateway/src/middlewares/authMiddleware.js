@@ -1,33 +1,40 @@
+import JwtProvider from '../providers/JwtProvider.js';
 import logger from '../utils/logger.js';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-const validateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        logger.warn('Access attempt with valid token');
+const isAuthorized = async (req, res, next) => {
+    const accessToken = req.headers.authorization;
+    if (!accessToken) {
         return res.status(401).json({
-            status: false,
-            message: 'Authentication required',
+            success: false,
+            message: 'Unauthorized!',
         });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            logger.warn('Invalid token');
-            return res.status(429).json({
-                status: false,
-                message: 'Invalid token',
+    try {
+        const accessTokenDecoded = await JwtProvider.verifyToken(
+            accessToken.split(' ')[1],
+            process.env.ACCESS_TOKEN_SECRET_SIGNATURE,
+        );
+
+        req.jwtDecoded = accessTokenDecoded;
+
+        next();
+    } catch (error) {
+        logger.error('Authentication JWT error:', error);
+        if (error.message?.includes('jwt expired')) {
+            return res.status(410).json({
+                success: false,
+                message: 'Need to refresh token',
             });
         }
 
-        req.user = user;
-        next();
-    });
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized!',
+        });
+    }
 };
 
-export default validateToken;
+export default {
+    isAuthorized,
+};

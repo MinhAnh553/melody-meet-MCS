@@ -104,7 +104,7 @@ const getRevenue = async (req, res) => {
         logger.error('Get revenue error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -123,7 +123,7 @@ const getRevenueByEventId = async (req, res) => {
         logger.error('Get revenue by event ID error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -167,7 +167,7 @@ const createOrder = async (req, res) => {
         logger.error('Create order error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -194,7 +194,7 @@ const getOrderById = async (req, res) => {
         logger.error('Get order by ID error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -220,7 +220,7 @@ const getOrderByOrderCode = async (req, res) => {
         logger.error('Get order by order code error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -246,7 +246,7 @@ const checkStatusOrder = async (req, res) => {
         logger.error('Get order by order code error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -295,7 +295,7 @@ const cancelOrder = async (req, res) => {
         logger.error('Cancel order error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -354,7 +354,7 @@ const selectPaymentMethod = async (req, res) => {
         logger.error('Select payment method error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -432,7 +432,7 @@ const webhookHandler = async (req, res) => {
         logger.error('Webhook handler error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -464,6 +464,12 @@ const createTicketsForOrder = async (order) => {
         const response = await axios.post(
             `${process.env.TICKET_SERVICE_URL}/api/tickets/bulk`,
             { tickets },
+            {
+                headers: {
+                    'x-user-id': req.user?.id,
+                    'x-user-role': req.user?.role,
+                },
+            },
         );
 
         if (!response.data.success) {
@@ -493,6 +499,12 @@ const getMyOrders = async (req, res) => {
                 try {
                     const eventResponse = await axios.get(
                         `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+                        {
+                            headers: {
+                                'x-user-id': req.user?.id,
+                                'x-user-role': req.user?.role,
+                            },
+                        },
                     );
                     if (eventResponse.data.success) {
                         return {
@@ -524,7 +536,7 @@ const getMyOrders = async (req, res) => {
         logger.error('Get my orders error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -560,14 +572,6 @@ const getOrdersByEventId = async (req, res) => {
 // [GET] /orders/dashboard
 const getDashboard = async (req, res) => {
     try {
-        const { userId, role } = req.user;
-        if (role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Bạn không có quyền truy cập vào trang này',
-            });
-        }
-
         const orders = await orderModel.aggregate([
             { $match: { status: 'PAID' } },
             {
@@ -610,11 +614,23 @@ const getDashboard = async (req, res) => {
         // Tổng người dùng
         const totalUsers = await axios.get(
             `${process.env.AUTH_SERVICE_URL}/api/auth/users/total`,
+            {
+                headers: {
+                    'x-user-id': req.user?.id,
+                    'x-user-role': req.user?.role,
+                },
+            },
         );
 
         // Tổng sự kiện
         const totalEvents = await axios.get(
             `${process.env.EVENT_SERVICE_URL}/api/events/admin/total-events`,
+            {
+                headers: {
+                    'x-user-id': req.user?.id,
+                    'x-user-role': req.user?.role,
+                },
+            },
         );
 
         const totalOrders = orders.length > 0 ? orders[0].countPaidOrders : 0;
@@ -665,6 +681,10 @@ const getAllOrders = async (req, res) => {
                 const eventResponse = await axios.get(
                     `${process.env.EVENT_SERVICE_URL}/api/events/search`,
                     {
+                        headers: {
+                            'x-user-id': req.user?.id,
+                            'x-user-role': req.user?.role,
+                        },
                         params: {
                             query: searchKey,
                         },
@@ -727,6 +747,12 @@ const getAllOrders = async (req, res) => {
             try {
                 const event = await axios.get(
                     `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+                    {
+                        headers: {
+                            'x-user-id': req.user?.id,
+                            'x-user-role': req.user?.role,
+                        },
+                    },
                 );
 
                 const orderObj = order.toObject();
@@ -831,7 +857,7 @@ const updateStatusOrder = async (req, res) => {
         logger.error('Update order status error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };

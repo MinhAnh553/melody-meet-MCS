@@ -2,147 +2,79 @@ import axios from 'axios';
 import api from './api';
 import swalCustomize from './swalCustomize';
 
-const instance = axios.create({
+let instance = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
 });
 
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    });
-    failedQueue = [];
-};
+// Thời gian chờ tối đa của 1 request
+instance.defaults.timeout = 1000 * 60 * 10;
 
 // Add a request interceptor
 instance.interceptors.request.use(
-    function (config) {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            config.headers = config.headers || {};
-            config.headers.Authorization = `Bearer ${token}`;
+    (config) => {
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
         }
+
         return config;
     },
-    function (error) {
+    (error) => {
         return Promise.reject(error);
     },
 );
 
+let refreshTokenPromise = null;
+
 // Add a response interceptor
 instance.interceptors.response.use(
-    function (response) {
+    (response) => {
         return response?.data ?? response;
     },
-    async function (error) {
-        const originalRequest = error.config;
+    async (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userInfo');
+            window.location.href = '/';
+        }
 
-        // If the error is 401 and we haven't tried to refresh the token yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                // If token refresh is in progress, add this request to the queue
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                })
-                    .then((token) => {
-                        originalRequest.headers.Authorization = `Bearer ${token}`;
-                        return instance(originalRequest);
+        const originalRequest = error.config;
+        if (error.response?.status === 410 && originalRequest) {
+            if (!refreshTokenPromise) {
+                const refreshToken = localStorage.getItem('refreshToken');
+                refreshTokenPromise = api
+                    .refreshToken(refreshToken)
+                    .then((res) => {
+                        const accessToken = res?.accessToken;
+                        localStorage.setItem('accessToken', accessToken);
+                        instance.defaults.headers.Authorization = `Bearer ${accessToken}`;
                     })
-                    .catch((err) => {
-                        return Promise.reject(err);
+                    .catch((_error) => {
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('refreshToken');
+                        localStorage.removeItem('userInfo');
+                        window.location.href = '/';
+
+                        return Promise.reject(_error);
+                    })
+                    .finally(() => {
+                        refreshTokenPromise = null;
                     });
             }
 
-            originalRequest._retry = true;
-            isRefreshing = true;
-
-            try {
-                const refreshToken = localStorage.getItem('refresh_token');
-                if (!refreshToken) {
-                    throw new Error('No refresh token available');
-                }
-
-                // Call your refresh token endpoint
-                const response = await api.refreshToken(refreshToken);
-                const { accessToken, refreshToken: newRefreshToken } =
-                    response.data;
-
-                // Update tokens in localStorage
-                localStorage.setItem('access_token', accessToken);
-                localStorage.setItem('refresh_token', newRefreshToken);
-
-                // Update the failed request's authorization header
-                originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-                // Process any queued requests
-                processQueue(null, accessToken);
-
-                // Retry the original request
+            return refreshTokenPromise.then(() => {
                 return instance(originalRequest);
-            } catch (refreshError) {
-                processQueue(refreshError, null);
-                // Clear tokens and redirect to /
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                window.location.href = '/';
-                return Promise.reject(refreshError);
-            } finally {
-                isRefreshing = false;
-            }
+            });
         }
-
-        // 404 Not Found thì hiển thị thông báo lỗi, về trang chủ
-        if (error?.response?.status === 404) {
+        // Xử lý tập trung phần hiển thị thông báo lỗi trả về từ mọi API khác 401, 410
+        if (error.response?.status !== 410) {
             swalCustomize.Toast.fire({
                 icon: 'error',
-                title: 'Không tìm thấy trang!',
-                timer: 3000,
-                timerProgressBar: true,
-                showConfirmButton: false,
+                title: error.response?.data?.message || error?.message,
             });
-
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 3000);
-
-            return Promise.reject(error.response.data);
         }
 
-        // Handle other errors
-        if (error?.response?.data) {
-            // Handle 400 status codes as a successful response with error message
-            if (error.response.status === 400) {
-                return error.response.data;
-            }
-
-            // Handle unauthorized access message
-            if (
-                error.response.status === 401 &&
-                error.response.data.message ===
-                    'Bạn không có quyền truy cập vào trang này'
-            ) {
-                swalCustomize.Toast.fire({
-                    icon: 'error',
-                    title: 'Bạn không có quyền truy cập vào trang này',
-                    timer: 3000,
-                    timerProgressBar: true,
-                    showConfirmButton: false,
-                });
-
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 3000);
-
-                return Promise.reject(error.response.data);
-            }
-            return Promise.reject(error.response.data);
-        }
         return Promise.reject(error);
     },
 );

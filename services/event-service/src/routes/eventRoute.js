@@ -6,7 +6,7 @@ const Router = express.Router();
 
 // Create event
 Router.route('/organizer/create').post(
-    authMiddleware.authenticateRequest,
+    authMiddleware.isValidPermission(['organizer', 'admin']),
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },
         { name: 'organizerLogo', maxCount: 1 },
@@ -16,28 +16,31 @@ Router.route('/organizer/create').post(
 
 // Get event summary
 Router.route('/organizer/:eventId/summary').get(
-    authMiddleware.authenticateRequest,
+    authMiddleware.isValidPermission(['organizer', 'admin']),
     eventController.getEventSummary,
 );
 
 // Get my events
 Router.route('/organizer/my').get(
-    authMiddleware.authenticateRequest,
+    authMiddleware.isValidPermission(['organizer', 'admin']),
     eventController.getMyEvents,
 );
 
 // Get all events
 Router.route('/admin/all-events').get(
-    authMiddleware.authorizeRoles,
+    authMiddleware.isValidPermission(['admin']),
     eventController.getAllEvents,
 );
 
 // Total events
-Router.route('/admin/total-events').get(eventController.getTotalEvents);
+Router.route('/admin/total-events').get(
+    authMiddleware.isValidPermission(['admin']),
+    eventController.getTotalEvents,
+);
 
 // Update event status (admin only)
 Router.route('/admin/update/:id/status').put(
-    authMiddleware.authorizeRoles,
+    authMiddleware.isValidPermission(['admin']),
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },
         { name: 'organizerLogo', maxCount: 1 },
@@ -53,13 +56,13 @@ Router.route('/search').get(eventController.searchEvents);
 
 // Get event by id to edit
 Router.route('/:id/edit').get(
-    authMiddleware.authenticateRequest,
+    authMiddleware.isValidPermission(['organizer', 'admin']),
     eventController.getEventByIdToEdit,
 );
 
 // Update event
 Router.route('/update/:id').patch(
-    authMiddleware.authenticateRequest,
+    authMiddleware.isValidPermission(['organizer', 'admin']),
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },
         { name: 'organizerLogo', maxCount: 1 },
@@ -67,9 +70,9 @@ Router.route('/update/:id').patch(
     eventController.updateEvent,
 );
 
-// Order event
+// Create order event
 Router.route('/order/:id').post(
-    authMiddleware.authenticateRequest,
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },
         { name: 'organizerLogo', maxCount: 1 },

@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
+import api from '../../util/api';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const { login } = useAuth();
-
     const [formData, setFormData] = useState({
         emailLogin: '',
         passwordLogin: '',
@@ -20,7 +20,12 @@ const Login = () => {
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
 
-        await login(formData.emailLogin, formData.passwordLogin);
+        const res = await api.login(
+            formData.emailLogin,
+            formData.passwordLogin,
+        );
+
+        login(res);
     };
 
     return (

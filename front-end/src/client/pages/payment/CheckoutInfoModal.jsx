@@ -10,7 +10,7 @@ import { useLoading } from '../../context/LoadingContext';
 
 const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
     // const { showLoading, hideLoading } = useLoading();
-    const { user, updateUser } = useAuth();
+    const { user } = useAuth();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
@@ -41,39 +41,17 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
             });
         }
 
-        try {
-            // showLoading();
-            const buyerInfo = {
-                name,
-                phone,
-                email,
-            };
-            // Gọi API update user
-            const res = await api.updateUserAddress(buyerInfo);
-            if (res.success) {
-                // Thành công => gọi onConfirm => tiếp tục PayOS
-                updateUser({
-                    user: {
-                        ...user,
-                        address: buyerInfo,
-                    },
-                });
+        // showLoading();
+        const buyerInfo = {
+            name,
+            phone,
+            email,
+        };
+        // Gọi API update user
+        const res = await api.updateUserAddress(buyerInfo);
 
-                onConfirm(buyerInfo);
-            } else {
-                return swalCustomize.Toast.fire({
-                    icon: 'error',
-                    title: res.message || 'Cập nhật thông tin thất bại!',
-                });
-            }
-        } catch (error) {
-            return swalCustomize.Toast.fire({
-                icon: 'error',
-                title: 'Lỗi khi cập nhật thông tin: ' + error.message,
-            });
-        } finally {
-            // hideLoading();
-        }
+        // Thành công => gọi onConfirm => tiếp tục PayOS
+        onConfirm(buyerInfo);
     };
 
     return (

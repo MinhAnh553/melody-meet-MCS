@@ -1,14 +1,17 @@
 import React, { useContext } from 'react';
 import avatar from '../../assets/images/avatar.png';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import swalCustomize from '../../util/swalCustomize';
+import { useAuth } from '../context/AuthContext';
+import { usePermission } from '../../hooks/usePermission';
+import { permissions } from '../../config/rbacConfig';
 
 const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
     const { eventId } = useParams();
     const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
+    const { hasPermission } = usePermission(user?.role);
 
     const steps = ['Thông tin sự kiện', 'Thời gian & Loại vé'];
 
@@ -211,7 +214,7 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                                 </span>
                             </div>
                             <ul className="infoAccountEvent dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1">
-                                {user?.role === 'admin' && (
+                                {hasPermission(permissions.VIEW_ADMIN) && (
                                     <li>
                                         <Link
                                             className="dropdown-item py-2 d-flex align-items-center"

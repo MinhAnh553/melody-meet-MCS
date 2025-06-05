@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ClientLayout from '../client/layout/ClientLayout.jsx';
 import HomePage from '../client/pages/home/HomePage.jsx';
 import EventManagementLayout from '../client/layout/EventManagementLayout.jsx';
-import ProtectedRoute from '../client/components/ProtectedRoute';
+import ProtectedRoutes from '../client/components/ProtectedRoutes';
 import EventCreateWizard from '../client/pages/event/EventCreateWizard.jsx';
 import EventDetail from '../client/pages/event/EventDetail.jsx';
 import PaymentSuccess from '../client/pages/payment/PaymentSuccess.jsx';
@@ -20,9 +20,12 @@ import EventsList from '../admin/components/Events/EventsList.jsx';
 import OrdersList from '../admin/components/Orders/OrdersList.jsx';
 import TicketsList from '../admin/components/Tickets/TicketsList.jsx';
 import UsersList from '../admin/components/Users/UsersList.jsx';
-import ProtectedAdminRoute from '../admin/components/ProtectedAdminRoute.jsx';
 import AllEvents from '../client/pages/home/AllEvents.jsx';
 import PaymentCancel from '../client/pages/payment/PaymentCancel.jsx';
+import AccessDenied from '../client/pages/AccessDenied.jsx';
+import NotFound from '../client/pages/NotFound.jsx';
+import RbacRoute from './RbacRoute.jsx';
+import { permissions } from '../config/rbacConfig';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -60,7 +63,7 @@ const AnimatedRoutes = () => {
                             </motion.div>
                         }
                     />
-                    <Route element={<ProtectedRoute />}>
+                    <Route element={<ProtectedRoutes />}>
                         <Route
                             path="my-tickets"
                             element={
@@ -77,78 +80,87 @@ const AnimatedRoutes = () => {
                         />
                     </Route>
                 </Route>
-                <Route path="organizer" element={<ProtectedRoute />}>
-                    <Route path="event" element={<EventManagementLayout />}>
-                        <Route
-                            index
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <EventManagement />
-                                </motion.div>
-                            }
-                        />
-                        <Route
-                            path="create"
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <EventCreateWizard />
-                                </motion.div>
-                            }
-                        />
-                        <Route
-                            path=":eventId/edit"
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <EventCreateWizard />
-                                </motion.div>
-                            }
-                        />
-                        <Route
-                            path=":eventId/orders"
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <OrderList />
-                                </motion.div>
-                            }
-                        />
-                        <Route
-                            path=":eventId/summary"
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <EventSummary />
-                                </motion.div>
-                            }
-                        />
+                <Route element={<ProtectedRoutes />}>
+                    <Route
+                        path="/organizer"
+                        element={
+                            <RbacRoute
+                                requiredPermission={permissions.VIEW_ORGANIZERS}
+                            />
+                        }
+                    >
+                        <Route path="event" element={<EventManagementLayout />}>
+                            <Route
+                                index
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <EventManagement />
+                                    </motion.div>
+                                }
+                            />
+                            <Route
+                                path="create"
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <EventCreateWizard />
+                                    </motion.div>
+                                }
+                            />
+                            <Route
+                                path=":eventId/edit"
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <EventCreateWizard />
+                                    </motion.div>
+                                }
+                            />
+                            <Route
+                                path=":eventId/orders"
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <OrderList />
+                                    </motion.div>
+                                }
+                            />
+                            <Route
+                                path=":eventId/summary"
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <EventSummary />
+                                    </motion.div>
+                                }
+                            />
+                        </Route>
                     </Route>
                 </Route>
                 <Route path="/event/:eventId" element={<ClientLayout />}>
@@ -167,7 +179,7 @@ const AnimatedRoutes = () => {
                         }
                     />
                 </Route>
-                <Route path="/orders">
+                <Route path="/orders" element={<ProtectedRoutes />}>
                     <Route
                         path="payment-success"
                         element={
@@ -211,19 +223,31 @@ const AnimatedRoutes = () => {
                         }
                     />
                 </Route>
-                <Route path="/admin" element={<ProtectedAdminRoute />}>
-                    <Route element={<Layout />}>
-                        <Route
-                            index
-                            element={<Navigate to="dashboard" replace />}
-                        />
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="events" element={<EventsList />} />
-                        <Route path="orders" element={<OrdersList />} />
-                        <Route path="tickets" element={<TicketsList />} />
-                        <Route path="users" element={<UsersList />} />
+                <Route element={<ProtectedRoutes />}>
+                    <Route
+                        path="/admin"
+                        element={
+                            <RbacRoute
+                                requiredPermission={permissions.VIEW_ADMIN}
+                            />
+                        }
+                    >
+                        <Route element={<Layout />}>
+                            <Route
+                                index
+                                element={<Navigate to="dashboard" replace />}
+                            />
+                            <Route path="dashboard" element={<Dashboard />} />
+                            <Route path="events" element={<EventsList />} />
+                            <Route path="orders" element={<OrdersList />} />
+                            <Route path="tickets" element={<TicketsList />} />
+                            <Route path="users" element={<UsersList />} />
+                        </Route>
                     </Route>
                 </Route>
+
+                <Route path="/access-denied" element={<AccessDenied />} />
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </AnimatePresence>
     );

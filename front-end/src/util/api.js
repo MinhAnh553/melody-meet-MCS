@@ -35,6 +35,11 @@ const getAccount = () => {
     return axios.get(URL_API);
 };
 
+const refreshToken = async (refreshToken) => {
+    const URL_API = `${API_URL}/auth/refresh_token`;
+    return await axios.put(URL_API, { refreshToken });
+};
+
 const getEventById = (id) => {
     const URL_API = `${API_URL}/events/${id}`;
     return axios.get(URL_API);
@@ -157,11 +162,6 @@ const updateUser = (userId, data) => {
 const getAllUsers = () => {
     const URL_API = `${API_URL}/user/all-users`;
     return axios.get(URL_API);
-};
-
-const refreshToken = (refreshToken) => {
-    const URL_API = `${API_URL}/auth/refresh-token`;
-    return axios.post(URL_API, { refreshToken });
 };
 
 export default {

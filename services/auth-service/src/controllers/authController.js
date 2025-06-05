@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 import otpModel from '../models/otpModel.js';
 import mailTemplate from '../templates/mailTemplate.js';
@@ -11,34 +10,22 @@ import {
     validateVerify,
     validateLogin,
 } from '../utils/validation.js';
-import { generateTokens, verifyRefreshToken } from '../utils/jwt.js';
+import JwtProvider from '../providers/JwtProvider.js';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const REFRESH_TOKEN_SECRET =
-    process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key';
-
-// Generate random 4-digit code
-const generateVerificationCode = () => {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-};
+const ACCESS_TOKEN_SECRET_SIGNATURE =
+    process.env.ACCESS_TOKEN_SECRET_SIGNATURE ||
+    'tLPQcRzyKdURPJKIoEbgvw7a1mPH466w';
+const REFRESH_TOKEN_SECRET_SIGNATURE =
+    process.env.REFRESH_TOKEN_SECRET_SIGNATURE ||
+    'aFj4d6sST6G6qynXTWgPQaDfvfdgwQq3';
 
 // Send verification code
 const sendVerificationCode = async (req, res) => {
-    const { email, password, confirmPassword } = req.body;
+    const { email } = req.body;
 
     try {
-        // Validate input
-        const { error } = validateRegister.validate(req.body);
-        if (error) {
-            logger.error('Validation error:', error);
-            return res.status(400).json({
-                success: false,
-                message: error.details[0].message,
-            });
-        }
-
         // Check if email already exists
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
@@ -50,7 +37,7 @@ const sendVerificationCode = async (req, res) => {
         }
 
         // Generate and save verification code
-        const code = generateVerificationCode();
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
         await otpModel.findOneAndUpdate(
             { email },
             { code },
@@ -73,14 +60,14 @@ const sendVerificationCode = async (req, res) => {
         logger.error('Send verification code error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
 
 // Verify code and register user
 const verifyAndRegister = async (req, res) => {
-    const { email, password, confirmPassword, code } = req.body;
+    const { email, password, code } = req.body;
 
     try {
         // Validate input
@@ -124,21 +111,16 @@ const verifyAndRegister = async (req, res) => {
         // Delete verification code
         await otpModel.deleteOne({ email });
 
-        // Generate tokens
-        const tokens = generateTokens(newUser);
-
         logger.info(`User registered successfully: ${email}`);
         res.status(201).json({
             success: true,
             message: 'Đăng ký thành công!',
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
         });
     } catch (error) {
         logger.error('Verification code error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -178,29 +160,40 @@ const login = async (req, res) => {
             });
         }
 
+        const userInfo = {
+            id: user._id,
+            email: user.email,
+            role: user.role,
+        };
+
         // Generate tokens
-        const tokens = generateTokens(user);
+        const accessToken = await JwtProvider.generateToken(
+            userInfo,
+            ACCESS_TOKEN_SECRET_SIGNATURE,
+            '10 m',
+            // '5',
+        );
+        const refreshToken = await JwtProvider.generateToken(
+            userInfo,
+            REFRESH_TOKEN_SECRET_SIGNATURE,
+            '14 days',
+        );
 
         logger.info(`User logged in successfully: ${email}`);
         res.status(200).json({
             success: true,
             message: 'Đăng nhập thành công',
             user: {
-                _id: user._id,
-                name: user.name,
-                phone: user.phone,
-                email: user.email,
-                address: user.address,
-                role: user.role,
+                ...userInfo,
             },
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
+            accessToken,
+            refreshToken,
         });
     } catch (error) {
         logger.error('Login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -208,76 +201,36 @@ const login = async (req, res) => {
 // Refresh token
 const refreshToken = async (req, res) => {
     try {
-        const { refreshToken } = req.body;
+        const refreshToken = req.body?.refreshToken;
 
-        if (!refreshToken) {
-            return res.status(400).json({
-                success: false,
-                message: 'Refresh token là bắt buộc',
-            });
-        }
+        const refreshTokenDecoded = await JwtProvider.verifyToken(
+            refreshToken,
+            REFRESH_TOKEN_SECRET_SIGNATURE,
+        );
 
-        let decoded;
-        try {
-            decoded = verifyRefreshToken(refreshToken);
-        } catch (error) {
-            return res.status(403).json({
-                success: false,
-                message: 'Refresh token không hợp lệ',
-            });
-        }
+        const userInfo = {
+            id: refreshTokenDecoded.id,
+            email: refreshTokenDecoded.email,
+            role: refreshTokenDecoded.role,
+        };
 
-        const user = await userModel.findById(decoded.userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'Người dùng không tồn tại',
-            });
-        }
-        const tokens = generateTokens(user);
+        const accessToken = await JwtProvider.generateToken(
+            userInfo,
+            ACCESS_TOKEN_SECRET_SIGNATURE,
+            '10 m',
+            // '5',
+        );
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            data: tokens,
+            message: 'Tạo mới accessToken thành công!',
+            accessToken,
         });
     } catch (error) {
         logger.error('Refresh token error:', error);
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({
-                success: false,
-                message: 'Refresh token đã hết hạn',
-            });
-        }
-        return res.status(403).json({
-            success: false,
-            message: 'Refresh token không hợp lệ',
-        });
-    }
-};
-
-// Logout
-const logout = async (req, res) => {
-    logger.info(`Logout request received`);
-    try {
-        const { refreshToken } = req.body;
-        if (!refreshToken) {
-            logger.error('Validation error: Refresh token is required');
-            return res.status(400).json({
-                success: false,
-                message: 'Refresh token là bắt buộc',
-            });
-        }
-
-        logger.info(`User logged out successfully`);
-        res.status(200).json({
-            success: true,
-            message: 'Đăng xuất thành công',
-        });
-    } catch (error) {
-        logger.error('Logout error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -286,15 +239,13 @@ const logout = async (req, res) => {
 const getAccount = async (req, res) => {
     logger.info(`Get account request received`);
     try {
-        const user = await userModel
-            .findById(req.user.userId)
-            .select('-password');
+        const user = await userModel.findById(req.user.id).select('-password');
         res.status(200).json({ success: true, user });
     } catch (error) {
         logger.error('Get account error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -305,7 +256,7 @@ const updateUserAddress = async (req, res) => {
     try {
         const data = req.body;
         const user = await userModel.updateOne(
-            { _id: req.user.userId },
+            { _id: req.user.id },
             {
                 $set: {
                     address: {
@@ -322,7 +273,7 @@ const updateUserAddress = async (req, res) => {
         logger.error('Update user address error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -344,7 +295,6 @@ export default {
     verifyAndRegister,
     login,
     refreshToken,
-    logout,
     getAccount,
     updateUserAddress,
     getTotalUsers,

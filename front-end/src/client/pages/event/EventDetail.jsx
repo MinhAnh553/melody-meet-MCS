@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLoading } from '../../context/LoadingContext';
 
 const EventDetail = () => {
-    const { isAuthenticated } = useAuth();
+    const { user } = useAuth();
     const [loadingLocal, setLoadingLocal] = useState(true);
 
     const { eventId } = useParams();
@@ -178,7 +178,7 @@ const EventDetail = () => {
                                         display: 'inline-block',
                                         cursor:
                                             event.status === 'event_over' ||
-                                            !isAuthenticated
+                                            !user
                                                 ? 'not-allowed'
                                                 : 'pointer',
                                     }}
@@ -188,19 +188,19 @@ const EventDetail = () => {
                                         onClick={handleBuyNow}
                                         disabled={
                                             event.status === 'event_over' ||
-                                            !isAuthenticated
+                                            !user
                                         }
                                         style={{
                                             backgroundColor:
                                                 event.status === 'event_over' ||
-                                                !isAuthenticated
+                                                !user
                                                     ? '#ccc'
                                                     : '',
                                         }}
                                     >
                                         {event.status === 'event_over'
                                             ? 'Sự kiện đã kết thúc'
-                                            : !isAuthenticated
+                                            : !user
                                             ? 'Đăng nhập để mua vé'
                                             : 'Mua vé ngay'}
                                     </button>
@@ -292,20 +292,17 @@ const EventDetail = () => {
                     <button
                         className="btn btn-success fw-bold"
                         onClick={handleBuyNow}
-                        disabled={
-                            event.status === 'event_over' || !isAuthenticated
-                        }
+                        disabled={event.status === 'event_over' || !user}
                         style={{
                             backgroundColor:
-                                event.status === 'event_over' ||
-                                !isAuthenticated
+                                event.status === 'event_over' || !user
                                     ? '#ccc'
                                     : '',
                         }}
                     >
                         {event.status === 'event_over'
                             ? 'Sự kiện đã kết thúc'
-                            : !isAuthenticated
+                            : !user
                             ? 'Đăng nhập để mua vé'
                             : 'Mua vé ngay'}
                     </button>

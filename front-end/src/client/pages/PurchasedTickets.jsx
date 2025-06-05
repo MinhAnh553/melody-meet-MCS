@@ -7,11 +7,14 @@ import { useAuth } from '../context/AuthContext';
 import noTicket from '../../assets/images/no-ticket.png';
 import api from '../../util/api';
 import TimeText from '../components/providers/TimeText';
+import { usePermission } from '../../hooks/usePermission';
+import { permissions } from '../../config/rbacConfig';
 import styles from './PurchasedTickets.module.css';
 
 function PurchasedTickets() {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { hasPermission } = usePermission(user?.role);
 
     const [orders, setOrders] = useState([]);
     const [loadingLocal, setLoadingLocal] = useState(true);
@@ -453,8 +456,7 @@ function PurchasedTickets() {
                             <BsTicket className="me-2 text-success" /> Vé đã mua
                         </Nav.Link>
 
-                        {(user?.role === 'organizer' ||
-                            user?.role === 'admin') && (
+                        {hasPermission(permissions.VIEW_ORGANIZERS) && (
                             <Nav.Link
                                 className={`d-flex align-items-center p-2 rounded hover-bg ${
                                     activeTab === 'events'

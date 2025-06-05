@@ -14,11 +14,11 @@ import LoadingSpinner from './client/components/loading/LoadingSpinner.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <LoadingProvider>
-        <AuthProvider>
-            <Router>
+        <Router>
+            <AuthProvider>
                 <AnimatedRoutes />
                 <LoadingSpinner />
-            </Router>
-        </AuthProvider>
+            </AuthProvider>
+        </Router>
     </LoadingProvider>,
 );

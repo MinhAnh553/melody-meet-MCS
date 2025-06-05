@@ -70,7 +70,7 @@ const createEvent = async (req, res) => {
             startTime: new Date(data.startTime),
             endTime: new Date(data.endTime),
             ticketTypes: ticketTypes,
-            createdBy: req.user.userId,
+            createdBy: req.user.id,
         };
 
         // Validate input
@@ -107,7 +107,7 @@ const createEvent = async (req, res) => {
         }
         res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -172,11 +172,23 @@ const getAllEvents = async (req, res) => {
             // Gọi API lấy thông tin người tạo sự kiện
             const organizerInfo = await axios.get(
                 `${process.env.AUTH_SERVICE_URL}/api/auth/users/organizer/${event.createdBy}`,
+                {
+                    headers: {
+                        'x-user-id': req.user?.id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
             );
 
             // Gọi API tính toán doanh thu sự kiện
             const revenue = await axios.get(
                 `${process.env.ORDER_SERVICE_URL}/api/orders/revenue/${event._id}`,
+                {
+                    headers: {
+                        'x-user-id': req.user?.id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
             );
 
             // Lấy ticketTypes
@@ -209,7 +221,7 @@ const getAllEvents = async (req, res) => {
         logger.error('Get all events error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -259,7 +271,7 @@ const getEventById = async (req, res) => {
         logger.error('Get event by id error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -267,7 +279,7 @@ const getEventById = async (req, res) => {
 // [GET] /events/my
 const getMyEvents = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
@@ -318,7 +330,7 @@ const getMyEvents = async (req, res) => {
         logger.error('Get my events error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -353,7 +365,7 @@ const getEventByIdToEdit = async (req, res) => {
         logger.error('Get event by id to edit error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -443,7 +455,7 @@ const updateEvent = async (req, res) => {
             startTime: new Date(data.startTime) || event.startTime,
             endTime: new Date(data.endTime) || event.endTime,
             status: data.status || event.status,
-            createdBy: event.createdBy || req.user.userId,
+            createdBy: event.createdBy || req.user.id,
         };
 
         // Xóa các loại vé cũ
@@ -475,7 +487,7 @@ const updateEvent = async (req, res) => {
         logger.error('Update event error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -496,6 +508,12 @@ const getEvents = async (req, res) => {
         if (type == 'trending') {
             const result = await axios.get(
                 `${process.env.ORDER_SERVICE_URL}/api/orders/revenue`,
+                {
+                    headers: {
+                        'x-user-id': req.user?.id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
             );
             events = result.data.revenue;
         }
@@ -564,7 +582,7 @@ const getEvents = async (req, res) => {
         logger.error('Get events error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -573,7 +591,7 @@ const getEvents = async (req, res) => {
 const createOrder = async (req, res) => {
     logger.info('Create order');
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id;
         const eventId = req.params.id;
         const data = req.body;
         const tickets = JSON.parse(data.items);
@@ -649,6 +667,12 @@ const createOrder = async (req, res) => {
                 totalPrice: data.totalPrice,
                 buyerInfo: JSON.parse(data.buyerInfo),
             },
+            {
+                headers: {
+                    'x-user-id': req.user?.id,
+                    'x-user-role': req.user?.role,
+                },
+            },
         );
 
         const orderId = response.data.orderId;
@@ -663,7 +687,7 @@ const createOrder = async (req, res) => {
         logger.error('Create order error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -703,7 +727,7 @@ const searchEvents = async (req, res) => {
         logger.error('Search events error:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -712,7 +736,7 @@ const searchEvents = async (req, res) => {
 const getEventSummary = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const userId = req.user.userId;
+        const userId = req.user.id;
 
         // Kiểm tra sự kiện tồn tại và thuộc về người dùng
         const event = await eventModel.findOne({
@@ -731,6 +755,12 @@ const getEventSummary = async (req, res) => {
         // Lấy danh sách đơn hàng từ order-service
         const ordersResponse = await axios.get(
             `${process.env.ORDER_SERVICE_URL}/api/orders/event/${eventId}`,
+            {
+                headers: {
+                    'x-user-id': req.user?.id,
+                    'x-user-role': req.user?.role,
+                },
+            },
         );
         const orders = ordersResponse.data.orders || [];
 
@@ -796,7 +826,7 @@ const getEventSummary = async (req, res) => {
         logger.error('Error in getEventSummary:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
@@ -813,7 +843,7 @@ const getTotalEvents = async (req, res) => {
         logger.error('Error in getTotalEvents:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error',
+            message: 'Internal Server Error',
         });
     }
 };
