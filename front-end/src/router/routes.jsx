@@ -89,6 +89,10 @@ const AnimatedRoutes = () => {
                             />
                         }
                     >
+                        <Route
+                            index
+                            element={<Navigate to="event" replace />}
+                        />
                         <Route path="event" element={<EventManagementLayout />}>
                             <Route
                                 index

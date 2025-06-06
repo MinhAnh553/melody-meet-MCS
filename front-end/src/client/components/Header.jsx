@@ -33,7 +33,7 @@ const Header = () => {
                     >
                         <SearchBar />
                         <ul className="navbar-nav mb-2 mb-lg-0 gap-2 align-items-center">
-                            {hasPermission(permissions.VIEW_CREATE_EVENT) && (
+                            {hasPermission(permissions.VIEW_ORGANIZERS) && (
                                 <li className="nav-item">
                                     <Link
                                         className="nav-link create-event"
