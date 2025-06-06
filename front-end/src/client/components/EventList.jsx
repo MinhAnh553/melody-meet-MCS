@@ -18,12 +18,9 @@ const EventList = ({ events, type = 'special' }) => {
                     const sortedTickets = [...event.ticketTypes].sort(
                         (a, b) => a.price - b.price,
                     );
-                    const lowestPrice =
-                        sortedTickets.length > 0
-                            ? sortedTickets[0].price === 0
-                                ? 'Miễn phí'
-                                : `Từ ${formatCurrency(sortedTickets[0].price)}`
-                            : 'Miễn phí';
+                    const lowestPrice = `Từ ${formatCurrency(
+                        sortedTickets[0].price,
+                    )}`;
 
                     return (
                         <div

@@ -209,16 +209,10 @@ function OrderPage() {
                                 <td className="text-start">{item.name}</td>
                                 <td className="text-center">{item.quantity}</td>
                                 <td className="text-end">
-                                    {item.price === 0
-                                        ? 'Miễn phí'
-                                        : item.price.toLocaleString('vi-VN') +
-                                          'đ'}
+                                    {item.price.toLocaleString('vi-VN') + 'đ'}
                                 </td>
                                 <td className="text-end">
-                                    {item.price === 0
-                                        ? 'Miễn phí'
-                                        : subTotal.toLocaleString('vi-VN') +
-                                          'đ'}
+                                    {subTotal.toLocaleString('vi-VN') + 'đ'}
                                 </td>
                             </tr>
                         );

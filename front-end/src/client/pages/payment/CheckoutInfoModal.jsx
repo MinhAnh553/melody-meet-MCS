@@ -96,6 +96,10 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
                         className="form-control text-dark"
                         placeholder="Nhập email"
                         value={email}
+                        disabled
+                        style={{
+                            cursor: 'not-allowed',
+                        }}
                         onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>

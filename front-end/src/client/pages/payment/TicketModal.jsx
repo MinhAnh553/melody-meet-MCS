@@ -51,12 +51,7 @@ const TicketModal = ({ show, onHide, event }) => {
     const isCheckoutDisabled = totalQuantity === 0;
 
     // Định dạng hiển thị tổng tiền
-    let displayPrice = '';
-    if (totalPrice > 0) {
-        displayPrice = totalPrice.toLocaleString('vi-VN') + 'đ';
-    } else {
-        displayPrice = hasFreeTicketSelected ? 'Miễn phí' : '0đ';
-    }
+    const displayPrice = totalPrice.toLocaleString('vi-VN') + 'đ';
 
     // Mở modal xác nhận thông tin
     const handleCheckout = () => {
@@ -145,11 +140,9 @@ const TicketModal = ({ show, onHide, event }) => {
                                                     </strong>
                                                 </td>
                                                 <td>
-                                                    {ticket.price === 0
-                                                        ? 'Miễn phí'
-                                                        : ticket.price.toLocaleString(
-                                                              'vi-VN',
-                                                          ) + 'đ'}
+                                                    {ticket.price.toLocaleString(
+                                                        'vi-VN',
+                                                    ) + 'đ'}
                                                 </td>
                                                 <td>
                                                     <div className="quantity-group d-flex justify-content-center align-items-center">
@@ -256,11 +249,9 @@ const TicketModal = ({ show, onHide, event }) => {
                                     <div className="d-flex justify-content-between mb-2">
                                         <strong>{ticket.name}</strong>
                                         <span>
-                                            {ticket.price === 0
-                                                ? 'Miễn phí'
-                                                : ticket.price.toLocaleString(
-                                                      'vi-VN',
-                                                  ) + 'đ'}
+                                            {ticket.price.toLocaleString(
+                                                'vi-VN',
+                                            ) + 'đ'}
                                         </span>
                                     </div>
                                     <div

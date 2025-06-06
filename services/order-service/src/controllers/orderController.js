@@ -466,8 +466,8 @@ const createTicketsForOrder = async (order) => {
             { tickets },
             {
                 headers: {
-                    'x-user-id': req.user?.id,
-                    'x-user-role': req.user?.role,
+                    'x-user-id': order.userId,
+                    'x-user-role': 'client',
                 },
             },
         );
@@ -488,7 +488,7 @@ const createTicketsForOrder = async (order) => {
 const getMyOrders = async (req, res) => {
     logger.info('Get my orders');
     try {
-        const { userId } = req.user;
+        const userId = req.user?.id;
         const orders = await orderModel
             .find({ userId, status: 'PAID' })
             .sort({ createdAt: -1 });

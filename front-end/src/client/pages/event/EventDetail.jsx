@@ -63,15 +63,11 @@ const EventDetail = () => {
         (a, b) => a.price - b.price,
     );
 
-    // Định dạng giá
-    const formatPrice = (price) =>
-        price === 0
-            ? 'Miễn phí'
-            : 'Giá từ ' + price.toLocaleString('vi-VN') + ' đ';
+    const formatCurrency = (price) => {
+        return price.toLocaleString('vi-VN') + 'đ';
+    };
 
-    const lowestPrice = sortedTickets.length
-        ? formatPrice(sortedTickets[0].price)
-        : 'Miễn phí';
+    const lowestPrice = `Giá từ ${formatCurrency(sortedTickets[0].price)}`;
 
     const sanitizedDescription = DOMPurify.sanitize(event.description);
 
