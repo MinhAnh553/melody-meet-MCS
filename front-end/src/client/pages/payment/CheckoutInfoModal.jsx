@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import { Modal } from 'react-bootstrap';
-import { useAuth } from '../../context/AuthContext';
 import 'react-phone-input-2/lib/bootstrap.css';
 import swalCustomize from '../../../util/swalCustomize';
 import api from '../../../util/api';
@@ -10,20 +9,26 @@ import { useLoading } from '../../context/LoadingContext';
 
 const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
     // const { showLoading, hideLoading } = useLoading();
-    const { user } = useAuth();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
 
+    const getUser = async () => {
+        const res = await api.getAccount();
+        return res.user;
+    };
+
     useEffect(() => {
-        if (show && user?.address) {
-            setName(user.address.name || '');
-            setPhone(user.address.phone || '');
-            setEmail(user.address.email || '');
-        } else {
-            setEmail(user?.email);
+        if (show) {
+            const fetchUser = async () => {
+                const user = await getUser();
+                setName(user.name || '');
+                setPhone(user.phone || '');
+                setEmail(user.email || '');
+            };
+            fetchUser();
         }
-    }, [show, user]);
+    }, [show]);
 
     const handleSubmit = async () => {
         // Kiểm tra bắt buộc 3 trường

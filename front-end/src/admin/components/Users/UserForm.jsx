@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import styles from './Users.module.css';
+import PhoneInput from 'react-phone-input-2';
 
 const UserForm = ({ user, onSubmit, onCancel }) => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        role: 'user',
+        role: 'client',
         status: 'active',
         phone: '',
         password: '',
@@ -20,7 +21,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                 name: user.name || '',
                 email: user.email || '',
                 status: user.status || 'active',
-                role: user.role || 'user',
+                role: user.role || 'client',
                 phone: user.phone || '',
                 password: '',
             });
@@ -86,6 +87,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                         </Form.Label>
                         <Form.Control
                             className={`text-dark ${styles.formControl}`}
+                            autoComplete="off"
                             type="text"
                             name="name"
                             value={formData.name}
@@ -104,6 +106,11 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                         </Form.Label>
                         <Form.Control
                             className={`text-dark ${styles.formControl}`}
+                            autoComplete="off"
+                            disabled
+                            style={{
+                                cursor: 'not-allowed',
+                            }}
                             type="email"
                             name="email"
                             readOnly
@@ -121,20 +128,21 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                         <Form.Label className={styles.formLabel}>
                             Số điện thoại
                         </Form.Label>
-                        <Form.Control
-                            className={`text-dark ${styles.formControl}`}
-                            type="text"
-                            name="phone"
-                            maxLength={10}
+                        <PhoneInput
+                            country={'vn'}
                             value={formData.phone}
-                            onInput={(e) =>
-                                (e.target.value = e.target.value.replace(
-                                    /\D/g,
-                                    '',
-                                ))
+                            onChange={(phone) =>
+                                setFormData({ ...formData, phone })
                             }
-                            onChange={handleChange}
-                            placeholder="Nhập số điện thoại"
+                            inputClass="form-control text-dark"
+                            inputStyle={{
+                                width: '100%',
+                                height: '45px',
+                                padding: '0 60px',
+                                paddingTop: '3px',
+                            }}
+                            containerStyle={{ width: '100%' }}
+                            enableSearch={true}
                         />
                     </Form.Group>
                 </div>
@@ -166,7 +174,8 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                             value={formData.role}
                             onChange={handleChange}
                         >
-                            <option value="user">Người dùng</option>
+                            <option value="client">Khách hàng</option>
+                            <option value="organizer">Tổ chức sự kiện</option>
                             <option value="admin">Quản trị viên</option>
                         </Form.Select>
                     </Form.Group>
@@ -179,6 +188,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                         </Form.Label>
                         <Form.Control
                             className={`text-dark ${styles.formControl}`}
+                            autoComplete="off"
                             type="password"
                             name="password"
                             value={formData.password}

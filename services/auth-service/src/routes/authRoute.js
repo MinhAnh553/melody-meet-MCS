@@ -26,6 +26,16 @@ Router.route('/users/total').get(
     authController.getTotalUsers,
 );
 
+Router.route('/users/admin/all-users').get(
+    authMiddleware.isValidPermission(['admin']),
+    authController.getAllUsers,
+);
+
+Router.route('/users/update/:id').patch(
+    authMiddleware.isValidPermission(['admin']),
+    authController.updateUser,
+);
+
 Router.route('/users/organizer/:id').get(
     authMiddleware.isValidPermission(['admin']),
     authController.getOrganizerInfo,

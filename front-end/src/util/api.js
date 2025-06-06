@@ -152,16 +152,14 @@ const updateStatusOrder = (orderId, data) => {
     return axios.patch(URL_API, { status: data });
 };
 
-// Chưa sử dụng
-
-const updateUser = (userId, data) => {
-    const URL_API = `${API_URL}/user/update/${userId}`;
-    return axios.patch(URL_API, data);
+const getAllUsers = () => {
+    const URL_API = `${API_URL}/auth/users/admin/all-users`;
+    return axios.get(URL_API);
 };
 
-const getAllUsers = () => {
-    const URL_API = `${API_URL}/user/all-users`;
-    return axios.get(URL_API);
+const updateUser = (userId, data) => {
+    const URL_API = `${API_URL}/auth/users/update/${userId}`;
+    return axios.patch(URL_API, data);
 };
 
 export default {

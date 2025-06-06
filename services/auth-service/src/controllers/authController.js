@@ -257,13 +257,7 @@ const updateUserAddress = async (req, res) => {
         const data = req.body;
         const user = await userModel.updateOne(
             { _id: req.user.id },
-            {
-                $set: {
-                    address: {
-                        ...data,
-                    },
-                },
-            },
+            { $set: data },
         );
         res.status(200).json({
             success: true,
@@ -280,16 +274,68 @@ const updateUserAddress = async (req, res) => {
 
 // Get total users
 const getTotalUsers = async (req, res) => {
-    const totalUsers = await userModel.countDocuments({ deleted: false });
-    res.status(200).json({ success: true, totalUsers });
+    try {
+        const totalUsers = await userModel.countDocuments({ deleted: false });
+        res.status(200).json({ success: true, totalUsers });
+    } catch (error) {
+        logger.error('Get total users error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
 };
 
 // Get organizer info
 const getOrganizerInfo = async (req, res) => {
-    const { id } = req.params;
-    const organizer = await userModel.findById(id).select('-password');
-    res.status(200).json({ success: true, organizer });
+    try {
+        const { id } = req.params;
+        const organizer = await userModel.findById(id).select('-password');
+        res.status(200).json({ success: true, organizer });
+    } catch (error) {
+        logger.error('Get organizer info error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
 };
+
+// Get all users
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await userModel
+            .find({ deleted: false })
+            .select('-password');
+        res.status(200).json({ success: true, users });
+    } catch (error) {
+        logger.error('Get all users error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// Update user
+const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = req.body;
+        const user = await userModel.findByIdAndUpdate(id, data, { new: true });
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật thông tin người dùng thành công',
+        });
+    } catch (error) {
+        logger.error('Update user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -299,4 +345,6 @@ export default {
     updateUserAddress,
     getTotalUsers,
     getOrganizerInfo,
+    getAllUsers,
+    updateUser,
 };
