@@ -5,11 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import CheckoutInfoModal from './CheckoutInfoModal';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
-import { useLoading } from '../../context/LoadingContext';
 
 const TicketModal = ({ show, onHide, event }) => {
     const navigate = useNavigate();
-    const { showLoading, hideLoading } = useLoading();
     const [quantities, setQuantities] = useState(() => {
         if (!event?.ticketTypes) return [];
         return event.ticketTypes.map(() => 0);
@@ -61,7 +59,6 @@ const TicketModal = ({ show, onHide, event }) => {
 
     // Khi user xác nhận info => proceed
     const handleInfoConfirmed = async (buyerInfo) => {
-        showLoading();
         try {
             const items = event.ticketTypes
                 .map((ticket, i) => ({
@@ -91,8 +88,6 @@ const TicketModal = ({ show, onHide, event }) => {
                 icon: 'error',
                 title: error.message || 'Server Error!',
             });
-        } finally {
-            hideLoading();
         }
     };
 

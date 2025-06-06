@@ -34,10 +34,8 @@ import OrderDetails from './OrderDetails';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import { BsCartX } from 'react-icons/bs';
-import { useLoading } from '../../../client/context/LoadingContext';
 
 const OrdersList = () => {
-    const { showLoading, hideLoading } = useLoading();
     const [loadingLocal, setLoadingLocal] = useState(true);
 
     const [orders, setOrders] = useState([]);
@@ -134,7 +132,6 @@ const OrdersList = () => {
     };
 
     const handleCancelClick = async (orderId) => {
-        showLoading();
         try {
             const res = await api.updateStatusOrder(orderId, 'CANCELED');
             if (res.success) {
@@ -148,13 +145,10 @@ const OrdersList = () => {
             }
         } catch (error) {
             console.error(error);
-        } finally {
-            hideLoading();
         }
     };
 
     const handleCompleteClick = async (orderId) => {
-        showLoading();
         try {
             const res = await api.updateStatusOrder(orderId, 'PAID');
             if (res.success) {
@@ -168,8 +162,6 @@ const OrdersList = () => {
             }
         } catch (error) {
             console.error(error);
-        } finally {
-            hideLoading();
         }
     };
 

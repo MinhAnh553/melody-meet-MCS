@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import {
     FaMoneyBillWave,
     FaUsers,
@@ -10,7 +10,7 @@ import {
     FaExclamationTriangle,
     FaTicketAlt,
 } from 'react-icons/fa';
-import { Line, Doughnut } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -36,11 +36,10 @@ ChartJS.register(
 );
 
 import styles from './Dashboard.module.css';
-import { formatCurrency, formatDate } from '../../utils/formatters';
+import { formatCurrency } from '../../utils/formatters';
 import api from '../../../util/api';
 
 const Dashboard = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
     // ✅ State để lưu dữ liệu từ API
     const [dashboardData, setDashboardData] = useState(null);
 
@@ -50,7 +49,6 @@ const Dashboard = () => {
     }, []);
 
     const fetchData = async () => {
-        setLoadingLocal(true);
         try {
             const res = await api.getDashboard();
             if (res.success) {
@@ -58,8 +56,6 @@ const Dashboard = () => {
             }
         } catch (err) {
             console.log(err.message);
-        } finally {
-            setLoadingLocal(false);
         }
     };
 
@@ -134,32 +130,6 @@ const Dashboard = () => {
             },
         },
     };
-
-    // ✅ Cấu hình biểu đồ vé bán theo loại
-    // const ticketChartData = {
-    //     labels: ticketsSoldByCategory.map((item) => item.category),
-    //     datasets: [
-    //         {
-    //             label: 'Vé đã bán',
-    //             data: ticketsSoldByCategory.map((item) => item.count),
-    //             backgroundColor: [
-    //                 'rgba(142, 68, 173, 0.7)',
-    //                 'rgba(52, 152, 219, 0.7)',
-    //                 'rgba(46, 204, 113, 0.7)',
-    //                 'rgba(241, 196, 15, 0.7)',
-    //                 'rgba(231, 76, 60, 0.7)',
-    //             ],
-    //             borderColor: [
-    //                 'rgba(142, 68, 173, 1)',
-    //                 'rgba(52, 152, 219, 1)',
-    //                 'rgba(46, 204, 113, 1)',
-    //                 'rgba(241, 196, 15, 1)',
-    //                 'rgba(231, 76, 60, 1)',
-    //             ],
-    //             borderWidth: 1,
-    //         },
-    //     ],
-    // };
 
     // ✅ Hàm lấy icon dựa theo hoạt động
     const getActivityIcon = (type) => {

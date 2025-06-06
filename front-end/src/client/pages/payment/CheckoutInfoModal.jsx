@@ -5,10 +5,8 @@ import { Modal } from 'react-bootstrap';
 import 'react-phone-input-2/lib/bootstrap.css';
 import swalCustomize from '../../../util/swalCustomize';
 import api from '../../../util/api';
-import { useLoading } from '../../context/LoadingContext';
 
 const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
-    // const { showLoading, hideLoading } = useLoading();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
@@ -46,7 +44,6 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
             });
         }
 
-        // showLoading();
         const buyerInfo = {
             name,
             phone,

@@ -4,12 +4,10 @@ import QRCode from 'react-qr-code';
 import { FaCheckCircle } from 'react-icons/fa';
 import api from '../../../util/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useLoading } from '../../context/LoadingContext';
 import styles from './PaymentSuccess.module.css';
 import TimeText from '../../components/providers/TimeText';
 
 function PaymentSuccess() {
-    const { showLoading, hideLoading } = useLoading();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -22,7 +20,6 @@ function PaymentSuccess() {
         const fetchData = async () => {
             if (!orderCode) return;
 
-            showLoading();
             try {
                 // Lấy thông tin đơn hàng
                 const orderRes = await api.getOrderByOrderCode(orderCode);
@@ -44,8 +41,6 @@ function PaymentSuccess() {
                 }
             } catch (err) {
                 console.error(err);
-            } finally {
-                hideLoading();
             }
         };
 
@@ -53,7 +48,7 @@ function PaymentSuccess() {
     }, [orderCode]);
 
     if (!order || !event) {
-        return showLoading();
+        return null;
     }
 
     // Tính tổng tiền

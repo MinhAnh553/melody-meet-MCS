@@ -1,21 +1,20 @@
 import React, { createContext, useContext, useState } from 'react';
+import { loadingProxy } from '../../util/loadingProxy';
 
 // Tạo context
 const LoadingContext = createContext();
 
 // Provider để quản lý trạng thái loading
 export const LoadingProvider = ({ children }) => {
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const showLoading = () => setLoading(true);
-    const hideLoading = () => setLoading(false);
+    loadingProxy.register(setIsLoading);
 
     return (
-        <LoadingContext.Provider value={{ loading, showLoading, hideLoading }}>
+        <LoadingContext.Provider value={{ isLoading, setIsLoading }}>
             {children}
         </LoadingContext.Provider>
     );
 };
 
-// Hook để sử dụng LoadingContext
 export const useLoading = () => useContext(LoadingContext);

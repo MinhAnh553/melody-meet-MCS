@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaTimesCircle } from 'react-icons/fa';
-import { useLoading } from '../../context/LoadingContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import api from '../../../util/api';
 
@@ -9,14 +8,12 @@ function PaymentCancel() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const orderCode = searchParams.get('orderCode');
-    const { showLoading, hideLoading } = useLoading();
     const [order, setOrder] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             if (!orderCode) return;
 
-            showLoading();
             try {
                 // Lấy thông tin đơn hàng
                 const orderRes = await api.getOrderByOrderCode(orderCode);
@@ -28,8 +25,6 @@ function PaymentCancel() {
                 }
             } catch (err) {
                 console.error(err);
-            } finally {
-                hideLoading();
             }
         };
 
@@ -37,7 +32,7 @@ function PaymentCancel() {
     }, [orderCode]);
 
     if (!order) {
-        return showLoading();
+        return null;
     }
 
     return (

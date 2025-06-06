@@ -8,13 +8,11 @@ import styles from '../../styles/EventManagement.module.css';
 import swalCustomize from '../../../util/swalCustomize';
 import api from '../../../util/api';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useLoading } from '../../context/LoadingContext';
 
 // Đăng ký locale tiếng Việt
 registerLocale('vi', vi);
 
 const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
-    const { showLoading, hideLoading } = useLoading();
     const { eventId } = useParams();
     const navigate = useNavigate();
     // State cho ticket hiện tại (dùng cho tạo mới hoặc chỉnh sửa)
@@ -278,7 +276,6 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
 
         try {
             onLoadingChange(true);
-            showLoading();
             let res;
             if (isEditMode) {
                 res = await api.updateEvent(eventId, formData);
@@ -310,7 +307,6 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
             });
         } finally {
             onLoadingChange(false);
-            hideLoading();
         }
     };
 

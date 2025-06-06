@@ -31,10 +31,8 @@ import EventDetails from './EventDetails';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import { BsCalendarX } from 'react-icons/bs';
-import { useLoading } from '../../../client/context/LoadingContext';
 
 const EventsList = () => {
-    const { showLoading, hideLoading } = useLoading();
     const [loadingLocal, setLoadingLocal] = useState(true);
 
     const [events, setEvents] = useState([]);
@@ -144,7 +142,6 @@ const EventsList = () => {
     };
 
     const handleApproveEvent = async (eventId) => {
-        showLoading();
         try {
             // tạo form data
             const formData = new FormData();
@@ -162,8 +159,6 @@ const EventsList = () => {
             }
         } catch (error) {
             console.error(error);
-        } finally {
-            hideLoading();
         }
     };
 
@@ -176,7 +171,6 @@ const EventsList = () => {
             return;
         }
 
-        showLoading();
         try {
             // tạo form data
             const formData = new FormData();
@@ -197,8 +191,6 @@ const EventsList = () => {
             }
         } catch (error) {
             console.error(error);
-        } finally {
-            hideLoading();
         }
     };
 

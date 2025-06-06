@@ -20,7 +20,9 @@ module.exports = {
         'no-case-declarations': 0,
         'react-refresh/only-export-components': [
             'warn',
-            { allowConstantExport: true },
+            {
+                allowExportNames: ['useLoading', 'useAuth'],
+            },
         ],
     },
 };

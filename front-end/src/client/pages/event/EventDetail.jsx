@@ -6,7 +6,6 @@ import DOMPurify from 'dompurify';
 import TicketModal from '../payment/TicketModal';
 import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
-import { useLoading } from '../../context/LoadingContext';
 
 const EventDetail = () => {
     const { user } = useAuth();

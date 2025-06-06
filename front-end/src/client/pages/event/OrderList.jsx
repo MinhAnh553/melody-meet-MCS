@@ -19,7 +19,6 @@ import {
 } from '../../../admin/utils/formatters';
 import OrderDetails from '../../../admin/components/Orders/OrderDetails';
 import { BsCartX } from 'react-icons/bs';
-import { useLoading } from '../../context/LoadingContext';
 
 const OrderList = () => {
     const [loadingLocal, setLoadingLocal] = useState(true);

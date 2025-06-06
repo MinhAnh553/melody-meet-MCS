@@ -13,10 +13,8 @@ import UserForm from './UserForm';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import { BsPersonX } from 'react-icons/bs';
-import { useLoading } from '../../../client/context/LoadingContext';
 
 const UsersList = () => {
-    const { showLoading, hideLoading } = useLoading();
     const [loadingLocal, setLoadingLocal] = useState(true);
 
     const [users, setUsers] = useState([]);
@@ -99,7 +97,6 @@ const UsersList = () => {
     };
 
     const handleFormSubmit = async (userId, userData) => {
-        showLoading();
         try {
             const res = await api.updateUser(userId, userData);
             if (res.success) {
@@ -117,8 +114,6 @@ const UsersList = () => {
             }
         } catch (error) {
             console.log('Lỗi khi gọi API:', error);
-        } finally {
-            hideLoading();
         }
     };
 

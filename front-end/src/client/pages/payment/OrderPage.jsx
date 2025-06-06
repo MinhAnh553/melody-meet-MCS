@@ -6,10 +6,8 @@ import { motion } from 'framer-motion';
 
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
-import { useLoading } from '../../context/LoadingContext';
 
 function OrderPage() {
-    const { showLoading, hideLoading } = useLoading();
     const { orderId } = useParams();
     const navigate = useNavigate();
 
@@ -20,9 +18,7 @@ function OrderPage() {
     // Lấy đơn hàng từ server
     useEffect(() => {
         const fetchData = async () => {
-            showLoading();
             await fetchOrder();
-            hideLoading();
         };
 
         fetchData();
@@ -148,11 +144,9 @@ function OrderPage() {
             })
             .then(async (result) => {
                 if (result.isConfirmed) {
-                    showLoading();
                     await api.cancelOrder({
                         orderId,
                     });
-                    hideLoading();
 
                     navigate(`/event/${order?.eventId || ''}`);
                 }
@@ -160,7 +154,6 @@ function OrderPage() {
     };
 
     const handleChoosePayOS = async () => {
-        showLoading();
         try {
             const res = await api.selectPayment(orderId, 'payos');
             if (res.success) {
@@ -180,8 +173,6 @@ function OrderPage() {
                 icon: 'error',
                 title: err.message || 'Server Error!',
             });
-        } finally {
-            hideLoading();
         }
     };
 

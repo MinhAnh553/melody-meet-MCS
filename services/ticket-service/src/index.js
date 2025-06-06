@@ -38,18 +38,18 @@ const rateLimiter = new RateLimiterRedis({
     duration: 1,
 });
 
-app.use(async (req, res, next) => {
-    try {
-        await rateLimiter.consume(req.ip);
-        next();
-    } catch (err) {
-        logger.warn('Rate limit exceeded for IP:', req.ip);
-        res.status(429).json({
-            success: false,
-            message: 'Too many requests',
-        });
-    }
-});
+// app.use(async (req, res, next) => {
+//     try {
+//         await rateLimiter.consume(req.ip);
+//         next();
+//     } catch (err) {
+//         logger.warn('Rate limit exceeded for IP:', req.ip);
+//         res.status(429).json({
+//             success: false,
+//             message: 'Too many requests',
+//         });
+//     }
+// });
 
 // IP based rate limiting for sensitive endpoints
 const sensitiveEndpointsLimiter = rateLimit({

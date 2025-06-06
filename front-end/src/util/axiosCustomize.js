@@ -1,6 +1,7 @@
 import axios from 'axios';
 import api from './api';
 import swalCustomize from './swalCustomize';
+import { loadingProxy } from './loadingProxy';
 
 let instance = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -12,6 +13,8 @@ instance.defaults.timeout = 1000 * 60 * 10;
 // Add a request interceptor
 instance.interceptors.request.use(
     (config) => {
+        loadingProxy.start();
+
         const accessToken = localStorage.getItem('accessToken');
         if (accessToken) {
             config.headers.Authorization = `Bearer ${accessToken}`;
@@ -20,6 +23,7 @@ instance.interceptors.request.use(
         return config;
     },
     (error) => {
+        loadingProxy.stop();
         return Promise.reject(error);
     },
 );
@@ -29,9 +33,12 @@ let refreshTokenPromise = null;
 // Add a response interceptor
 instance.interceptors.response.use(
     (response) => {
+        loadingProxy.stop();
         return response?.data ?? response;
     },
     async (error) => {
+        loadingProxy.stop();
+
         if (error.response?.status === 401) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');

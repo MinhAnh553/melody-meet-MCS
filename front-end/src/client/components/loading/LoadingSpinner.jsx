@@ -1,10 +1,9 @@
 import React from 'react';
-import { Oval } from 'react-loader-spinner';
-import { useLoading } from '../../context/LoadingContext'; // Sử dụng LoadingContext
+import { useLoading } from '../../context/LoadingContext';
 
 const LoadingSpinner = () => {
-    const { loading } = useLoading();
-    if (!loading) return null;
+    const { isLoading } = useLoading();
+    if (!isLoading) return null;
 
     return (
         <div
