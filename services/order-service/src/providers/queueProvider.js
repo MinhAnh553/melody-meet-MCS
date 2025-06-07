@@ -3,7 +3,9 @@ import Redis from 'ioredis';
 import logger from '../utils/logger.js';
 import { publishEvent } from './rabbitmqProvider.js';
 import orderModel from '../models/orderModel.js';
+import dotenv from 'dotenv';
 
+dotenv.config();
 
 const { REDIS_URL } = process.env;
 
