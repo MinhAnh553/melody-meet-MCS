@@ -137,6 +137,19 @@ const createOrder = async (req, res) => {
         }${Number(String(Date.now()).slice(-6))}`;
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
+        // Hủy đơn hàng cũ nếu đã có đơn hàng với cùng userId và eventId
+        const oldOrder = await orderModel.findOne({ userId, eventId, status: 'PENDING' });
+        if (oldOrder) {
+            await deleteOrderExpireJob(oldOrder._id);
+            logger.info(`Order canceled: ${oldOrder._id}`);
+            oldOrder.status = 'CANCELED';
+            await oldOrder.save();
+            await publishEvent('order.expired', {
+                orderId: oldOrder._id,
+                tickets: oldOrder.tickets,
+            });
+        }
+
         const newOrder = new orderModel({
             userId,
             buyerInfo,
@@ -148,7 +161,7 @@ const createOrder = async (req, res) => {
             expiredAt,
         });
         await newOrder.save();
-        logger.info(`Order created: ${newOrder._id}`);
+        logger.info(`Order created: ${newOrder._id}`);     
 
         // Thêm job hết hạn đơn hàng
         await addOrderExpireJob(newOrder._id, tickets);
