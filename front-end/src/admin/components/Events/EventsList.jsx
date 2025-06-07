@@ -396,7 +396,8 @@ const EventsList = () => {
                                             </td>
                                             <td>
                                                 {truncateText(
-                                                    event.email || '',
+                                                    event.organizerInfo[0]
+                                                        .email || '',
                                                     30,
                                                 )}
                                             </td>

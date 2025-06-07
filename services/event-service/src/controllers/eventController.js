@@ -161,48 +161,60 @@ const getAllEvents = async (req, res) => {
         }
 
         const [events, totalNoOfEvents] = await Promise.all([
-            eventModel.find(query).sort(sort).skip(startIndex).limit(limit),
+            eventModel.aggregate([
+                { $match: query },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'createdBy',
+                        foreignField: '_id',
+                        as: 'organizerInfo',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    email: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    // Chèn ticketTypes từ collection tickettypes
+                    $lookup: {
+                        from: 'tickettypes', // collection name (phải là lowercase, đúng tên Mongo)
+                        localField: '_id', // event._id
+                        foreignField: 'eventId', // ticketType.eventId
+                        as: 'ticketTypes',
+                    },
+                },
+                { $sort: sort },
+                { $skip: startIndex },
+                { $limit: limit },
+            ]),
             eventModel.countDocuments(query),
         ]);
 
-        const eventsWithInfo = [];
+        const eventsWithInfo = await Promise.all(
+            events.map(async (event) => {
+                const [revenue] = await Promise.all([
+                    axios.get(
+                        `${process.env.ORDER_SERVICE_URL}/api/orders/revenue/${event._id}`,
+                        {
+                            headers: {
+                                'x-user-id': req.user?.id,
+                                'x-user-role': req.user?.role,
+                            },
+                        },
+                    ),
+                ]);
 
-        //Vòng lặp để thêm thông tin người tạo sự kiện và doanh thu vào kết quả
-        for (const event of events) {
-            // Gọi API lấy thông tin người tạo sự kiện
-            const organizerInfo = await axios.get(
-                `${process.env.AUTH_SERVICE_URL}/api/auth/users/organizer/${event.createdBy}`,
-                {
-                    headers: {
-                        'x-user-id': req.user?.id,
-                        'x-user-role': req.user?.role,
-                    },
-                },
-            );
-
-            // Gọi API tính toán doanh thu sự kiện
-            const revenue = await axios.get(
-                `${process.env.ORDER_SERVICE_URL}/api/orders/revenue/${event._id}`,
-                {
-                    headers: {
-                        'x-user-id': req.user?.id,
-                        'x-user-role': req.user?.role,
-                    },
-                },
-            );
-
-            // Lấy ticketTypes
-            const ticketTypes = await ticketTypeModel.find({
-                eventId: event._id,
-            });
-
-            // Thêm thông tin người tạo sự kiện và doanh thu vào kết quả
-            const eventObj = event.toObject();
-            eventObj.email = organizerInfo.data.organizer.email;
-            eventObj.totalRevenue = revenue.data.totalRevenue;
-            eventObj.ticketTypes = ticketTypes;
-            eventsWithInfo.push(eventObj);
-        }
+                return {
+                    ...event,
+                    totalRevenue: revenue.data.totalRevenue,
+                };
+            }),
+        );
 
         const result = {
             success: true,

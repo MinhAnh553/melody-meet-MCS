@@ -36,9 +36,4 @@ Router.route('/users/update/:id').patch(
     authController.updateUser,
 );
 
-Router.route('/users/organizer/:id').get(
-    authMiddleware.isValidPermission(['admin']),
-    authController.getOrganizerInfo,
-);
-
 export default Router;

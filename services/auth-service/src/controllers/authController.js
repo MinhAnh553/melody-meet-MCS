@@ -286,21 +286,6 @@ const getTotalUsers = async (req, res) => {
     }
 };
 
-// Get organizer info
-const getOrganizerInfo = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const organizer = await userModel.findById(id).select('-password');
-        res.status(200).json({ success: true, organizer });
-    } catch (error) {
-        logger.error('Get organizer info error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal Server Error',
-        });
-    }
-};
-
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
@@ -344,7 +329,6 @@ export default {
     getAccount,
     updateUserAddress,
     getTotalUsers,
-    getOrganizerInfo,
     getAllUsers,
     updateUser,
 };
