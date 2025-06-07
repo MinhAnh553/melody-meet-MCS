@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+    api-gateway:
+        build: ./api-gateway
+        ports: 
+            - "3000:3000"
+        env_file: 
+            - ./api-gateway/.env
+        depends_on:
+            - redis
+            - rabbitmq
+        environment:
+            - AUTH_SERVICE_URL=http://auth-service:3001
+            - EVENT_SERVICE_URL=http://event-service:3002
+            - ORDER_SERVICE_URL=http://order-service:3003
+            - TICKET_SERVICE_URL=http://ticket-service:3004
+            - REDIS_URL=redis://redis:6379
+            - RABBITMQ_URL=amqp://rabbitmq:5672
+
+    auth-service:
+        build: ./auth-service
+        env_file: 
+            - ./auth-service/.env
+        depends_on:
+            - redis
+            - rabbitmq
+        environment:
+            - AUTH_SERVICE_URL=http://auth-service:3001
+            - EVENT_SERVICE_URL=http://event-service:3002
+            - ORDER_SERVICE_URL=http://order-service:3003
+            - TICKET_SERVICE_URL=http://ticket-service:3004
+            - REDIS_URL=redis://redis:6379
+            - RABBITMQ_URL=amqp://rabbitmq:5672
+
+    event-service:
+        build: ./event-service
+        env_file: 
+            - ./event-service/.env
+        depends_on:
+            - redis
+            - rabbitmq
+        environment:
+            - AUTH_SERVICE_URL=http://auth-service:3001
+            - EVENT_SERVICE_URL=http://event-service:3002
+            - ORDER_SERVICE_URL=http://order-service:3003
+            - TICKET_SERVICE_URL=http://ticket-service:3004
+            - REDIS_URL=redis://redis:6379
+            - RABBITMQ_URL=amqp://rabbitmq:5672
+        
+
+    order-service:
+        build: ./order-service
+        env_file: 
+            - ./order-service/.env
+        depends_on:
+            - redis
+            - rabbitmq
+        environment:
+            - AUTH_SERVICE_URL=http://auth-service:3001
+            - EVENT_SERVICE_URL=http://event-service:3002
+            - ORDER_SERVICE_URL=http://order-service:3003
+            - TICKET_SERVICE_URL=http://ticket-service:3004
+            - REDIS_URL=redis://redis:6379
+            - RABBITMQ_URL=amqp://rabbitmq:5672
+            
+
+    ticket-service:
+        build: ./ticket-service
+        env_file: 
+            - ./ticket-service/.env
+        depends_on:
+            - redis
+            - rabbitmq
+        environment:
+            - AUTH_SERVICE_URL=http://auth-service:3001
+            - EVENT_SERVICE_URL=http://event-service:3002
+            - ORDER_SERVICE_URL=http://order-service:3003
+            - TICKET_SERVICE_URL=http://ticket-service:3004
+            - REDIS_URL=redis://redis:6379
+            - RABBITMQ_URL=amqp://rabbitmq:5672
+
+    redis:
+        image: redis:7.2-alpine
+        ports:
+            - "6379:6379"
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        healthcheck:
+            test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+            interval: 30s
+            timeout: 10s
+            retries: 5

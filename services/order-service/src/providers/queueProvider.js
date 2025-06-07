@@ -4,22 +4,20 @@ import logger from '../utils/logger.js';
 import { publishEvent } from './rabbitmqProvider.js';
 import orderModel from '../models/orderModel.js';
 
-async function invalidateOrderCache(req) {
-    const keys = await req.redisClient.keys('orders:*');
-    if (keys.length > 0) {
-        await req.redisClient.del(keys);
-        logger.info('Invalidate event cache');
-    }
-}
 
+const { REDIS_URL } = process.env;
+
+const redisUrl = new URL(REDIS_URL); // chuyển chuỗi thành URL object
 // Cấu hình Redis cho BullMQ
 const redisOptions = {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
+    host: redisUrl.hostname, // => 'redis'
+    port: Number(redisUrl.port), // => 6379
 };
 
 // Khởi tạo Redis client
-const redisClient = new Redis(process.env.REDIS_URL, redisOptions);
+const redisClient = new Redis(redisOptions);
 
 // Khởi tạo queue
 const orderExpireQueue = new Queue('order-expire', {
