@@ -1,43 +1,74 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Table,
     Button,
     Form,
     InputGroup,
+    Badge,
     Pagination,
     Modal,
+    Card,
+    Row,
+    Col,
+    Dropdown,
 } from 'react-bootstrap';
-import { FaSearch, FaEdit } from 'react-icons/fa';
+import {
+    FaSearch,
+    FaEye,
+    FaSort,
+    FaSortUp,
+    FaSortDown,
+    FaFilter,
+    FaCheck,
+    FaTimes,
+} from 'react-icons/fa';
 import styles from './Users.module.css';
+
+import { formatDateTime } from '../../utils/formatters';
+
 import UserForm from './UserForm';
 import api from '../../../util/api';
+import { BsPerson } from 'react-icons/bs';
 import swalCustomize from '../../../util/swalCustomize';
-import { BsPersonX } from 'react-icons/bs';
 
 const UsersList = () => {
     const [loadingLocal, setLoadingLocal] = useState(true);
 
     const [users, setUsers] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(0);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortBy, setSortBy] = useState('name');
-    const [sortOrder, setSortOrder] = useState('asc');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortUser, setSortUser] = useState('desc');
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Modal
     const [showUserForm, setShowUserForm] = useState(false);
-    const [editingUser, setEditingUser] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const itemsPerPage = 10;
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [currentPage, searchTerm, statusFilter, sortBy, sortUser]);
 
     const fetchUsers = async () => {
         setLoadingLocal(true);
         try {
-            const res = await api.getAllUsers();
+            const res = await api.getAllUsers({
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchTerm,
+                status: statusFilter !== 'all' ? statusFilter : undefined,
+                sortBy,
+                sortUser,
+            });
             if (res.success) {
                 setUsers(res.users);
+                setTotalPages(res.totalPages);
+                setTotalUsers(res.totalUsers);
             }
         } catch (error) {
             console.log('Lỗi khi gọi API getAllUsers:', error);
@@ -46,185 +77,238 @@ const UsersList = () => {
         }
     };
 
-    // Filter users
-    const filteredUsers = users.filter((user) => {
-        const matchesSearch = user.email
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase());
-        return matchesSearch;
-    });
-
-    // Sort users
-    const sortedUsers = [...filteredUsers].sort((a, b) => {
-        switch (sortBy) {
-            case 'email':
-                return sortOrder === 'asc'
-                    ? a.email.localeCompare(b.email)
-                    : b.email.localeCompare(a.email);
-            case 'createdAt':
-                return sortOrder === 'asc'
-                    ? new Date(a.createdAt) - new Date(b.createdAt)
-                    : new Date(b.createdAt) - new Date(a.createdAt);
-            default:
-                return 0;
-        }
-    });
-
-    // Pagination
-    const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
-    const indexOfLastUser = currentPage * itemsPerPage;
-    const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-    const currentUsers = sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
-
-    // Handle sorting change
     const handleSortChange = (field) => {
         if (sortBy === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+            setSortUser(sortUser === 'asc' ? 'desc' : 'asc');
         } else {
             setSortBy(field);
-            setSortOrder('asc');
+            setSortUser('asc');
         }
     };
 
-    // Handle pagination
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleEditUser = (user) => {
-        setEditingUser(user);
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case 'active':
+                return (
+                    <Badge
+                        className={`${styles.statusBadge} ${styles.statusBadgePaid}`}
+                    >
+                        Hoạt động
+                    </Badge>
+                );
+            case 'inactive':
+                return (
+                    <Badge
+                        className={`${styles.statusBadge} ${styles.statusBadgeCanceled}`}
+                    >
+                        Không hoạt động
+                    </Badge>
+                );
+            default:
+                return <Badge className={styles.statusBadge}>{status}</Badge>;
+        }
+    };
+
+    const handleViewUserForm = (user) => {
+        setSelectedUser(user);
         setShowUserForm(true);
     };
 
-    const handleFormSubmit = async (userId, userData) => {
-        try {
-            const res = await api.updateUser(userId, userData);
-            if (res.success) {
-                fetchUsers();
-                swalCustomize.Toast.fire({
-                    icon: 'success',
-                    title: 'Cập nhật thành công!',
-                });
-                setShowUserForm(false);
-            } else {
-                swalCustomize.Toast.fire({
-                    icon: 'error',
-                    title: res.message,
-                });
-            }
-        } catch (error) {
-            console.log('Lỗi khi gọi API:', error);
-        }
+    const handleUpdateUser = async (userId, userData) => {
+        await api.updateUser(userId, userData);
+
+        swalCustomize.Toast.fire({
+            icon: 'success',
+            title: 'Cập nhật người dùng thành công!',
+        });
+        setShowUserForm(false);
+        fetchUsers(); // Refresh danh sách người dùng
+    };
+
+    const getSortIcon = (field) => {
+        if (sortBy !== field) return <FaSort className={styles.sortIcon} />;
+        return sortUser === 'asc' ? (
+            <FaSortUp className={styles.sortIcon} />
+        ) : (
+            <FaSortDown className={styles.sortIcon} />
+        );
     };
 
     return (
         <div className={styles.usersContainer}>
-            {/* Table Header */}
-            <div className={styles.tableHeader}>
-                {/* <Button variant="primary" onClick={handleAddUser}>
-                    Thêm người dùng mới
-                </Button> */}
+            {/* Header Section */}
+            <Card className={styles.headerCard}>
+                <Card.Body>
+                    <Row className="align-items-center">
+                        <Col md={6}>
+                            <h2 className={styles.pageTitle}>
+                                Quản lý người dùng
+                            </h2>
+                            <p className={styles.pageSubtitle}>
+                                Tổng số người dùng: {totalUsers}
+                            </p>
+                        </Col>
+                        <Col md={6}>
+                            <div className={styles.searchFilter}>
+                                <InputGroup className={styles.searchInput}>
+                                    <InputGroup.Text>
+                                        <FaSearch />
+                                    </InputGroup.Text>
+                                    <Form.Control
+                                        placeholder="Tìm kiếm người dùng..."
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                    />
+                                </InputGroup>
 
-                <div className={styles.searchFilter}>
-                    <InputGroup className={styles.searchInput}>
-                        <InputGroup.Text id="search-addon">
-                            <FaSearch />
-                        </InputGroup.Text>
-                        <Form.Control
-                            className="text-dark"
-                            placeholder="Tìm kiếm người dùng..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </InputGroup>
+                                <Dropdown>
+                                    <Dropdown.Toggle
+                                        variant="outline-secondary"
+                                        id="status-filter"
+                                        className={styles.filterDropdown}
+                                    >
+                                        <FaFilter className="me-2" />
+                                        {statusFilter === 'all'
+                                            ? 'Tất cả trạng thái'
+                                            : statusFilter === 'active'
+                                            ? 'Hoạt động'
+                                            : 'Không hoạt động'}
+                                    </Dropdown.Toggle>
 
-                    {/* <Form.Select
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value)}
-                    >
-                        <option value="all">Tất cả vai trò</option>
-                        <option value="admin">Quản trị viên</option>
-                        <option value="organizer">Nhà tổ chức</option>
-                        <option value="user">Người dùng</option>
-                    </Form.Select> */}
-                </div>
-            </div>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('all');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Tất cả trạng thái
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('active');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Hoạt động
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            onClick={() => {
+                                                setStatusFilter('inactive');
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            Không hoạt động
+                                        </Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </div>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
 
             {/* Users Table */}
-            {loadingLocal ? (
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
-            ) : currentUsers.length > 0 ? (
-                <>
-                    <div className={styles.tableWrapper}>
-                        <Table responsive hover className={styles.userTable}>
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('email')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Email{' '}
-                                        {sortBy === 'email' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Trạng thái</th>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('createdAt')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Ngày tạo{' '}
-                                        {sortBy === 'createdAt' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentUsers.map((user, index) => (
-                                    <tr key={user._id}>
-                                        <td>{index + 1}</td>
-                                        <td>{user.email}</td>
-                                        <td>
-                                            {user.status === 'active'
-                                                ? 'Hoạt động'
-                                                : 'Không hoạt động'}
-                                        </td>
-                                        <td>
-                                            {new Date(
-                                                user.createdAt,
-                                            ).toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            <div
-                                                className={styles.tableActions}
-                                            >
-                                                <Button
-                                                    variant="link"
-                                                    className={`${styles.actionButton} ${styles.editButton}`}
-                                                    title="Chỉnh sửa"
-                                                    onClick={() =>
-                                                        handleEditUser(user)
+            <Card className={styles.tableCard}>
+                <Card.Body>
+                    {loadingLocal ? (
+                        <div className={styles.loadingContainer}>
+                            <div
+                                className="spinner-buser text-primary"
+                                role="status"
+                            >
+                                <span className="visually-hidden">
+                                    Đang tải...
+                                </span>
+                            </div>
+                            <p className="mt-3">Đang tải dữ liệu...</p>
+                        </div>
+                    ) : users.length > 0 ? (
+                        <div className={styles.tableWrapper}>
+                            <Table
+                                responsive
+                                hover
+                                className={styles.userTable}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th
+                                            className={styles.sortableColumn}
+                                            onClick={() =>
+                                                handleSortChange('email')
+                                            }
+                                        >
+                                            Email {getSortIcon('email')}
+                                        </th>
+                                        <th>Trạng thái</th>
+                                        <th
+                                            className={styles.sortableColumn}
+                                            onClick={() =>
+                                                handleSortChange('createdAt')
+                                            }
+                                        >
+                                            Ngày tạo {getSortIcon('createdAt')}
+                                        </th>
+                                        <th className={styles.actionColumn}>
+                                            Thao tác
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {users.map((user, index) => (
+                                        <tr key={user._id}>
+                                            <td>
+                                                {(currentPage - 1) *
+                                                    itemsPerPage +
+                                                    index +
+                                                    1}
+                                            </td>
+                                            <td>{user.email}</td>
+                                            <td>
+                                                {getStatusBadge(user.status)}
+                                            </td>
+                                            <td>
+                                                {formatDateTime(user.createdAt)}
+                                            </td>
+                                            <td>
+                                                <div
+                                                    className={
+                                                        styles.tableActions
                                                     }
                                                 >
-                                                    <FaEdit />
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    </div>
+                                                    <Button
+                                                        variant="link"
+                                                        className={`${styles.actionButton} ${styles.viewButton}`}
+                                                        title="Xem chi tiết"
+                                                        onClick={() =>
+                                                            handleViewUserForm(
+                                                                user,
+                                                            )
+                                                        }
+                                                    >
+                                                        <FaEye />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
+                    ) : (
+                        <div className={styles.noData}>
+                            <p>Không có dữ liệu người dùng</p>
+                        </div>
+                    )}
 
                     {/* Pagination */}
                     {totalPages > 1 && (
@@ -266,13 +350,8 @@ const UsersList = () => {
                             </Pagination>
                         </div>
                     )}
-                </>
-            ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center my-5">
-                    <BsPersonX size={60} className="mb-3" />
-                    <p className="fs-5">Không có người dùng</p>
-                </div>
-            )}
+                </Card.Body>
+            </Card>
 
             {/* User Form Modal */}
             <Modal
@@ -280,21 +359,49 @@ const UsersList = () => {
                 onHide={() => setShowUserForm(false)}
                 size="lg"
                 centered
+                className={styles.userModal}
+                contentClassName={styles.modalContent}
             >
-                <Modal.Header closeButton>
+                <Modal.Header closeButton className={styles.modalHeader}>
                     <Modal.Title className={styles.modalTitle}>
-                        {editingUser
-                            ? 'Chỉnh sửa người dùng'
+                        {selectedUser
+                            ? 'Cập nhật người dùng'
                             : 'Thêm người dùng mới'}
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body className={styles.modalBody}>
                     <UserForm
-                        user={editingUser}
-                        onSubmit={handleFormSubmit}
+                        user={selectedUser}
+                        onSubmit={handleUpdateUser}
                         onCancel={() => setShowUserForm(false)}
                     />
                 </Modal.Body>
+                <Modal.Footer className={styles.modalFooter}>
+                    <Button
+                        variant="outline-light"
+                        onClick={() => setShowUserForm(false)}
+                        className={styles.modalButton}
+                    >
+                        Đóng
+                    </Button>
+                    <Button
+                        variant="success"
+                        className={styles.modalButton}
+                        onClick={() => {
+                            const form = document.querySelector('form');
+                            if (form) {
+                                form.dispatchEvent(
+                                    new Event('submit', {
+                                        cancelable: true,
+                                        bubbles: true,
+                                    }),
+                                );
+                            }
+                        }}
+                    >
+                        {selectedUser ? 'Cập nhật' : 'Thêm mới'}
+                    </Button>
+                </Modal.Footer>
             </Modal>
         </div>
     );

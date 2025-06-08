@@ -1,160 +1,734 @@
 .usersContainer {
-    padding: 1rem 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header Card */
+.headerCard {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(to right, #ffffff, #f8f9fa);
 }
 
 .pageTitle {
-    margin-bottom: 1.5rem;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
 }
 
-.tableHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+.pageSubtitle {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
 }
 
 .searchFilter {
     display: flex;
+    gap: 12px;
     align-items: center;
-    gap: 10px;
 }
 
 .searchInput {
-    min-width: 350px;
     flex: 1;
+    max-width: 400px;
 }
 
-.searchFilter select {
-    width: auto;
+.searchInput input {
+    border-left: none;
+    transition: all 0.3s ease;
 }
 
-.tableActions {
-    display: flex;
-    gap: 0.5rem;
+.searchInput input:focus {
+    box-shadow: none;
+    border-color: #007bff;
+    background-color: inherit;
 }
 
-.actionButton {
-    cursor: pointer;
-    background: none;
+.searchInput .input-group-text {
+    border-right: none;
+    background-color: inherit;
+    transition: all 0.3s ease;
+}
+
+.searchInput:focus-within .input-group-text {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+/* Table Card */
+.tableCard {
     border: none;
-    font-size: 1rem;
-    transition: all 0.2s;
-    padding: 0.25rem;
-    border-radius: 4px;
-}
-
-.viewButton {
-    color: var(--secondary-color);
-}
-
-.editButton {
-    color: var(--warning-color);
-}
-
-.editButton:hover {
-    background: rgba(243, 156, 18, 0.2);
-}
-
-.deleteButton {
-    color: var(--danger-color);
-}
-
-.actionButton:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.userTable {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.userTable thead {
-    background-color: #f8f9fa;
-    color: #333;
-    font-weight: bold;
-}
-
-.userTable th,
-.userTable td {
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.userTable tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.userTable th {
-    cursor: pointer;
-    position: relative;
-}
-
-.userTable th:hover {
-    background-color: #ececec;
-}
-
-.userTable th::after {
-    content: ' ▼';
-    font-size: 12px;
-    color: #666;
-    margin-left: 5px;
-    visibility: hidden;
-}
-
-.userTable th:hover::after {
-    visibility: visible;
-}
-
-.userTable td {
-    color: #555;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: white;
 }
 
 .tableWrapper {
     overflow-x: auto;
-    background: #fff;
-    padding: 1rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.userRoleBadge {
-    padding: 0.35rem 0.65rem;
-    border-radius: 50rem;
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
+.userTable {
+    margin-bottom: 0;
+}
+
+.userTable thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    color: #495057;
+    font-weight: 600;
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+
+.sortableColumn {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortableColumn:hover {
+    background-color: #e9ecef;
+}
+
+.sortIcon {
+    margin-left: 4px;
+    color: #6c757d;
+}
+
+.actionColumn {
+    width: 80px;
     text-align: center;
 }
 
-.userRoleAdmin {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: var(--danger-color);
+.tableActions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
 }
 
-.userRoleUser {
-    background-color: rgba(52, 152, 219, 0.2);
-    color: var(--secondary-color);
+/* Status Badges */
+.statusBadge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-.userRoleOrganizer {
-    background-color: rgba(243, 156, 18, 0.2);
-    color: var(--warning-color);
+.statusBadgePaid {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    color: #2ecc71 !important;
+}
+
+.statusBadgeCanceled {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    color: #e74c3c !important;
+}
+
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: #f39c12 !important;
+}
+
+/* Action Buttons */
+.actionButton {
+    padding: 6px;
+    color: #6c757d;
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    color: #2c3e50;
+    transform: scale(1.1);
+}
+
+.viewButton:hover {
+    color: #007bff;
+}
+
+.completeButton:hover {
+    color: #28a745;
+}
+
+.deleteButton:hover {
+    color: #dc3545;
+}
+
+/* Loading State */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+/* Empty State */
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.emptyState h4 {
+    margin: 16px 0 8px;
+    color: #2c3e50;
+}
+
+.emptyState p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Pagination */
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.paginationContainer .pagination {
+    margin: 0;
+}
+
+.paginationContainer .page-link {
+    color: #2c3e50;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+}
+
+.paginationContainer .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.paginationContainer .page-link:hover {
+    background-color: #e9ecef;
+    color: #2c3e50;
+}
+
+/* Modal */
+.userModal {
+    background: #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.modalContent {
+    background: #1a1a1a;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modalHeader {
+    background: #2a2a2a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+}
+
+.modalTitle {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modalBody {
+    padding: 1.75rem;
+    background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modalFooter {
+    background: #2a2a2a;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+}
+
+.modalButton {
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.modalButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .searchFilter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchInput {
+        max-width: none;
+    }
+
+    .userTable th,
+    .userTable td {
+        white-space: nowrap;
+    }
+}
+
+/* Order Details Styles */
+.userDetailsCard {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 2rem;
+    color: #ffffff;
+}
+
+.userDetailsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.userID {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.userDate {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #a0a0a0;
+    font-size: 0.95rem;
+}
+
+.userDate svg {
+    color: #4a90e2;
+}
+
+.userStatusContainer {
+    text-align: right;
+}
+
+.userTotalLabel {
+    color: #a0a0a0;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.userDetailsSection {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionIcon {
+    font-size: 1.5rem;
+    color: #4a90e2;
+}
+
+.userDetailsSectionTitle {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.infoItem {
+    color: #e0e0e0;
+}
+
+.infoRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.infoIcon {
+    color: #4a90e2;
+    font-size: 1.1rem;
+    margin-top: 0.2rem;
+}
+
+.infoValue {
+    color: #ffffff;
+    flex: 1;
+}
+
+.ticketList {
+    display: grid;
+    gap: 1rem;
+}
+
+.ticketItem {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.ticketTitle {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.ticketDetails {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.ticketDetail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #a0a0a0;
+    font-size: 0.9rem;
+}
+
+.ticketIcon {
+    color: #4a90e2;
+    font-size: 1rem;
+}
+
+/* Status Badge Styles */
+.statusBadge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: #f39c12 !important;
+}
+
+.statusBadgePaid {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    color: #2ecc71 !important;
+}
+
+.statusBadgeCanceled {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    color: #e74c3c !important;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .userDetailsCard {
+        padding: 1.5rem;
+    }
+
+    .userDetailsHeader {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .userStatusContainer {
+        text-align: left;
+        width: 100%;
+    }
+
+    .ticketDetails {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Add these styles to the existing CSS file */
+.totalPriceContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        145deg,
+        rgba(74, 144, 226, 0.1),
+        rgba(74, 144, 226, 0.05)
+    );
+    border: 1px solid rgba(74, 144, 226, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.totalPriceContainer:hover {
+    background: linear-gradient(
+        145deg,
+        rgba(74, 144, 226, 0.15),
+        rgba(74, 144, 226, 0.1)
+    );
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.totalPriceLabel {
+    color: #a0a0a0;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.totalPriceValue {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #4a90e2, #6a11cb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.userFormCard {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.formHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.formTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.formSubtitle {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 4px 0 0;
 }
 
 .userFormGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 24px;
+    margin-bottom: 24px;
 }
 
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formLabel {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.formControl {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+}
+
+.formControl:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.formControl:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.formSelect {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.formSelect:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+.formActions button {
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.formActions button:hover {
+    transform: translateY(-1px);
+}
+
+.formActions button:active {
+    transform: translateY(0);
+}
+
+/* Status Badge Styles */
+.statusBadge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statusBadgeActive {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.statusBadgeInactive {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+/* Role Badge Styles */
+.roleBadge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.roleBadgeAdmin {
+    background-color: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+}
+
+.roleBadgeOrganizer {
+    background-color: rgba(155, 89, 182, 0.2);
+    color: #9b59b6;
+}
+
+.roleBadgeClient {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .userFormGrid {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
+
+    .formHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .formActions {
+        flex-direction: column;
+    }
+
+    .formActions button {
+        width: 100%;
+    }
+}
+
+/* UserForm styles */
+.userFormContainer {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 2rem;
+    color: #ffffff;
+}
+
+.formSection {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionIcon {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    margin-right: 10px;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
 }
 
 .formGroup {
@@ -162,104 +736,90 @@
 }
 
 .formLabel {
-    display: block;
+    display: flex;
+    align-items: center;
     margin-bottom: 0.5rem;
+    color: #e0e0e0;
     font-weight: 500;
 }
 
-.formActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
+.inputIcon {
+    margin-right: 8px;
+    color: #0d6efd;
+    font-size: 1rem;
 }
 
 .formControl {
-    height: 45px;
-    padding: 8px 12px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    background-color: #fff;
     width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.modalTitle {
-    color: var(--text-light);
+.formControl:focus {
+    color: #212529;
+    background-color: #fff;
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-.modalFooter {
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
+.formControl.isInvalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
 
-.paginationContainer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 2rem;
+.formControl.isInvalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
-.userInfoCard {
-    background-color: var(--dark-card-bg);
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
 }
 
-.userProfileHeader {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2rem;
+/* PhoneInput customization */
+.react-tel-input .form-control {
+    width: 100%;
+    height: 45px;
+    padding: 0 60px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.userProfileAvatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 2rem;
-    font-weight: bold;
-    margin-right: 1.5rem;
+.react-tel-input .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-.userProfileInfo {
-    flex: 1;
+.react-tel-input .form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
 
-.userProfileName {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.userProfileEmail {
-    color: var(--text-secondary);
-}
-
-.userStatsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.userStatCard {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 1.5rem;
-}
-
-.userStatValue {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.userStatLabel {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+.react-tel-input .form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }

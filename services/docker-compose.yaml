@@ -1,6 +1,28 @@
 version: '3.8'
 
 services:
+    
+    redis:
+        image: redis:7.2-alpine
+        ports:
+            - "6379:6379"
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        healthcheck:
+            test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+            interval: 30s
+            timeout: 10s
+            retries: 5
     api-gateway:
         build: ./api-gateway
         ports: 
@@ -80,18 +102,3 @@ services:
             - REDIS_URL=redis://redis:6379
             - RABBITMQ_URL=amqp://rabbitmq:5672
 
-    redis:
-        image: redis:7.2-alpine
-        ports:
-            - "6379:6379"
-
-    rabbitmq:
-        image: rabbitmq:3-management
-        ports:
-            - "5672:5672"
-            - "15672:15672"
-        healthcheck:
-            test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
-            interval: 30s
-            timeout: 10s
-            retries: 5

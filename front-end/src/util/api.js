@@ -152,9 +152,9 @@ const updateStatusOrder = (orderId, data) => {
     return axios.patch(URL_API, { status: data });
 };
 
-const getAllUsers = () => {
+const getAllUsers = (params) => {
     const URL_API = `${API_URL}/auth/users/admin/all-users`;
-    return axios.get(URL_API);
+    return axios.get(URL_API, { params });
 };
 
 const updateUser = (userId, data) => {

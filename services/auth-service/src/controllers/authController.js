@@ -289,10 +289,61 @@ const getTotalUsers = async (req, res) => {
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+        const status = req.query.status;
+        const searchKey = req.query.search || '';
+        const sortBy = req.query.sortBy || 'createdAt';
+        const sortUser = req.query.sortUser || 'desc';
+
+        // const cacheKey = `users:admin:${page}:${limit}:${status}:${searchKey}:${sortBy}:${sortUser}`;
+        // const cachedUsers = await req.redisClient.get(cacheKey);
+
+        // if (cachedUsers) {
+        //     logger.info('Get all users from cache');
+        //     return res.status(200).json(JSON.parse(cachedUsers));
+        // }
+
+        const query = {};
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+        if (searchKey) {
+            query.$or = [{ email: { $regex: searchKey, $options: 'i' } }];
+        }
+
+        const sort = {};
+        switch (sortBy) {
+            case 'email':
+                sort.email = sortUser === 'asc' ? 1 : -1;
+                break;
+            case 'createdAt':
+            default:
+                sort.createdAt = sortUser === 'asc' ? 1 : -1;
+        }
+
         const users = await userModel
-            .find({ deleted: false })
-            .select('-password');
-        res.status(200).json({ success: true, users });
+            .find(query)
+            .select('-password')
+            .skip(startIndex)
+            .limit(limit)
+            .sort(sort);
+
+        const totalUsers = await userModel.countDocuments(query);
+
+        const result = {
+            success: true,
+            users,
+            currentPage: page,
+            totalPages: Math.ceil(totalUsers / limit),
+            totalUsers,
+        };
+
+        // await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
+        logger.info('Get all users from database');
+
+        return res.status(200).json(result);
     } catch (error) {
         logger.error('Get all users error:', error);
         res.status(500).json({
