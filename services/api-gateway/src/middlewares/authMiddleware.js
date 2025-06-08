@@ -22,6 +22,7 @@ const isAuthorized = async (req, res, next) => {
     } catch (error) {
         logger.error('Authentication JWT error:', error);
         if (error.message?.includes('jwt expired')) {
+            res.set('Cache-Control', 'no-store');
             return res.status(410).json({
                 success: false,
                 message: 'Need to refresh token',
