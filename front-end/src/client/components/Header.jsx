@@ -6,27 +6,129 @@ import SearchBar from './SearchBar';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../../hooks/usePermission';
 import { permissions } from '../../config/rbacConfig';
+import styles from '../styles/Header.module.css';
 
 const Header = () => {
     const { user, logout } = useAuth();
     const { hasPermission } = usePermission(user?.role);
 
     return (
-        <header className="fixed-top">
-            <nav className="navbar navbar-expand-lg">
+        <header className={`fixed-top ${styles.header}`}>
+            <nav className={`navbar navbar-expand-lg ${styles.navbar}`}>
                 <div className="container-fluid">
-                    <Link className="navbar-brand" to="/">
+                    <Link
+                        className={`navbar-brand ${styles.navbarBrand}`}
+                        to="/"
+                    >
                         MelodyMeet
                         <img src={logo} alt="Logo" height={30} />
                     </Link>
-                    <button
-                        className="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarContent"
-                    >
-                        <span className="navbar-toggler-icon" />
-                    </button>
+
+                    {/* Reponsive */}
+                    <div className="d-flex d-lg-none align-items-center">
+                        <Link
+                            to="/search"
+                            className="text-white"
+                            style={{
+                                width: '2.2rem',
+                                height: '2.2rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                borderRadius: '50%',
+                                border: '1px solid rgba(235, 235, 240, 0.565)',
+                            }}
+                        >
+                            <i
+                                className="bi bi-search"
+                                style={{
+                                    transform: 'scale(1.1)',
+                                }}
+                            />
+                        </Link>
+                        {user ? (
+                            <>
+                                <div
+                                    className="dropdown-toggle me-2 ms-3"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <img
+                                        className={styles.avatar}
+                                        src={avatar}
+                                        alt="User Avatar"
+                                        width={36}
+                                        height={36}
+                                    />
+                                </div>
+
+                                <ul
+                                    className={`dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1 me-2`}
+                                >
+                                    {hasPermission(permissions.VIEW_ADMIN) && (
+                                        <li>
+                                            <Link
+                                                className={`dropdown-item py-2 d-flex align-items-center ${styles.dropdownItem}`}
+                                                to="/admin"
+                                            >
+                                                <i className="bi bi-shield-lock me-2 text-danger fs-5" />
+                                                <span>Trang Quản Trị</span>
+                                            </Link>
+                                        </li>
+                                    )}
+                                    <li>
+                                        <Link
+                                            className={`dropdown-item py-2 d-flex align-items-center ${styles.dropdownItem}`}
+                                            to="/my-tickets"
+                                        >
+                                            <i className="bi bi-ticket-perforated me-2 text-primary fs-5" />
+                                            <span>Vé Đã Mua</span>
+                                        </Link>
+                                    </li>
+
+                                    {hasPermission(
+                                        permissions.VIEW_ORGANIZERS,
+                                    ) && (
+                                        <li>
+                                            <Link
+                                                className={`dropdown-item py-2 d-flex align-items-center ${styles.dropdownItem}`}
+                                                to="/organizer/event"
+                                            >
+                                                <i className="bi bi-calendar-event me-2 text-success fs-5" />
+                                                <span>Sự Kiện Của Tôi</span>
+                                            </Link>
+                                        </li>
+                                    )}
+
+                                    <li>
+                                        <hr className="dropdown-divider" />
+                                    </li>
+                                    <li>
+                                        <button
+                                            className={`dropdown-item py-2 d-flex align-items-center text-danger action-logout ${styles.dropdownItem}`}
+                                            onClick={() => {
+                                                logout();
+                                            }}
+                                        >
+                                            <i className="bi bi-box-arrow-right me-2 fs-5" />
+                                            <span>Đăng xuất</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </>
+                        ) : (
+                            <button
+                                className="btn btn-primary me-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#loginModal"
+                            >
+                                Đăng nhập
+                            </button>
+                        )}
+                    </div>
+                    {/*  */}
                     <div
                         className="collapse navbar-collapse justify-content-between"
                         id="navbarContent"
@@ -36,7 +138,7 @@ const Header = () => {
                             {hasPermission(permissions.VIEW_ORGANIZERS) && (
                                 <li className="nav-item">
                                     <Link
-                                        className="nav-link create-event"
+                                        className={`nav-link ${styles.createEvent}`}
                                         to="/organizer/event/create"
                                     >
                                         Tạo sự kiện
@@ -45,7 +147,7 @@ const Header = () => {
                             )}
                             <li className="nav-item">
                                 <Link
-                                    className="nav-link custom-nav-link d-flex align-items-center"
+                                    className={`nav-link ${styles.navLink} d-flex align-items-center`}
                                     to="/my-tickets"
                                 >
                                     <i className="bi bi-ticket-perforated me-2" />
@@ -54,29 +156,24 @@ const Header = () => {
                             </li>
                             <li>
                                 {user !== null ? (
-                                    // Hiển thị avatar khi đã xác thực
-                                    <div className="nav-item dropdown position-relative">
+                                    <div
+                                        className={`nav-item dropdown position-relative ${styles.dropdown}`}
+                                    >
                                         <div
-                                            className="nav-link dropdown-toggle d-flex align-items-center rounded"
+                                            className={`nav-link dropdown-toggle d-flex align-items-center rounded ${styles.dropdownToggle}`}
                                             role="button"
                                             data-bs-toggle="dropdown"
                                             aria-expanded="false"
-                                            style={{
-                                                cursor: 'pointer',
-                                                transition: 'background 0.3s',
-                                                padding: 0,
-                                            }}
                                         >
                                             <img
-                                                className="rounded-circle border border-2"
+                                                className={styles.avatar}
                                                 src={avatar}
                                                 alt="User Avatar"
                                                 width={36}
                                                 height={36}
                                             />
                                             <span
-                                                className="ms-2 fw-semibold"
-                                                style={{ cursor: 'pointer' }}
+                                                className={styles.email}
                                                 title={user.email}
                                             >
                                                 {user.email.length > 27
@@ -86,15 +183,14 @@ const Header = () => {
                                             </span>
                                         </div>
                                         <ul
-                                            className="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1"
-                                            style={{ right: 0 }}
+                                            className={`dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1 ${styles.dropdownMenu}`}
                                         >
                                             {hasPermission(
                                                 permissions.VIEW_ADMIN,
                                             ) && (
                                                 <li>
                                                     <Link
-                                                        className="dropdown-item py-2 d-flex align-items-center"
+                                                        className={`dropdown-item py-2 d-flex align-items-center ${styles.dropdownItem}`}
                                                         to="/admin"
                                                     >
                                                         <i className="bi bi-shield-lock me-2 text-danger fs-5" />
@@ -106,7 +202,7 @@ const Header = () => {
                                             )}
                                             <li>
                                                 <Link
-                                                    className="dropdown-item py-2 d-flex align-items-center"
+                                                    className={`dropdown-item py-2 d-flex align-items-center ${styles.dropdownItem}`}
                                                     to="/my-tickets"
                                                 >
                                                     <i className="bi bi-ticket-perforated me-2 text-primary fs-5" />
@@ -119,7 +215,7 @@ const Header = () => {
                                             ) && (
                                                 <li>
                                                     <Link
-                                                        className="dropdown-item py-2 d-flex align-items-center"
+                                                        className={`dropdown-item py-2 d-flex align-items-center ${styles.dropdownItem}`}
                                                         to="/organizer/event"
                                                     >
                                                         <i className="bi bi-calendar-event me-2 text-success fs-5" />
@@ -135,7 +231,7 @@ const Header = () => {
                                             </li>
                                             <li>
                                                 <button
-                                                    className="dropdown-item py-2 d-flex align-items-center text-danger action-logout"
+                                                    className={`dropdown-item py-2 d-flex align-items-center text-danger action-logout ${styles.dropdownItem}`}
                                                     onClick={() => {
                                                         logout();
                                                     }}
@@ -147,8 +243,7 @@ const Header = () => {
                                         </ul>
                                     </div>
                                 ) : (
-                                    // Nếu chưa đăng nhập, hiển thị nút đăng nhập/đăng ký
-                                    <div className="auth-buttons d-flex">
+                                    <div className={styles.authButtons}>
                                         <button
                                             className="btn btn-outline-primary me-2"
                                             data-bs-toggle="modal"
