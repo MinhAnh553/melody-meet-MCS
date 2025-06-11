@@ -84,10 +84,6 @@ header .form-control {
 }
 
 /* Tài khoản */
-.nav-item.dropdown {
-    margin-bottom: -5px;
-    padding-bottom: 5px;
-}
 .nav-item.dropdown:hover .dropdown-menu {
     display: block;
     opacity: 1;

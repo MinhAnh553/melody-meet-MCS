@@ -183,7 +183,7 @@ const Header = () => {
                                             </span>
                                         </div>
                                         <ul
-                                            className={`dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1 ${styles.dropdownMenu}`}
+                                            className={`dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 ${styles.dropdownMenu}`}
                                         >
                                             {hasPermission(
                                                 permissions.VIEW_ADMIN,

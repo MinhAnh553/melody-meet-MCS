@@ -190,7 +190,13 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                         </ul>
                     </li> */}
                     <li>
-                        <div className="nav-item dropdown position-relative">
+                        <div
+                            className="nav-item dropdown position-relative"
+                            style={{
+                                paddingBottom: '5px',
+                                marginBottom: '-5px',
+                            }}
+                        >
                             <div
                                 className="nav-link dropdown-toggle d-flex align-items-center rounded"
                                 role="button"
@@ -213,7 +219,7 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                                     Tài khoản
                                 </span>
                             </div>
-                            <ul className="infoAccountEvent dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1">
+                            <ul className="infoAccountEvent dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3">
                                 {hasPermission(permissions.VIEW_ADMIN) && (
                                     <li>
                                         <Link
