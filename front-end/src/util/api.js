@@ -162,6 +162,25 @@ const updateUser = (userId, data) => {
     return axios.patch(URL_API, data);
 };
 
+// Search events nâng cao
+const searchEvents = (filters) => {
+    const params = {};
+    if (filters.searchTerm) params.query = filters.searchTerm;
+    if (filters.date) {
+        if (Array.isArray(filters.date) && filters.date[0] && filters.date[1]) {
+            params.startDate = filters.date[0].toISOString().slice(0, 10);
+            params.endDate = filters.date[1].toISOString().slice(0, 10);
+        } else if (filters.date instanceof Date) {
+            params.date = filters.date.toISOString().slice(0, 10);
+        }
+    }
+    if (filters.location) params.location = filters.location;
+    if (filters.minPrice) params.minPrice = filters.minPrice;
+    if (filters.maxPrice) params.maxPrice = filters.maxPrice;
+    const URL_API = `${API_URL}/events/search`;
+    return axios.get(URL_API, { params });
+};
+
 export default {
     sendOTP,
     verifyOTPAndRegister,
@@ -191,5 +210,6 @@ export default {
     getAllUsers,
     getDashboard,
     search,
+    searchEvents,
     refreshToken,
 };

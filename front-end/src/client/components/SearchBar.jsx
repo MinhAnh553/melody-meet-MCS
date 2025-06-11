@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import {
+    Link,
+    useNavigate,
+    useSearchParams,
+    useLocation,
+} from 'react-router-dom';
 import api from '../../util/api';
 
 const SearchBar = () => {
-    const [query, setQuery] = useState('');
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
+    const initialQuery = searchParams.get('query') || '';
+    const [query, setQuery] = useState(initialQuery);
     const [results, setResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -19,15 +28,31 @@ const SearchBar = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [query]);
 
+    // Reset showResults when navigating to search page
+    useEffect(() => {
+        if (location.pathname === '/search') {
+            setShowResults(false);
+        }
+    }, [location.pathname, initialQuery]);
+
     const searchEvents = async (searchQuery) => {
         try {
             const res = await api.search(searchQuery);
             if (res.success) {
                 setResults(res.events);
-                setShowResults(true);
+                if (location.pathname !== '/search') {
+                    setShowResults(true);
+                }
             }
         } catch (error) {
             console.error('Search error:', error);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (query.trim()) {
+            navigate(`/search?query=${encodeURIComponent(query.trim())}`);
         }
     };
 
@@ -38,9 +63,13 @@ const SearchBar = () => {
                 width: '40%',
             }}
         >
-            <form className="d-flex search-form">
+            <form className="d-flex search-form" onSubmit={handleSubmit}>
                 <div className="input-group">
-                    <span className="input-group-text">
+                    <span
+                        className="input-group-text"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleSubmit}
+                    >
                         <i className="bi bi-search" />
                     </span>
                     <input
@@ -51,9 +80,7 @@ const SearchBar = () => {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => setShowResults(true)}
-                        onBlur={() =>
-                            setTimeout(() => setShowResults(false), 200)
-                        }
+                        onBlur={() => setShowResults(false)}
                     />
                 </div>
             </form>

@@ -704,37 +704,96 @@ const createOrder = async (req, res) => {
     }
 };
 
-// [GET] /events/search?query=abc
+// [GET] /events/search?query=abc&date=YYYY-MM-DD&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&location=...&minPrice=...&maxPrice=...
 const searchEvents = async (req, res) => {
     try {
-        const { query = '' } = req.query;
-        const cacheKey = `events:search:${query}`;
-        const cachedEvents = await req.redisClient.get(cacheKey);
-
-        if (cachedEvents) {
-            logger.info('Get search events from cache');
-            return res.status(200).json(JSON.parse(cachedEvents));
-        }
-
-        // Tìm kiếm sự kiện theo tên
-        const events = await eventModel
-            .find({
-                status: { $in: ['approved', 'event_over'] },
-                name: { $regex: query, $options: 'i' },
-            })
-            .sort({ startTime: 1 })
-            .select('_id name background');
-
-        const result = {
-            success: true,
-            events,
+        const {
+            query = '',
+            date,
+            startDate,
+            endDate,
+            location,
+            minPrice,
+            maxPrice,
+        } = req.query;
+        const eventQuery = {
+            status: { $in: ['approved', 'event_over'] },
+            name: { $regex: query, $options: 'i' },
         };
 
-        // Cache kết quả trong 1 giờ
-        await req.redisClient.setex(cacheKey, 3600, JSON.stringify(result));
-        logger.info('Get search events from database');
+        // Lọc theo ngày hoặc khoảng ngày
+        if (startDate && endDate) {
+            eventQuery.startTime = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate + 'T23:59:59.999Z'),
+            };
+        } else if (date) {
+            const start = new Date(date);
+            const end = new Date(date);
+            end.setHours(23, 59, 59, 999);
+            eventQuery.startTime = { $gte: start, $lte: end };
+        }
 
-        return res.status(200).json(result);
+        // Lọc theo vị trí
+        if (location) {
+            eventQuery.$or = [
+                { 'location.venueName': { $regex: location, $options: 'i' } },
+                { 'location.province': { $regex: location, $options: 'i' } },
+                { 'location.district': { $regex: location, $options: 'i' } },
+                { 'location.ward': { $regex: location, $options: 'i' } },
+                { 'location.address': { $regex: location, $options: 'i' } },
+            ];
+        }
+
+        // Lọc theo giá
+        let eventIdsByPrice = null;
+        if (minPrice || maxPrice) {
+            const priceQuery = {};
+            if (minPrice)
+                priceQuery.price = {
+                    ...priceQuery.price,
+                    $gte: Number(minPrice),
+                };
+            if (maxPrice)
+                priceQuery.price = {
+                    ...priceQuery.price,
+                    $lte: Number(maxPrice),
+                };
+            const ticketTypes = await ticketTypeModel
+                .find(priceQuery)
+                .select('eventId');
+            eventIdsByPrice = ticketTypes.map((t) => t.eventId.toString());
+            if (eventIdsByPrice.length === 0) {
+                return res.status(200).json({ success: true, events: [] });
+            }
+        }
+        if (eventIdsByPrice) {
+            eventQuery._id = { $in: eventIdsByPrice };
+        }
+
+        // Truy vấn sự kiện kèm ticketTypes
+        const events = await eventModel
+            .find(eventQuery)
+            .sort({ startTime: 1 })
+            .select('_id name background startTime location organizer')
+            .lean();
+        // Lấy ticketTypes cho từng event
+        const eventIds = events.map((e) => e._id);
+        const ticketTypesMap = {};
+        if (eventIds.length > 0) {
+            const ticketTypes = await ticketTypeModel
+                .find({ eventId: { $in: eventIds } })
+                .lean();
+            ticketTypes.forEach((tt) => {
+                const eid = tt.eventId.toString();
+                if (!ticketTypesMap[eid]) ticketTypesMap[eid] = [];
+                ticketTypesMap[eid].push(tt);
+            });
+        }
+        events.forEach((e) => {
+            e.ticketTypes = ticketTypesMap[e._id.toString()] || [];
+        });
+        return res.status(200).json({ success: true, events });
     } catch (error) {
         logger.error('Search events error:', error);
         return res.status(500).json({

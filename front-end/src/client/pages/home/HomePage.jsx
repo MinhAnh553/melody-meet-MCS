@@ -85,7 +85,7 @@ const HomePage = () => {
                                     Sự kiện đặc sắc
                                 </h2>
                                 <Link
-                                    to={'/all-events'}
+                                    to={'/search'}
                                     className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center"
                                     style={{ color: 'rgb(166, 166, 176)' }}
                                 >

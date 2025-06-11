@@ -20,12 +20,12 @@ import EventsList from '../admin/components/Events/EventsList.jsx';
 import OrdersList from '../admin/components/Orders/OrdersList.jsx';
 import TicketsList from '../admin/components/Tickets/TicketsList.jsx';
 import UsersList from '../admin/components/Users/UsersList.jsx';
-import AllEvents from '../client/pages/home/AllEvents.jsx';
 import PaymentCancel from '../client/pages/payment/PaymentCancel.jsx';
 import AccessDenied from '../client/pages/AccessDenied.jsx';
 import NotFound from '../client/pages/NotFound.jsx';
 import RbacRoute from './RbacRoute.jsx';
 import { permissions } from '../config/rbacConfig';
+import Search from '../client/pages/Search.jsx';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -49,20 +49,6 @@ const AnimatedRoutes = () => {
             <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<ClientLayout />}>
                     <Route index element={<HomePage />} />
-                    <Route
-                        path="all-events"
-                        element={
-                            <motion.div
-                                variants={pageVariants}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                transition={{ duration: 0.5 }}
-                            >
-                                <AllEvents />
-                            </motion.div>
-                        }
-                    />
                     <Route element={<ProtectedRoutes />}>
                         <Route
                             path="my-tickets"
@@ -248,6 +234,23 @@ const AnimatedRoutes = () => {
                             <Route path="users" element={<UsersList />} />
                         </Route>
                     </Route>
+                </Route>
+
+                <Route path="/search" element={<ClientLayout />}>
+                    <Route
+                        index
+                        element={
+                            <motion.div
+                                variants={pageVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                transition={{ duration: 0.5 }}
+                            >
+                                <Search />
+                            </motion.div>
+                        }
+                    />
                 </Route>
 
                 <Route path="/access-denied" element={<AccessDenied />} />
