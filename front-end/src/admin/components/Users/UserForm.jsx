@@ -146,99 +146,97 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                             Thông tin cơ bản
                         </h4>
                     </div>
-                    <div className={styles.formGrid}>
-                        <Form.Group className={styles.formGroup}>
-                            <Form.Label className={styles.formLabel}>
-                                <FaUser className={styles.inputIcon} />
-                                Tên người dùng
-                            </Form.Label>
-                            <Form.Control
-                                className={`${styles.formControl} ${
-                                    errors.name ? styles.isInvalid : ''
-                                }`}
-                                autoComplete="off"
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="Nhập tên người dùng"
-                                isInvalid={!!errors.name}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.name}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                    <Form.Group className={styles.formGroup}>
+                        <Form.Label className={styles.formLabel}>
+                            <FaUser className={styles.inputIcon} />
+                            Tên người dùng
+                        </Form.Label>
+                        <Form.Control
+                            className={`${styles.formControl} ${
+                                errors.name ? styles.isInvalid : ''
+                            }`}
+                            autoComplete="off"
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Nhập tên người dùng"
+                            isInvalid={!!errors.name}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.name}
+                        </Form.Control.Feedback>
+                    </Form.Group>
 
-                        <Form.Group className={styles.formGroup}>
-                            <Form.Label className={styles.formLabel}>
-                                <FaEnvelope className={styles.inputIcon} />
-                                Email
-                            </Form.Label>
-                            <Form.Control
-                                className={`${styles.formControl} ${
-                                    errors.email ? styles.isInvalid : ''
-                                }`}
-                                autoComplete="off"
-                                disabled
-                                style={{
-                                    cursor: 'not-allowed',
-                                }}
-                                type="email"
-                                name="email"
-                                readOnly
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="Nhập email"
-                                isInvalid={!!errors.email}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.email}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                    <Form.Group className={styles.formGroup}>
+                        <Form.Label className={styles.formLabel}>
+                            <FaEnvelope className={styles.inputIcon} />
+                            Email
+                        </Form.Label>
+                        <Form.Control
+                            className={`${styles.formControl} ${
+                                errors.email ? styles.isInvalid : ''
+                            }`}
+                            autoComplete="off"
+                            disabled
+                            style={{
+                                cursor: 'not-allowed',
+                            }}
+                            type="email"
+                            name="email"
+                            readOnly
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Nhập email"
+                            isInvalid={!!errors.email}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.email}
+                        </Form.Control.Feedback>
+                    </Form.Group>
 
-                        <Form.Group className={styles.formGroup}>
-                            <Form.Label className={styles.formLabel}>
-                                <FaPhone className={styles.inputIcon} />
-                                Số điện thoại
-                            </Form.Label>
-                            <PhoneInput
-                                country={'vn'}
-                                value={formData.phone}
-                                onChange={handlePhoneChange}
-                                inputClass={`${styles.formControl} ${
-                                    errors.phone ? styles.isInvalid : ''
-                                }`}
-                                inputStyle={{
-                                    width: '100%',
-                                    height: '45px',
-                                    padding: '0 60px',
-                                    paddingTop: '3px',
-                                }}
-                                containerStyle={{ width: '100%' }}
-                                enableSearch={true}
-                                preferredCountries={['vn']}
-                                countryCodeEditable={false}
-                                inputProps={{
-                                    name: 'phone',
-                                    required: false,
-                                    autoComplete: 'tel',
-                                }}
-                                isValid={(value) => {
-                                    if (!value) return true;
-                                    try {
-                                        return isValidPhoneNumber(value, 'VN');
-                                    } catch (error) {
-                                        return false;
-                                    }
-                                }}
-                            />
-                            {errors.phone && (
-                                <div className="invalid-feedback d-block">
-                                    {errors.phone}
-                                </div>
-                            )}
-                        </Form.Group>
-                    </div>
+                    <Form.Group className={styles.formGroup}>
+                        <Form.Label className={styles.formLabel}>
+                            <FaPhone className={styles.inputIcon} />
+                            Số điện thoại
+                        </Form.Label>
+                        <PhoneInput
+                            country={'vn'}
+                            value={formData.phone}
+                            onChange={handlePhoneChange}
+                            inputClass={`${styles.formControl} ${
+                                errors.phone ? styles.isInvalid : ''
+                            }`}
+                            inputStyle={{
+                                width: '100%',
+                                height: '45px',
+                                padding: '0 60px',
+                                paddingTop: '3px',
+                            }}
+                            containerStyle={{ width: '100%' }}
+                            enableSearch={true}
+                            preferredCountries={['vn']}
+                            countryCodeEditable={false}
+                            inputProps={{
+                                name: 'phone',
+                                required: false,
+                                autoComplete: 'tel',
+                            }}
+                            isValid={(value) => {
+                                if (!value) return true;
+                                try {
+                                    return isValidPhoneNumber(value, 'VN');
+                                } catch (error) {
+                                    return false;
+                                }
+                            }}
+                        />
+                        {errors.phone && (
+                            <div className="invalid-feedback d-block">
+                                {errors.phone}
+                            </div>
+                        )}
+                    </Form.Group>
                 </div>
 
                 {/* Thông tin tài khoản */}
@@ -249,80 +247,75 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                             Thông tin tài khoản
                         </h4>
                     </div>
-                    <div className={styles.formGrid}>
-                        <Form.Group className={styles.formGroup}>
-                            <Form.Label className={styles.formLabel}>
-                                <FaUserTag className={styles.inputIcon} />
-                                Vai trò
-                            </Form.Label>
-                            <Form.Select
-                                className={`${styles.formControl} ${
-                                    errors.role ? styles.isInvalid : ''
-                                }`}
-                                name="role"
-                                value={formData.role}
-                                onChange={handleChange}
-                            >
-                                <option value="client">Khách hàng</option>
-                                <option value="organizer">
-                                    Tổ chức sự kiện
-                                </option>
-                                <option value="admin">Quản trị viên</option>
-                            </Form.Select>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.role}
-                            </Form.Control.Feedback>
-                        </Form.Group>
 
-                        <Form.Group className={styles.formGroup}>
-                            <Form.Label className={styles.formLabel}>
-                                <FaToggleOn className={styles.inputIcon} />
-                                Trạng thái
-                            </Form.Label>
-                            <Form.Select
-                                className={`${styles.formControl} ${
-                                    errors.status ? styles.isInvalid : ''
-                                }`}
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                            >
-                                <option value="active">Hoạt động</option>
-                                <option value="inactive">
-                                    Không hoạt động
-                                </option>
-                            </Form.Select>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.status}
-                            </Form.Control.Feedback>
-                        </Form.Group>
+                    <Form.Group className={styles.formGroup}>
+                        <Form.Label className={styles.formLabel}>
+                            <FaUserTag className={styles.inputIcon} />
+                            Vai trò
+                        </Form.Label>
+                        <Form.Select
+                            className={`${styles.formControl} ${
+                                errors.role ? styles.isInvalid : ''
+                            }`}
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                        >
+                            <option value="client">Khách hàng</option>
+                            <option value="organizer">Tổ chức sự kiện</option>
+                            <option value="admin">Quản trị viên</option>
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errors.role}
+                        </Form.Control.Feedback>
+                    </Form.Group>
 
-                        <Form.Group className={styles.formGroup}>
-                            <Form.Label className={styles.formLabel}>
-                                <FaLock className={styles.inputIcon} />
-                                {user
-                                    ? 'Mật khẩu mới (để trống nếu không đổi)'
-                                    : 'Mật khẩu'}
-                            </Form.Label>
-                            <Form.Control
-                                className={`${styles.formControl} ${
-                                    errors.password ? styles.isInvalid : ''
-                                }`}
-                                autoComplete="off"
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder={
-                                    user ? 'Nhập mật khẩu mới' : 'Nhập mật khẩu'
-                                }
-                                isInvalid={!!errors.password}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.password}
-                            </Form.Control.Feedback>
-                        </Form.Group>
-                    </div>
+                    <Form.Group className={styles.formGroup}>
+                        <Form.Label className={styles.formLabel}>
+                            <FaToggleOn className={styles.inputIcon} />
+                            Trạng thái
+                        </Form.Label>
+                        <Form.Select
+                            className={`${styles.formControl} ${
+                                errors.status ? styles.isInvalid : ''
+                            }`}
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                        >
+                            <option value="active">Hoạt động</option>
+                            <option value="inactive">Không hoạt động</option>
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errors.status}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className={styles.formGroup}>
+                        <Form.Label className={styles.formLabel}>
+                            <FaLock className={styles.inputIcon} />
+                            {user
+                                ? 'Mật khẩu mới (để trống nếu không đổi)'
+                                : 'Mật khẩu'}
+                        </Form.Label>
+                        <Form.Control
+                            className={`${styles.formControl} ${
+                                errors.password ? styles.isInvalid : ''
+                            }`}
+                            autoComplete="off"
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder={
+                                user ? 'Nhập mật khẩu mới' : 'Nhập mật khẩu'
+                            }
+                            isInvalid={!!errors.password}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.password}
+                        </Form.Control.Feedback>
+                    </Form.Group>
                 </div>
             </Form>
         </div>

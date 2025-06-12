@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Dropdown } from 'react-bootstrap';
 import {
@@ -22,12 +22,34 @@ import { useAuth } from '../../../client/context/AuthContext';
 const Layout = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-
     const [collapsed, setCollapsed] = useState(false);
+    const [showSidebar, setShowSidebar] = useState(false);
     const location = useLocation();
 
+    // Handle window resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth > 768) {
+                setShowSidebar(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const toggleSidebar = () => {
-        setCollapsed(!collapsed);
+        if (window.innerWidth <= 768) {
+            setShowSidebar(!showSidebar);
+        } else {
+            setCollapsed(!collapsed);
+        }
+    };
+
+    const closeSidebar = () => {
+        if (window.innerWidth <= 768) {
+            setShowSidebar(false);
+        }
     };
 
     const navItems = [
@@ -44,11 +66,21 @@ const Layout = () => {
 
     return (
         <div className={styles.layoutContainer}>
+            {/* Mobile Overlay */}
+            {showSidebar && (
+                <div
+                    className={`${styles.sidebarOverlay} ${
+                        showSidebar ? styles.show : ''
+                    }`}
+                    onClick={closeSidebar}
+                />
+            )}
+
             {/* Sidebar */}
             <div
                 className={`${styles.sidebar} ${
                     collapsed ? styles.sidebarCollapsed : ''
-                }`}
+                } ${showSidebar ? styles.show : ''}`}
             >
                 <div className={styles.logo}>
                     <Link to="/">
@@ -62,9 +94,9 @@ const Layout = () => {
                     </Link>
                     <button
                         onClick={toggleSidebar}
-                        className={styles.toggleButton}
+                        className={`${styles.toggleButton} d-md-none`}
                     >
-                        {collapsed ? <FaBars /> : <FaTimes />}
+                        {showSidebar ? <FaTimes /> : <FaBars />}
                     </button>
                 </div>
 
@@ -78,6 +110,7 @@ const Layout = () => {
                                     ? styles.active
                                     : ''
                             }`}
+                            onClick={closeSidebar}
                         >
                             <span className={styles.navIcon}>{item.icon}</span>
                             <span
@@ -104,17 +137,22 @@ const Layout = () => {
                     collapsed ? styles.contentExpanded : ''
                 }`}
             >
-                <header className={styles.header}>
-                    <h3>
+                <header
+                    className={`${styles.header} d-flex align-items-center`}
+                >
+                    <button
+                        className={`${styles.toggleButton} d-md-none me-3`}
+                        onClick={toggleSidebar}
+                    >
+                        <FaBars />
+                    </button>
+                    <h3 className="mb-0">
                         {navItems.find(
                             (item) => item.path === location.pathname,
                         )?.text || ''}
                     </h3>
 
-                    <div
-                        className="nav-item dropdown position-relative"
-                        style={{ marginLeft: 'auto' }}
-                    >
+                    <div className="nav-item dropdown ms-auto">
                         <div
                             className="nav-link dropdown-toggle d-flex align-items-center rounded"
                             role="button"
@@ -133,7 +171,9 @@ const Layout = () => {
                                 width={36}
                                 height={36}
                             />
-                            <span className="ms-2 fw-semibold">Tài khoản</span>
+                            <span className="ms-2 d-none d-md-inline fw-semibold">
+                                Tài khoản
+                            </span>
                         </div>
                         <ul className="infoAccountEvent dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-1">
                             <li>
@@ -162,7 +202,7 @@ const Layout = () => {
                     </div>
                 </header>
 
-                <Container fluid className="py-2">
+                <Container fluid className="py-3">
                     <Outlet />
                 </Container>
             </div>
