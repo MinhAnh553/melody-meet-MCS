@@ -31,6 +31,7 @@ import {
 } from 'date-fns';
 import EventList from '../components/EventList';
 import { useSearchParams } from 'react-router-dom';
+import SearchBar from '../components/SearchBar';
 
 const MIN_PRICE = 0;
 const MAX_PRICE = 5000000;
@@ -161,8 +162,12 @@ const Search = () => {
 
     return (
         <Container className={styles.searchContainer}>
+            {/* Thanh tìm kiếm cho mobile */}
+            <div className="d-block d-sm-none">
+                <SearchBar />
+            </div>
             <Row className="align-items-center mb-4">
-                <Col xs="auto">
+                <Col xs="auto" className="d-none d-sm-block">
                     <span
                         style={{
                             color: '#22c55e',
@@ -173,6 +178,8 @@ const Search = () => {
                         Kết quả tìm kiếm:
                     </span>
                 </Col>
+
+                {/* Thanh tìm kiếm cho desktop */}
                 <Col xs="auto" className="ms-auto d-flex gap-2">
                     <Button
                         variant="success"
@@ -278,7 +285,7 @@ const Search = () => {
                                 endDate={dateRange[1]}
                                 selectsRange
                                 inline
-                                monthsShown={2}
+                                monthsShown={window.innerWidth < 768 ? 1 : 2}
                                 calendarStartDay={1}
                                 locale="vi"
                                 className={styles.customDatePicker}

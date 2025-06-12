@@ -59,15 +59,15 @@ const CheckoutInfoModal = ({ show, onHide, onConfirm }) => {
     return (
         <Modal show={show} onHide={onHide} centered>
             <Modal.Header closeButton>
-                <Modal.Title>Cập nhật thông tin nhận vé</Modal.Title>
+                <Modal.Title>Cập nhật thông tin mua vé</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div className="mb-3">
-                    <label className="form-label">Tên người nhận</label>
+                    <label className="form-label">Tên người mua</label>
                     <input
                         type="text"
                         className="form-control text-dark"
-                        placeholder="Nhập tên người nhận"
+                        placeholder="Nhập tên người mua"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
