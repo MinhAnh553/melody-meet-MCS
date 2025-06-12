@@ -46,31 +46,31 @@ Router.route('/admin/update/:id/status').patch(
 
 // Lấy đơn hàng theo ID
 Router.route('/:id').get(
-    authMiddleware.isValidPermission(['client', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     orderController.getOrderById,
 );
 
 // Lấy đơn hàng theo orderCode
 Router.route('/order-code/:orderCode').get(
-    authMiddleware.isValidPermission(['client', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     orderController.getOrderByOrderCode,
 );
 
 // Check status
 Router.route('/:id/check-status').get(
-    authMiddleware.isValidPermission(['client', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     orderController.checkStatusOrder,
 );
 
 // Hủy đơn hàng
 Router.route('/cancel').post(
-    authMiddleware.isValidPermission(['client', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     orderController.cancelOrder,
 );
 
 // Phương thức thanh toán
 Router.route('/:id/select-payment').get(
-    authMiddleware.isValidPermission(['client', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     orderController.selectPaymentMethod,
 );
 

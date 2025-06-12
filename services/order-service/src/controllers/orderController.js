@@ -6,6 +6,8 @@ import {
 } from '../providers/queueProvider.js';
 import { publishEvent } from '../providers/rabbitmqProvider.js';
 import payosProvider from '../providers/payosProvider.js';
+import emailProvider from '../providers/emailProvider.js';
+import mailTemplate from '../templates/mailTemplate.js';
 import axios from 'axios';
 
 async function invalidateEventCacheById(req, eventId) {
@@ -138,7 +140,11 @@ const createOrder = async (req, res) => {
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
         // Hủy đơn hàng cũ nếu đã có đơn hàng với cùng userId và eventId
-        const oldOrder = await orderModel.findOne({ userId, eventId, status: 'PENDING' });
+        const oldOrder = await orderModel.findOne({
+            userId,
+            eventId,
+            status: 'PENDING',
+        });
         if (oldOrder) {
             await deleteOrderExpireJob(oldOrder._id);
             logger.info(`Order canceled: ${oldOrder._id}`);
@@ -161,7 +167,7 @@ const createOrder = async (req, res) => {
             expiredAt,
         });
         await newOrder.save();
-        logger.info(`Order created: ${newOrder._id}`);     
+        logger.info(`Order created: ${newOrder._id}`);
 
         // Thêm job hết hạn đơn hàng
         await addOrderExpireJob(newOrder._id, tickets);
@@ -431,6 +437,22 @@ const webhookHandler = async (req, res) => {
             // Xóa job hết hạn đơn hàng
             await deleteOrderExpireJob(order._id);
         }
+
+        const event = await axios.get(
+            `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+        );
+
+        // Gửi email thông báo cho người dùng
+        await emailProvider.sendMail(
+            order.buyerInfo.email,
+            'Melody Meet: Giao Dịch Thành Công',
+            mailTemplate.ticketInfoTemplate(
+                order.buyerInfo.name,
+                event.data.data,
+                order,
+                order.tickets,
+            ),
+        );
 
         invalidateOrderCache(req);
 
@@ -858,6 +880,22 @@ const updateStatusOrder = async (req, res) => {
 
         // Invalidate order cache
         await invalidateOrderCache(req);
+
+        const event = await axios.get(
+            `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+        );
+
+        // Gửi email thông báo cho người dùng
+        await emailProvider.sendMail(
+            order.buyerInfo.email,
+            'Melody Meet: Giao Dịch Thành Công',
+            mailTemplate.ticketInfoTemplate(
+                order.buyerInfo.name,
+                event.data.data,
+                order,
+                order.tickets,
+            ),
+        );
 
         logger.info(`Order ${id} status updated to ${status}`);
 

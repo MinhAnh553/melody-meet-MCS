@@ -17,7 +17,7 @@ Router.route('/account').get(
 );
 
 Router.route('/user/update-address').patch(
-    authMiddleware.isValidPermission(['client', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     authController.updateUserAddress,
 );
 
