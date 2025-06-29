@@ -434,9 +434,11 @@ const OrganizerReviews = () => {
                                                 <small
                                                     style={{ color: '#a0aec0' }}
                                                 >
-                                                    {formatDate(
-                                                        review.createdAt,
-                                                    )}
+                                                    <TimeText
+                                                        event={
+                                                            review.eventInfo[0]
+                                                        }
+                                                    />
                                                 </small>
                                             </div>
                                         </div>
@@ -510,12 +512,9 @@ const OrganizerReviews = () => {
                                                                     color: '#a0aec0',
                                                                 }}
                                                             >
-                                                                <TimeText
-                                                                    event={
-                                                                        review
-                                                                            .eventInfo[0]
-                                                                    }
-                                                                />
+                                                                {formatDate(
+                                                                    review.createdAt,
+                                                                )}
                                                             </small>
                                                         )}
                                                 </div>
