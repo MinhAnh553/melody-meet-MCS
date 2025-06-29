@@ -777,7 +777,7 @@ const searchEvents = async (req, res) => {
         const events = await eventModel
             .find(eventQuery)
             .sort({ startTime: 1 })
-            .select('_id name background startTime location organizer')
+            .select('_id name background startTime location organizer status')
             .lean();
         // Lấy ticketTypes cho từng event
         const eventIds = events.map((e) => e._id);
