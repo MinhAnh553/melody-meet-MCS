@@ -14,6 +14,13 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: 'active',
         },
+        organizer: {
+            logo: { type: String },
+            name: { type: String },
+            info: { type: String },
+            email: { type: String },
+            phone: { type: String },
+        },
         deleted: {
             type: Boolean,
             default: false,

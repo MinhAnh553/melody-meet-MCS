@@ -202,6 +202,11 @@ const getMyReviews = (page = 1, limit = 10) => {
     return axios.get(URL_API);
 };
 
+const getOrganizerReviews = async (organizerId, page = 1, limit = 10) => {
+    const URL_API = `${API_URL}/events/reviews/organizer/${organizerId}?page=${page}&limit=${limit}`;
+    return axios.get(URL_API);
+};
+
 const updateReview = (reviewId, data) => {
     const URL_API = `${API_URL}/events/reviews/${reviewId}`;
     return axios.put(URL_API, data);
@@ -214,6 +219,12 @@ const deleteReview = (reviewId) => {
 
 const checkEventReview = (eventId) => {
     const URL_API = `${API_URL}/events/reviews/check-event/${eventId}`;
+    return axios.get(URL_API);
+};
+
+// Lấy thông tin ban tổ chức
+const getOrganizerInfo = async (organizerId) => {
+    const URL_API = `${API_URL}/auth/users/${organizerId}`;
     return axios.get(URL_API);
 };
 
@@ -253,7 +264,10 @@ export default {
     getEventReviews,
     getEventReviewStats,
     getMyReviews,
+    getOrganizerReviews,
     updateReview,
     deleteReview,
     checkEventReview,
+    // Lấy thông tin ban tổ chức
+    getOrganizerInfo,
 };

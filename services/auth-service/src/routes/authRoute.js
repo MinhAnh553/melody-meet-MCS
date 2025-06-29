@@ -36,4 +36,7 @@ Router.route('/users/update/:id').patch(
     authController.updateUser,
 );
 
+// Get user by ID (for external services)
+Router.route('/users/:id').get(authController.getUserById);
+
 export default Router;

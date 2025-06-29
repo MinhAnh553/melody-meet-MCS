@@ -50,18 +50,26 @@ const Header = () => {
                         {user ? (
                             <>
                                 <div
-                                    className="dropdown-toggle me-2 ms-3"
+                                    className="dropdown-toggle me-2 ms-3 d-flex align-items-center"
                                     role="button"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
-                                    <img
-                                        className={styles.avatar}
-                                        src={avatar}
-                                        alt="User Avatar"
-                                        width={36}
-                                        height={36}
-                                    />
+                                    <div
+                                        className={`d-flex align-items-center justify-content-center rounded-circle ${styles.avatar}`}
+                                    >
+                                        {user
+                                            ? user.name
+                                                ? user.name
+                                                      .charAt(0)
+                                                      .toUpperCase()
+                                                : user.email
+                                                ? user.email
+                                                      .charAt(0)
+                                                      .toUpperCase()
+                                                : 'A'
+                                            : 'A'}
+                                    </div>
                                 </div>
 
                                 <ul
@@ -165,13 +173,28 @@ const Header = () => {
                                             data-bs-toggle="dropdown"
                                             aria-expanded="false"
                                         >
-                                            <img
+                                            {/* <img
                                                 className={styles.avatar}
                                                 src={avatar}
                                                 alt="User Avatar"
                                                 width={36}
                                                 height={36}
-                                            />
+                                            /> */}
+                                            <div
+                                                className={`d-flex align-items-center justify-content-center rounded-circle ${styles.avatar}`}
+                                            >
+                                                {user
+                                                    ? user.name
+                                                        ? user.name
+                                                              .charAt(0)
+                                                              .toUpperCase()
+                                                        : user.email
+                                                        ? user.email
+                                                              .charAt(0)
+                                                              .toUpperCase()
+                                                        : 'A'
+                                                    : 'A'}
+                                            </div>
                                             <span
                                                 className={styles.email}
                                                 title={user.email}

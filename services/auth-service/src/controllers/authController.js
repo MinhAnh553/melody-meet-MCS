@@ -372,6 +372,32 @@ const updateUser = async (req, res) => {
     }
 };
 
+// Get user by ID (for external services)
+const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await userModel.findById(id).select('-password');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy người dùng',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            organizer: user.organizer,
+        });
+    } catch (error) {
+        logger.error('Get user by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -382,4 +408,5 @@ export default {
     getTotalUsers,
     getAllUsers,
     updateUser,
+    getUserById,
 };

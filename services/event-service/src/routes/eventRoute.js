@@ -101,6 +101,11 @@ Router.route('/reviews/my-reviews').get(
     eventController.getMyReviews,
 );
 
+// Lấy tất cả đánh giá của các sự kiện do organizer tổ chức
+Router.route('/reviews/organizer/:organizerId').get(
+    eventController.getOrganizerReviews,
+);
+
 // Kiểm tra sự kiện đã được đánh giá chưa
 Router.route('/reviews/check-event/:eventId').get(
     authMiddleware.isValidPermission(['client', 'organizer', 'admin']),

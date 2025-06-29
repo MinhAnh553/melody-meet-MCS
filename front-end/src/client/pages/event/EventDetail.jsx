@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../../util/api';
 import TimeText from '../../components/providers/TimeText';
 import DOMPurify from 'dompurify';
@@ -389,7 +389,7 @@ const EventDetail = () => {
             <div className="container my-5">
                 <h2 className="text-white mb-3">Giới thiệu</h2>
                 <div
-                    className="card p-4 border-0"
+                    className="card p-4 border-0 shadow rounded-4"
                     style={{ backgroundColor: '#1e1e1e' }}
                 >
                     {/* Nếu có ảnh mô tả giới thiệu riêng, hiển thị: */}
@@ -413,9 +413,9 @@ const EventDetail = () => {
             </div>
             {/* Thông tin ban tổ chức */}
             <div className="container my-5">
-                <h2 className="text-white mb-3">Ban Tổ Chức</h2>
+                <h2 className="text-white mb-4">Ban Tổ Chức</h2>
                 <div
-                    className="card p-4 border-0"
+                    className="card p-4 border-0 shadow rounded-4"
                     style={{ backgroundColor: '#1e1e1e' }}
                 >
                     <div className="d-flex align-items-center">
@@ -426,16 +426,74 @@ const EventDetail = () => {
                                 width: '100px',
                                 height: '100px',
                                 objectFit: 'cover',
+                                border: '2px solid #fff',
                             }}
-                            className="rounded me-3"
+                            className="rounded-circle me-4"
                         />
-                        <div>
-                            <h5 className="text-white mb-1">
-                                {event.organizer?.name}
-                            </h5>
-                            <p style={{ color: '#fff' }}>
-                                {event.organizer?.info}
-                            </p>
+                        <div className="flex-grow-1">
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                <h5 className="text-white fw-semibold mb-0">
+                                    {event.organizer?.name}
+                                </h5>
+                                <Link
+                                    to={`/organizer/${event.createdBy}/reviews`}
+                                    className="text-decoration-none d-flex align-items-center small"
+                                    style={{
+                                        color: '#a6a6b0',
+                                        transition: 'color 0.3s',
+                                    }}
+                                    onMouseEnter={(e) =>
+                                        (e.currentTarget.style.color =
+                                            '#ffffff')
+                                    }
+                                    onMouseLeave={(e) =>
+                                        (e.currentTarget.style.color =
+                                            '#a6a6b0')
+                                    }
+                                >
+                                    Thông tin chi tiết
+                                    <i className="bi bi-chevron-right ms-1"></i>
+                                </Link>
+                            </div>
+
+                            <div
+                                className="small"
+                                style={{ lineHeight: '1.6', color: '#e0e0e0' }}
+                            >
+                                <p className="mb-2">{event.organizer?.info}</p>
+
+                                {event.organizer?.email && (
+                                    <p className="mb-1">
+                                        <a
+                                            href={`mailto:${event.organizer.email}`}
+                                            className="text-decoration-none"
+                                            style={{ color: '#dddddd' }}
+                                        >
+                                            <i
+                                                className="bi bi-envelope me-2"
+                                                style={{ color: '#999' }}
+                                            ></i>
+                                            {event.organizer.email}
+                                        </a>
+                                    </p>
+                                )}
+
+                                {event.organizer?.phone && (
+                                    <p className="mb-0">
+                                        <a
+                                            href={`tel:${event.organizer.phone}`}
+                                            className="text-decoration-none"
+                                            style={{ color: '#dddddd' }}
+                                        >
+                                            <i
+                                                className="bi bi-telephone me-2"
+                                                style={{ color: '#999' }}
+                                            ></i>
+                                            {event.organizer.phone}
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -461,7 +519,7 @@ const EventDetail = () => {
 
                     {reviewStats.totalReviews === 0 ? (
                         <div
-                            className="card p-4 border-0 text-center"
+                            className="card p-4 border-0 shadow rounded-4"
                             style={{ backgroundColor: '#1e1e1e' }}
                         >
                             <p className="text-white mb-0">
@@ -470,7 +528,7 @@ const EventDetail = () => {
                         </div>
                     ) : (
                         <div
-                            className="card p-4 border-0"
+                            className="card p-4 border-0 shadow rounded-4"
                             style={{ backgroundColor: '#1e1e1e' }}
                         >
                             <div className="text-center">

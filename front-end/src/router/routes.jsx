@@ -8,6 +8,7 @@ import EventManagementLayout from '../client/layout/EventManagementLayout.jsx';
 import ProtectedRoutes from '../client/components/ProtectedRoutes';
 import EventCreateWizard from '../client/pages/event/EventCreateWizard.jsx';
 import EventDetail from '../client/pages/event/EventDetail.jsx';
+import OrganizerReviews from '../client/pages/OrganizerReviews.jsx';
 import PaymentSuccess from '../client/pages/payment/PaymentSuccess.jsx';
 import OrderPage from '../client/pages/payment/OrderPage.jsx';
 import PurchasedTickets from '../client/pages/PurchasedTickets.jsx';
@@ -165,6 +166,25 @@ const AnimatedRoutes = () => {
                                 transition={{ duration: 0.5 }}
                             >
                                 <EventDetail />
+                            </motion.div>
+                        }
+                    />
+                </Route>
+                <Route
+                    path="/organizer/:organizerId/reviews"
+                    element={<ClientLayout />}
+                >
+                    <Route
+                        index
+                        element={
+                            <motion.div
+                                variants={pageVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                transition={{ duration: 0.5 }}
+                            >
+                                <OrganizerReviews />
                             </motion.div>
                         }
                     />

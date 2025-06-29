@@ -272,6 +272,43 @@ const getEventById = async (req, res) => {
         const ticketTypes = await ticketTypeModel.find({
             eventId: eventId,
         });
+
+        // Lấy thông tin BTC từ auth-service
+        try {
+            const organizerResponse = await axios.get(
+                `${process.env.AUTH_SERVICE_URL}/api/auth/users/${event.createdBy}`,
+                {
+                    headers: {
+                        'x-user-id': req.user?.id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
+            );
+
+            if (organizerResponse.data.success) {
+                eventData.organizer = {
+                    email: organizerResponse.data.organizer.email,
+                    phone: organizerResponse.data.organizer.phone,
+                    name: organizerResponse.data.organizer.name,
+                    logo: organizerResponse.data.organizer.logo,
+                    info: organizerResponse.data.organizer.info,
+                };
+            }
+        } catch (error) {
+            logger.error(
+                'Error fetching organizer info from auth-service:',
+                error,
+            );
+            // Fallback to event organizer data if auth-service fails
+            eventData.organizer = {
+                email: 'N/A',
+                phone: 'N/A',
+                name: 'N/A',
+                logo: 'N/A',
+                info: 'N/A',
+            };
+        }
+
         eventData.ticketTypes = ticketTypes;
         // Cache the event data for 60 minutes
         await req.redisClient.setex(cacheKey, 3600, JSON.stringify(eventData));
@@ -1389,6 +1426,126 @@ const deleteReview = async (req, res) => {
     }
 };
 
+// [GET] /reviews/organizer/:organizerId - Lấy tất cả đánh giá của các sự kiện do organizer tổ chức
+const getOrganizerReviews = async (req, res) => {
+    try {
+        const { organizerId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+
+        // Lấy tất cả sự kiện do organizer tổ chức
+        const events = await eventModel
+            .find({ createdBy: organizerId })
+            .select('_id name background');
+        const eventIds = events.map((event) => event._id);
+
+        if (eventIds.length === 0) {
+            return res.status(200).json({
+                success: true,
+                reviews: [],
+                pagination: {
+                    currentPage: page,
+                    totalPages: 0,
+                    totalReviews: 0,
+                    hasNextPage: false,
+                    hasPrevPage: false,
+                },
+                summary: {
+                    averageRating: 0,
+                    totalReviews: 0,
+                },
+            });
+        }
+
+        // Lấy đánh giá của tất cả sự kiện do organizer tổ chức
+        const [reviews, totalReviews] = await Promise.all([
+            reviewModel.aggregate([
+                { $match: { eventId: { $in: eventIds } } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'userInfo',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    email: 1,
+                                    name: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'events',
+                        localField: 'eventId',
+                        foreignField: '_id',
+                        as: 'eventInfo',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    name: 1,
+                                    background: 1,
+                                    startTime: 1,
+                                    endTime: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                { $sort: { createdAt: -1 } },
+                { $skip: startIndex },
+                { $limit: limit },
+            ]),
+            reviewModel.countDocuments({ eventId: { $in: eventIds } }),
+        ]);
+
+        // Tính điểm đánh giá trung bình
+        const averageRating = await reviewModel.aggregate([
+            { $match: { eventId: { $in: eventIds } } },
+            {
+                $group: {
+                    _id: null,
+                    averageRating: { $avg: '$rating' },
+                    totalReviews: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const result = {
+            success: true,
+            reviews: reviews,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalReviews / limit),
+                totalReviews: totalReviews,
+                hasNextPage: page * limit < totalReviews,
+                hasPrevPage: page > 1,
+            },
+            summary: {
+                averageRating:
+                    averageRating.length > 0
+                        ? averageRating[0].averageRating
+                        : 0,
+                totalReviews: totalReviews,
+            },
+        };
+
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get organizer reviews error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -1409,4 +1566,5 @@ export default {
     getEventReviewStats,
     getMyReviews,
     deleteReview,
+    getOrganizerReviews,
 };

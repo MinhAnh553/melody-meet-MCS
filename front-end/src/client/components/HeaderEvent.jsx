@@ -208,13 +208,37 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                                     padding: 0,
                                 }}
                             >
-                                <img
+                                {/* <img
                                     className="rounded-circle border border-2"
                                     src={avatar}
                                     alt="User Avatar"
                                     width={36}
                                     height={36}
-                                />
+                                /> */}
+
+                                <div
+                                    className={`d-flex align-items-center justify-content-center rounded-circle`}
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        fontSize: '1.1rem',
+                                        background:
+                                            'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                                        boxShadow:
+                                            '0 2px 8px rgba(49, 130, 206, 0.4)',
+                                        border: '2px solid #fff',
+                                    }}
+                                >
+                                    {user
+                                        ? user.name
+                                            ? user.name.charAt(0).toUpperCase()
+                                            : user.email
+                                            ? user.email.charAt(0).toUpperCase()
+                                            : 'A'
+                                        : 'A'}
+                                </div>
                                 <span className="ms-2 fw-semibold">
                                     Tài khoản
                                 </span>

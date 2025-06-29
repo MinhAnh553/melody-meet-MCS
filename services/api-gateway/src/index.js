@@ -71,6 +71,7 @@ app.use(
             '/v1/auth/register/verify',
             '/v1/auth/login',
             '/v1/auth/refresh_token',
+            /^\/v1\/auth\/users\/[^\/]+$/, // /v1/auth/users/:id
         ];
 
         // Kiểm tra nếu route hiện tại match với bất kỳ pattern nào
