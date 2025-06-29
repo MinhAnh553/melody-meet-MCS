@@ -1,13 +1,15 @@
 import axios from 'axios';
+import mongoose from 'mongoose';
 
 import eventModel from '../models/eventModel.js';
 import ticketTypeModel from '../models/ticketTypeModel.js';
 import logger from '../utils/logger.js';
-import { validateCreateEvent } from '../utils/validation.js';
+import { validateCreateEvent, validateReview } from '../utils/validation.js';
 import {
     deleteCloudinaryImage,
     deleteMultipleCloudinaryImages,
 } from '../providers/cloudinaryProvider.js';
+import reviewModel from '../models/reviewModel.js';
 
 async function invalidateEventCache(req) {
     const keys = await req.redisClient.keys('events:*');
@@ -988,6 +990,405 @@ const updateEventStatus = async (req, res) => {
     }
 };
 
+// [POST] /reviews - Tạo đánh giá mới
+const createReview = async (req, res) => {
+    try {
+        const { error } = validateReview.validate(req.body);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message,
+            });
+        }
+
+        const { eventId, rating, comment } = req.body;
+        const userId = req.user.id;
+
+        // Kiểm tra sự kiện đã diễn ra chưa
+        const event = await eventModel.findById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        if (event.status !== 'event_over') {
+            return res.status(400).json({
+                success: false,
+                message: 'Chỉ có thể đánh giá sau khi sự kiện đã diễn ra',
+            });
+        }
+
+        // Kiểm tra đã đánh giá sự kiện này chưa
+        const existingReview = await reviewModel.findOne({
+            eventId: eventId,
+            userId: userId,
+        });
+
+        if (existingReview) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bạn đã đánh giá sự kiện này rồi',
+            });
+        }
+
+        // Tạo đánh giá mới
+        const review = new reviewModel({
+            userId: userId,
+            eventId: eventId,
+            rating: rating,
+            comment: comment,
+        });
+
+        await review.save();
+
+        logger.info(`User ${userId} created review for event ${eventId}`);
+
+        return res.status(201).json({
+            success: true,
+            message: 'Đánh giá thành công',
+            review: review,
+        });
+    } catch (error) {
+        logger.error('Create review error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// [PUT] /reviews/:reviewId - Cập nhật đánh giá
+const updateReview = async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        const { reviewId } = req.params;
+        const userId = req.user.id;
+
+        // Validate rating
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                message: 'Đánh giá phải từ 1 đến 5 sao',
+            });
+        }
+
+        // Validate comment length
+        if (comment && comment.length > 1000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bình luận không được quá 1000 ký tự',
+            });
+        }
+
+        // Kiểm tra đánh giá có tồn tại và thuộc về người dùng không
+        const review = await reviewModel.findOne({
+            _id: reviewId,
+            userId: userId,
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Đánh giá không tồn tại hoặc không thuộc về bạn',
+            });
+        }
+
+        // Cập nhật đánh giá
+        review.rating = rating;
+        review.comment = comment;
+        review.updatedAt = new Date();
+
+        await review.save();
+
+        logger.info(`User ${userId} updated review ${reviewId}`);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Cập nhật đánh giá thành công',
+            review: review,
+        });
+    } catch (error) {
+        logger.error('Update review error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// [GET] /reviews/check-event/:eventId - Kiểm tra sự kiện đã được đánh giá chưa
+const checkEventReview = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const userId = req.user.id;
+
+        // Kiểm tra đã đánh giá sự kiện này chưa
+        const review = await reviewModel.findOne({
+            eventId: eventId,
+            userId: userId,
+        });
+
+        return res.status(200).json({
+            success: true,
+            hasReviewed: !!review,
+            review: review,
+        });
+    } catch (error) {
+        logger.error('Check event review error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// [GET] /reviews/event/:eventId - Lấy tất cả đánh giá của một sự kiện
+const getEventReviews = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+
+        // Kiểm tra sự kiện có tồn tại không
+        const event = await eventModel.findById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        // Lấy đánh giá với thông tin người dùng
+        const [reviews, totalReviews] = await Promise.all([
+            reviewModel.aggregate([
+                { $match: { eventId: new mongoose.Types.ObjectId(eventId) } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'userInfo',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    email: 1,
+                                    name: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                { $sort: { createdAt: -1 } },
+                { $skip: startIndex },
+                { $limit: limit },
+            ]),
+            reviewModel.countDocuments({ eventId: eventId }),
+        ]);
+
+        // Tính điểm đánh giá trung bình
+        const averageRating = await reviewModel.aggregate([
+            { $match: { eventId: new mongoose.Types.ObjectId(eventId) } },
+            {
+                $group: {
+                    _id: null,
+                    averageRating: { $avg: '$rating' },
+                    totalReviews: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const result = {
+            success: true,
+            reviews: reviews,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalReviews / limit),
+                totalReviews: totalReviews,
+                hasNextPage: page * limit < totalReviews,
+                hasPrevPage: page > 1,
+            },
+            summary: {
+                averageRating:
+                    averageRating.length > 0
+                        ? averageRating[0].averageRating
+                        : 0,
+                totalReviews: totalReviews,
+            },
+        };
+
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get event reviews error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// [GET] /reviews/event/:eventId/stats - Lấy thống kê đánh giá của một sự kiện
+const getEventReviewStats = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+
+        // Kiểm tra sự kiện có tồn tại không
+        const event = await eventModel.findById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Sự kiện không tồn tại',
+            });
+        }
+
+        // Tính thống kê đánh giá
+        const stats = await reviewModel.aggregate([
+            { $match: { eventId: new mongoose.Types.ObjectId(eventId) } },
+            {
+                $group: {
+                    _id: null,
+                    averageRating: { $avg: '$rating' },
+                    totalReviews: { $sum: 1 },
+                    ratingDistribution: {
+                        $push: '$rating',
+                    },
+                },
+            },
+        ]);
+
+        // Tính phân bố rating
+        let ratingDistribution = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+        };
+
+        if (stats.length > 0 && stats[0].ratingDistribution) {
+            stats[0].ratingDistribution.forEach((rating) => {
+                ratingDistribution[rating]++;
+            });
+        }
+
+        const result = {
+            success: true,
+            stats: {
+                averageRating: stats.length > 0 ? stats[0].averageRating : 0,
+                totalReviews: stats.length > 0 ? stats[0].totalReviews : 0,
+                ratingDistribution: ratingDistribution,
+            },
+        };
+
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get event review stats error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// [GET] /reviews/my-reviews - Lấy đánh giá của người dùng hiện tại
+const getMyReviews = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+
+        // Lấy đánh giá của user với thông tin sự kiện
+        const [reviews, totalReviews] = await Promise.all([
+            reviewModel.aggregate([
+                { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+                {
+                    $lookup: {
+                        from: 'events',
+                        localField: 'eventId',
+                        foreignField: '_id',
+                        as: 'eventInfo',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    name: 1,
+                                    background: 1,
+                                    startTime: 1,
+                                    endTime: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                { $sort: { createdAt: -1 } },
+                { $skip: startIndex },
+                { $limit: limit },
+            ]),
+            reviewModel.countDocuments({ userId: userId }),
+        ]);
+
+        const result = {
+            success: true,
+            reviews: reviews,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalReviews / limit),
+                totalReviews: totalReviews,
+                hasNextPage: page * limit < totalReviews,
+                hasPrevPage: page > 1,
+            },
+        };
+
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('Get my reviews error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// [DELETE] /reviews/:reviewId - Xóa đánh giá
+const deleteReview = async (req, res) => {
+    try {
+        const { reviewId } = req.params;
+        const userId = req.user.id;
+
+        // Kiểm tra đánh giá có tồn tại và thuộc về người dùng không
+        const review = await reviewModel.findOne({
+            _id: reviewId,
+            userId: userId,
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Đánh giá không tồn tại hoặc không thuộc về bạn',
+            });
+        }
+
+        await reviewModel.findByIdAndDelete(reviewId);
+
+        logger.info(`User ${userId} deleted review ${reviewId}`);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Xóa đánh giá thành công',
+        });
+    } catch (error) {
+        logger.error('Delete review error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     createEvent,
     getAllEvents,
@@ -1001,4 +1402,11 @@ export default {
     getEventSummary,
     getTotalEvents,
     updateEventStatus,
+    createReview,
+    updateReview,
+    checkEventReview,
+    getEventReviews,
+    getEventReviewStats,
+    getMyReviews,
+    deleteReview,
 };

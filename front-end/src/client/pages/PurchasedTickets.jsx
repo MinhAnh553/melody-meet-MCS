@@ -9,6 +9,7 @@ import api from '../../util/api';
 import TimeText from '../components/providers/TimeText';
 import { usePermission } from '../../hooks/usePermission';
 import { permissions } from '../../config/rbacConfig';
+import ReviewForm from '../components/ReviewForm';
 import styles from './PurchasedTickets.module.css';
 
 function PurchasedTickets() {
@@ -25,6 +26,12 @@ function PurchasedTickets() {
     const [activeTab, setActiveTab] = useState('tickets');
     // Quản lý mở/đóng chi tiết cho từng đơn
     const [expandedOrders, setExpandedOrders] = useState({});
+
+    // State cho review
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [selectedReview, setSelectedReview] = useState(null);
+    const [eventReviews, setEventReviews] = useState({}); // Lưu mapping giữa eventId và review
 
     const itemsPerPage = 10;
 
@@ -45,6 +52,35 @@ function PurchasedTickets() {
         fetchOrders();
     }, []);
 
+    // Kiểm tra đánh giá cho các sự kiện có thể đánh giá
+    useEffect(() => {
+        const checkReviewsForEvents = async () => {
+            const reviewPromises = [];
+
+            orders.forEach((order) => {
+                if (canReviewEvent(order)) {
+                    const reviewId = generateReviewId(order.eventId, user.id);
+                    reviewPromises.push(
+                        checkEventReview(order.eventId).then((review) => {
+                            if (review) {
+                                setEventReviews((prev) => ({
+                                    ...prev,
+                                    [reviewId]: review,
+                                }));
+                            }
+                        }),
+                    );
+                }
+            });
+
+            await Promise.all(reviewPromises);
+        };
+
+        if (orders.length > 0 && user) {
+            checkReviewsForEvents();
+        }
+    }, [orders, user]);
+
     const fetchOrders = async () => {
         try {
             setLoadingLocal(true);
@@ -57,6 +93,62 @@ function PurchasedTickets() {
         } finally {
             setLoadingLocal(false);
         }
+    };
+
+    // Kiểm tra sự kiện đã được đánh giá chưa
+    const checkEventReview = async (eventId) => {
+        try {
+            const res = await api.checkEventReview(eventId);
+            if (res.success) {
+                const reviewId = generateReviewId(eventId, user.id);
+                setEventReviews((prev) => ({
+                    ...prev,
+                    [reviewId]: res.review,
+                }));
+                return res.review;
+            }
+        } catch (error) {
+            console.error('checkEventReview error:', error);
+        }
+        return null;
+    };
+
+    // Mở form đánh giá
+    const handleOpenReviewForm = async (eventId) => {
+        // Kiểm tra sự kiện đã đánh giá chưa
+        const existingReview = await checkEventReview(eventId);
+
+        setSelectedEvent({ eventId });
+        setSelectedReview(existingReview);
+        setShowReviewForm(true);
+    };
+
+    // Xử lý sau khi đánh giá thành công
+    const handleReviewSuccess = () => {
+        // Cập nhật lại danh sách đánh giá
+        if (selectedEvent) {
+            const reviewId = generateReviewId(selectedEvent.eventId, user.id);
+            checkEventReview(selectedEvent.eventId).then((review) => {
+                if (review) {
+                    setEventReviews((prev) => ({
+                        ...prev,
+                        [reviewId]: review,
+                    }));
+                }
+            });
+        }
+        // Refresh lại danh sách orders để cập nhật trạng thái
+        fetchOrders();
+    };
+
+    // Kiểm tra sự kiện có thể đánh giá không
+    const canReviewEvent = (order) => {
+        return new Date(order.endTime) < new Date() && order.status === 'PAID';
+    };
+
+    // Tạo reviewId từ eventId và userId
+    const generateReviewId = (eventId, userId) => {
+        return `${eventId}_${userId}`;
     };
 
     // Lọc theo status
@@ -267,6 +359,45 @@ function PurchasedTickets() {
                                                         {ticket.quantity} vé
                                                     </small>
                                                 </div>
+                                                {/* Nút đánh giá cho sự kiện đã kết thúc */}
+                                                {canReviewEvent(order) &&
+                                                    idx === 0 && (
+                                                        <div className="d-flex mt-2 gap-2">
+                                                            {(() => {
+                                                                const reviewId =
+                                                                    generateReviewId(
+                                                                        order.eventId,
+                                                                        user.id,
+                                                                    );
+                                                                const existingReview =
+                                                                    eventReviews[
+                                                                        reviewId
+                                                                    ];
+
+                                                                return (
+                                                                    <Button
+                                                                        variant={
+                                                                            existingReview
+                                                                                ? 'success'
+                                                                                : 'outline-success'
+                                                                        }
+                                                                        size="sm"
+                                                                        onClick={() =>
+                                                                            handleOpenReviewForm(
+                                                                                order.eventId,
+                                                                            )
+                                                                        }
+                                                                        className="d-flex align-items-center gap-1 text-light"
+                                                                    >
+                                                                        <i className="bi bi-star-fill"></i>
+                                                                        {existingReview
+                                                                            ? 'Đã đánh giá'
+                                                                            : 'Đánh giá'}
+                                                                    </Button>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                    )}
                                             </div>
                                             <div
                                                 className={
@@ -527,6 +658,19 @@ function PurchasedTickets() {
                     {renderOrders()}
                 </Col>
             </Row>
+
+            {/* Review Form Modal */}
+            <ReviewForm
+                show={showReviewForm}
+                onHide={() => {
+                    setShowReviewForm(false);
+                    setSelectedEvent(null);
+                    setSelectedReview(null);
+                }}
+                eventId={selectedEvent?.eventId}
+                review={selectedReview}
+                onSuccess={handleReviewSuccess}
+            />
         </Container>
     );
 }

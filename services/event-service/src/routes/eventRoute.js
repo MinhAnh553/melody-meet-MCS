@@ -80,6 +80,46 @@ Router.route('/order/:id').post(
     eventController.createOrder,
 );
 
+// Tạo đánh giá mới
+Router.route('/reviews/create').post(
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
+    cloudinaryProvider.fields([]),
+    eventController.createReview,
+);
+
+// Lấy đánh giá của một sự kiện
+Router.route('/reviews/event/:eventId').get(eventController.getEventReviews);
+
+// Lấy thống kê đánh giá của một sự kiện
+Router.route('/reviews/event/:eventId/stats').get(
+    eventController.getEventReviewStats,
+);
+
+// Lấy đánh giá của người dùng hiện tại
+Router.route('/reviews/my-reviews').get(
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
+    eventController.getMyReviews,
+);
+
+// Kiểm tra sự kiện đã được đánh giá chưa
+Router.route('/reviews/check-event/:eventId').get(
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
+    eventController.checkEventReview,
+);
+
+// Cập nhật đánh giá
+Router.route('/reviews/:reviewId').put(
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
+    cloudinaryProvider.fields([]),
+    eventController.updateReview,
+);
+
+// Xóa đánh giá
+Router.route('/reviews/:reviewId').delete(
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
+    eventController.deleteReview,
+);
+
 // Get event by id
 Router.route('/:id').get(eventController.getEventById);
 

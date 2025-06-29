@@ -181,6 +181,42 @@ const searchEvents = (filters) => {
     return axios.get(URL_API, { params });
 };
 
+// Review APIs
+const createReview = (data) => {
+    const URL_API = `${API_URL}/events/reviews/create`;
+    return axios.post(URL_API, data);
+};
+
+const getEventReviews = (eventId, page = 1, limit = 10) => {
+    const URL_API = `${API_URL}/events/reviews/event/${eventId}?page=${page}&limit=${limit}`;
+    return axios.get(URL_API);
+};
+
+const getEventReviewStats = (eventId) => {
+    const URL_API = `${API_URL}/events/reviews/event/${eventId}/stats`;
+    return axios.get(URL_API);
+};
+
+const getMyReviews = (page = 1, limit = 10) => {
+    const URL_API = `${API_URL}/events/reviews/my-reviews?page=${page}&limit=${limit}`;
+    return axios.get(URL_API);
+};
+
+const updateReview = (reviewId, data) => {
+    const URL_API = `${API_URL}/events/reviews/${reviewId}`;
+    return axios.put(URL_API, data);
+};
+
+const deleteReview = (reviewId) => {
+    const URL_API = `${API_URL}/events/reviews/${reviewId}`;
+    return axios.delete(URL_API);
+};
+
+const checkEventReview = (eventId) => {
+    const URL_API = `${API_URL}/events/reviews/check-event/${eventId}`;
+    return axios.get(URL_API);
+};
+
 export default {
     sendOTP,
     verifyOTPAndRegister,
@@ -212,4 +248,12 @@ export default {
     search,
     searchEvents,
     refreshToken,
+    // Review APIs
+    createReview,
+    getEventReviews,
+    getEventReviewStats,
+    getMyReviews,
+    updateReview,
+    deleteReview,
+    checkEventReview,
 };

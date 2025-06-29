@@ -83,3 +83,19 @@ export const validateCreateEvent = Joi.object({
         'any.required': 'Người tạo là bắt buộc',
     }),
 });
+
+export const validateReview = Joi.object({
+    eventId: Joi.string().required().messages({
+        'string.empty': 'ID sự kiện không được để trống',
+        'any.required': 'ID sự kiện là bắt buộc',
+    }),
+    rating: Joi.number().min(1).max(5).required().messages({
+        'number.base': 'Đánh giá phải là số',
+        'number.min': 'Đánh giá phải từ 1 đến 5 sao',
+        'number.max': 'Đánh giá phải từ 1 đến 5 sao',
+        'any.required': 'Đánh giá là bắt buộc',
+    }),
+    comment: Joi.string().max(1000).allow('').allow(null).messages({
+        'string.max': 'Bình luận không được quá 1000 ký tự',
+    }),
+});

@@ -4,6 +4,7 @@ import api from '../../../util/api';
 import TimeText from '../../components/providers/TimeText';
 import DOMPurify from 'dompurify';
 import TicketModal from '../payment/TicketModal';
+import ReviewForm from '../../components/ReviewForm';
 import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,7 +15,19 @@ const EventDetail = () => {
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
     const [showModal, setShowModal] = useState(false);
+
+    // State cho review
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [selectedReview, setSelectedReview] = useState(null);
+    const [userReview, setUserReview] = useState(null);
+    const [canReview, setCanReview] = useState(false);
+    const [reviewStats, setReviewStats] = useState({
+        averageRating: 0,
+        totalReviews: 0,
+    });
+
     const navigate = useNavigate();
+
     useEffect(() => {
         const fetchEvent = async () => {
             try {
@@ -37,6 +50,62 @@ const EventDetail = () => {
         };
         fetchEvent();
     }, [eventId]);
+
+    // Fetch thông tin đánh giá của sự kiện
+    useEffect(() => {
+        const fetchReviewStats = async () => {
+            if (!event) return;
+
+            try {
+                const res = await api.getEventReviewStats(eventId);
+                if (res.success) {
+                    setReviewStats({
+                        averageRating: res.stats.averageRating || 0,
+                        totalReviews: res.stats.totalReviews || 0,
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching review stats:', error);
+            }
+        };
+
+        fetchReviewStats();
+    }, [event, eventId]);
+
+    // Kiểm tra xem user có thể đánh giá sự kiện này không
+    useEffect(() => {
+        const checkReviewStatus = async () => {
+            if (!user || !event) return;
+
+            try {
+                // Kiểm tra xem user đã mua vé và sự kiện đã kết thúc chưa
+                const ordersRes = await api.getMyOrders();
+                if (ordersRes.success) {
+                    const hasPurchasedTicket = ordersRes.orders.some(
+                        (order) =>
+                            order.eventId === eventId &&
+                            order.status === 'PAID',
+                    );
+
+                    const eventEnded = new Date(event.endTime) < new Date();
+                    const canReviewEvent = hasPurchasedTicket && eventEnded;
+                    setCanReview(canReviewEvent);
+
+                    // Nếu có thể đánh giá, kiểm tra xem đã đánh giá chưa
+                    if (canReviewEvent) {
+                        const reviewRes = await api.checkEventReview(eventId);
+                        if (reviewRes.success && reviewRes.review) {
+                            setUserReview(reviewRes.review);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking review status:', error);
+            }
+        };
+
+        checkReviewStatus();
+    }, [user, event, eventId]);
 
     if (!event)
         return (
@@ -74,6 +143,69 @@ const EventDetail = () => {
     const handleBuyNow = () => {
         setShowModal(true);
     };
+
+    // Mở form đánh giá
+    const handleOpenReviewForm = () => {
+        setSelectedReview(userReview);
+        setShowReviewForm(true);
+    };
+
+    // Xử lý sau khi đánh giá thành công
+    const handleReviewSuccess = () => {
+        // Refresh lại thông tin review
+        const checkReviewStatus = async () => {
+            try {
+                const reviewRes = await api.checkEventReview(eventId);
+                if (reviewRes.success && reviewRes.review) {
+                    setUserReview(reviewRes.review);
+                }
+
+                // Refresh lại thống kê đánh giá
+                const statsRes = await api.getEventReviewStats(eventId);
+                if (statsRes.success) {
+                    setReviewStats({
+                        averageRating: statsRes.stats.averageRating || 0,
+                        totalReviews: statsRes.stats.totalReviews || 0,
+                    });
+                }
+            } catch (error) {
+                console.error('Error refreshing review:', error);
+            }
+        };
+        checkReviewStatus();
+    };
+
+    // Render sao
+    const renderStars = (rating) => {
+        const stars = [];
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 !== 0;
+
+        // Thêm sao đầy
+        for (let i = 0; i < fullStars; i++) {
+            stars.push(
+                <i key={i} className="bi bi-star-fill text-warning"></i>,
+            );
+        }
+
+        // Thêm sao nửa (nếu có)
+        if (hasHalfStar) {
+            stars.push(
+                <i key="half" className="bi bi-star-half text-warning"></i>,
+            );
+        }
+
+        // Thêm sao rỗng
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        for (let i = 0; i < emptyStars; i++) {
+            stars.push(
+                <i key={`empty-${i}`} className="bi bi-star text-warning"></i>,
+            );
+        }
+
+        return stars;
+    };
+
     return (
         <>
             {/* Phần banner (đã có sẵn) */}
@@ -162,45 +294,66 @@ const EventDetail = () => {
                                 </div>
                             )}
 
-                            {/* Nếu còn vé thì hiển thị nút mua vé */}
-                            {sortedTickets.some(
-                                (ticket) =>
-                                    ticket.totalQuantity - ticket.quantitySold >
-                                    0,
-                            ) && (
-                                <div
-                                    style={{
-                                        display: 'inline-block',
-                                        cursor:
-                                            event.status === 'event_over' ||
-                                            !user
-                                                ? 'not-allowed'
-                                                : 'pointer',
-                                    }}
-                                >
-                                    <button
-                                        className="btn btn-success btn-lg mt-2"
-                                        onClick={handleBuyNow}
-                                        disabled={
-                                            event.status === 'event_over' ||
-                                            !user
-                                        }
+                            <div className="d-flex align-items-center gap-3">
+                                {/* Nếu còn vé thì hiển thị nút mua vé */}
+                                {sortedTickets.some(
+                                    (ticket) =>
+                                        ticket.totalQuantity -
+                                            ticket.quantitySold >
+                                        0,
+                                ) && (
+                                    <div
                                         style={{
-                                            backgroundColor:
+                                            display: 'inline-block',
+                                            cursor:
                                                 event.status === 'event_over' ||
                                                 !user
-                                                    ? '#ccc'
-                                                    : '',
+                                                    ? 'not-allowed'
+                                                    : 'pointer',
                                         }}
                                     >
-                                        {event.status === 'event_over'
-                                            ? 'Sự kiện đã kết thúc'
-                                            : !user
-                                            ? 'Đăng nhập để mua vé'
-                                            : 'Mua vé ngay'}
-                                    </button>
-                                </div>
-                            )}
+                                        <button
+                                            className="btn btn-success btn-lg mt-2"
+                                            onClick={handleBuyNow}
+                                            disabled={
+                                                event.status === 'event_over' ||
+                                                !user
+                                            }
+                                            style={{
+                                                backgroundColor:
+                                                    event.status ===
+                                                        'event_over' || !user
+                                                        ? '#ccc'
+                                                        : '',
+                                            }}
+                                        >
+                                            {event.status === 'event_over'
+                                                ? 'Sự kiện đã kết thúc'
+                                                : !user
+                                                ? 'Đăng nhập để mua vé'
+                                                : 'Mua vé ngay'}
+                                        </button>
+                                    </div>
+                                )}
+                                {/* Nút đánh giá sự kiện */}
+                                {canReview && (
+                                    <div className="mt-2">
+                                        <button
+                                            onClick={handleOpenReviewForm}
+                                            className={`btn ${
+                                                userReview
+                                                    ? 'btn-success'
+                                                    : 'btn-outline-success'
+                                            } btn-lg d-flex align-items-center gap-1 mx-auto`}
+                                        >
+                                            <i className="bi bi-star-fill"></i>
+                                            {userReview
+                                                ? 'Đã đánh giá'
+                                                : 'Đánh giá sự kiện'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Cột phải */}
@@ -214,6 +367,23 @@ const EventDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Hiển thị đánh giá trung bình */}
+            {reviewStats.totalReviews > 0 && (
+                <div className="container mt-3">
+                    <div className="d-flex justify-content-center align-items-center gap-3">
+                        <div className="d-flex align-items-center gap-2">
+                            {renderStars(reviewStats.averageRating)}
+                            <span className="text-white fw-bold fs-5">
+                                {reviewStats.averageRating.toFixed(1)}
+                            </span>
+                        </div>
+                        <span className="text-white">
+                            ({reviewStats.totalReviews} đánh giá)
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* Phần giới thiệu (nằm dưới banner) */}
             <div className="container my-5">
@@ -271,12 +441,79 @@ const EventDetail = () => {
                 </div>
             </div>
 
+            {/* Phần đánh giá */}
+            {canReview && (
+                <div className="container my-5">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h2 className="text-white mb-0">Đánh giá</h2>
+                        {reviewStats.totalReviews > 0 && (
+                            <div className="d-flex align-items-center gap-2">
+                                {renderStars(reviewStats.averageRating)}
+                                <span className="text-white fw-bold">
+                                    {reviewStats.averageRating.toFixed(1)}
+                                </span>
+                                <span className="text-muted">
+                                    ({reviewStats.totalReviews} đánh giá)
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {reviewStats.totalReviews === 0 ? (
+                        <div
+                            className="card p-4 border-0 text-center"
+                            style={{ backgroundColor: '#1e1e1e' }}
+                        >
+                            <p className="text-white mb-0">
+                                Chưa có đánh giá nào cho sự kiện này
+                            </p>
+                        </div>
+                    ) : (
+                        <div
+                            className="card p-4 border-0"
+                            style={{ backgroundColor: '#1e1e1e' }}
+                        >
+                            <div className="text-center">
+                                <div className="d-flex justify-content-center align-items-center gap-3 mb-3">
+                                    <div className="d-flex align-items-center gap-2">
+                                        {renderStars(reviewStats.averageRating)}
+                                        <span className="text-white fw-bold fs-4">
+                                            {reviewStats.averageRating.toFixed(
+                                                1,
+                                            )}
+                                        </span>
+                                    </div>
+                                    <span className="text-white">/ 5 sao</span>
+                                </div>
+                                <p className="text-white mb-0">
+                                    Dựa trên {reviewStats.totalReviews} đánh giá
+                                    từ người tham gia
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Modal mua vé */}
             <TicketModal
                 show={showModal}
                 onHide={() => setShowModal(false)}
                 event={event}
             />
+
+            {/* Review Form Modal */}
+            <ReviewForm
+                show={showReviewForm}
+                onHide={() => {
+                    setShowReviewForm(false);
+                    setSelectedReview(null);
+                }}
+                eventId={eventId}
+                review={selectedReview}
+                onSuccess={handleReviewSuccess}
+            />
+
             <div className="fixed-ticket-bar d-block d-md-none">
                 <div className="container d-flex justify-content-between align-items-center h-100">
                     <span className="text-white fw-bold">
