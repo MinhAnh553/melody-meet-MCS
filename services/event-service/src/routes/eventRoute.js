@@ -9,7 +9,7 @@ Router.route('/organizer/create').post(
     authMiddleware.isValidPermission(['organizer', 'admin']),
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },
-        { name: 'organizerLogo', maxCount: 1 },
+        // { name: 'organizerLogo', maxCount: 1 },
     ]),
     eventController.createEvent,
 );
@@ -41,10 +41,7 @@ Router.route('/admin/total-events').get(
 // Update event status (admin only)
 Router.route('/admin/update/:id/status').put(
     authMiddleware.isValidPermission(['admin']),
-    cloudinaryProvider.fields([
-        { name: 'eventBackground', maxCount: 1 },
-        { name: 'organizerLogo', maxCount: 1 },
-    ]),
+    cloudinaryProvider.fields([]),
     eventController.updateEventStatus,
 );
 
@@ -65,7 +62,7 @@ Router.route('/update/:id').patch(
     authMiddleware.isValidPermission(['organizer', 'admin']),
     cloudinaryProvider.fields([
         { name: 'eventBackground', maxCount: 1 },
-        { name: 'organizerLogo', maxCount: 1 },
+        // { name: 'organizerLogo', maxCount: 1 },
     ]),
     eventController.updateEvent,
 );
@@ -73,10 +70,7 @@ Router.route('/update/:id').patch(
 // Create order event
 Router.route('/order/:id').post(
     authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
-    cloudinaryProvider.fields([
-        { name: 'eventBackground', maxCount: 1 },
-        { name: 'organizerLogo', maxCount: 1 },
-    ]),
+    cloudinaryProvider.fields([]),
     eventController.createOrder,
 );
 

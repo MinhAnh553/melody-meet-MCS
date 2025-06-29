@@ -37,7 +37,7 @@ const createEvent = async (req, res) => {
         // Store uploaded image paths for potential cleanup
         uploadedImages = [
             req.files.eventBackground[0].path,
-            req.files.organizerLogo[0].path,
+            // req.files.organizerLogo[0].path,
         ];
 
         // Parse lại dữ liệu ticketTypes từ chuỗi JSON
@@ -64,11 +64,11 @@ const createEvent = async (req, res) => {
                 address: data.address,
             },
             description: data.description,
-            organizer: {
-                logo: req.files.organizerLogo[0].path,
-                name: data.organizerName,
-                info: data.organizerInfo,
-            },
+            // organizer: {
+            //     logo: req.files.organizerLogo[0].path,
+            //     name: data.organizerName,
+            //     info: data.organizerInfo,
+            // },
             startTime: new Date(data.startTime),
             endTime: new Date(data.endTime),
             ticketTypes: ticketTypes,
@@ -440,13 +440,13 @@ const updateEvent = async (req, res) => {
                 uploadedImages.push(req.files.eventBackground[0].path);
                 data.background = req.files.eventBackground[0].path;
             }
-            if (req.files.organizerLogo && req.files.organizerLogo.length > 0) {
-                if (event.organizer.logo) {
-                    await deleteCloudinaryImage(event.organizer.logo);
-                }
-                uploadedImages.push(req.files.organizerLogo[0].path);
-                data.organizerLogo = req.files.organizerLogo[0].path;
-            }
+            // if (req.files.organizerLogo && req.files.organizerLogo.length > 0) {
+            //     if (event.organizer.logo) {
+            //         await deleteCloudinaryImage(event.organizer.logo);
+            //     }
+            //     uploadedImages.push(req.files.organizerLogo[0].path);
+            //     data.organizerLogo = req.files.organizerLogo[0].path;
+            // }
         }
         if (!event) {
             logger.error('Event not found');
@@ -498,11 +498,11 @@ const updateEvent = async (req, res) => {
                 address: data.address || event.location.address,
             },
             description: data.description || event.description,
-            organizer: {
-                logo: data.organizerLogo || event.organizer.logo,
-                name: data.organizerName || event.organizer.name,
-                info: data.organizerInfo || event.organizer.info,
-            },
+            // organizer: {
+            //     logo: data.organizerLogo || event.organizer.logo,
+            //     name: data.organizerName || event.organizer.name,
+            //     info: data.organizerInfo || event.organizer.info,
+            // },
             startTime: new Date(data.startTime) || event.startTime,
             endTime: new Date(data.endTime) || event.endTime,
             status: data.status || event.status,
@@ -963,7 +963,6 @@ const updateEventStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const data = req.body;
-        console.log('MinhAnh553: updateEventStatus -> data', data);
 
         // Validate status
         const validStatuses = ['pending', 'approved', 'rejected', 'event_over'];

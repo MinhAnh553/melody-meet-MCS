@@ -35,20 +35,20 @@ export const validateCreateEvent = Joi.object({
         'string.empty': 'Mô tả không được để trống',
         'any.required': 'Mô tả là bắt buộc',
     }),
-    organizer: Joi.object({
-        logo: Joi.string().required().messages({
-            'string.empty': 'Logo ban tổ chức không được để trống',
-            'any.required': 'Logo ban tổ chức là bắt buộc',
-        }),
-        name: Joi.string().required().messages({
-            'string.empty': 'Tên tổ chức không được để trống',
-            'any.required': 'Tên tổ chức là bắt buộc',
-        }),
-        info: Joi.string().required().messages({
-            'string.empty': 'Thông tin tổ chức không được để trống',
-            'any.required': 'Thông tin tổ chức là bắt buộc',
-        }),
-    }),
+    // organizer: Joi.object({
+    //     logo: Joi.string().required().messages({
+    //         'string.empty': 'Logo ban tổ chức không được để trống',
+    //         'any.required': 'Logo ban tổ chức là bắt buộc',
+    //     }),
+    //     name: Joi.string().required().messages({
+    //         'string.empty': 'Tên tổ chức không được để trống',
+    //         'any.required': 'Tên tổ chức là bắt buộc',
+    //     }),
+    //     info: Joi.string().required().messages({
+    //         'string.empty': 'Thông tin tổ chức không được để trống',
+    //         'any.required': 'Thông tin tổ chức là bắt buộc',
+    //     }),
+    // }),
     ticketTypes: Joi.array().items(
         Joi.object({
             name: Joi.string().required().messages({

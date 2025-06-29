@@ -21,11 +21,11 @@ const eventSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        organizer: {
-            logo: { type: String, required: true },
-            name: { type: String, required: true },
-            info: { type: String, required: true },
-        },
+        // organizer: {
+        //     logo: { type: String, required: true },
+        //     name: { type: String, required: true },
+        //     info: { type: String, required: true },
+        // },
         // ticketTypes: [
         //     {
         //         name: { type: String, required: true }, // Tên vé

@@ -42,19 +42,19 @@ const Step1 = ({
             });
         }
 
-        if (!data.organizerName.trim() || !data.organizerInfo.trim()) {
-            return swalCustomize.Toast.fire({
-                icon: 'error',
-                title: 'Vui lòng nhập thông tin ban tổ chức',
-            });
-        }
+        // if (!data.organizerName.trim() || !data.organizerInfo.trim()) {
+        //     return swalCustomize.Toast.fire({
+        //         icon: 'error',
+        //         title: 'Vui lòng nhập thông tin ban tổ chức',
+        //     });
+        // }
 
-        if (!isEditMode && (!data.eventBackground || !data.organizerLogo)) {
-            return swalCustomize.Toast.fire({
-                icon: 'error',
-                title: 'Vui lòng tải lên đầy đủ hình ảnh',
-            });
-        }
+        // if (!isEditMode && (!data.eventBackground || !data.organizerLogo)) {
+        //     return swalCustomize.Toast.fire({
+        //         icon: 'error',
+        //         title: 'Vui lòng tải lên đầy đủ hình ảnh',
+        //     });
+        // }
 
         swalCustomize.Toast.fire({
             icon: 'success',
@@ -133,7 +133,7 @@ const Step1 = ({
                     }
                 />
             </div>
-            <div className="card-dark mt-4 mb-5">
+            {/* <div className="card-dark mt-4 mb-5">
                 <div className="row align-items-center">
                     <div className="col-md-2">
                         <UploadImage
@@ -196,7 +196,7 @@ const Step1 = ({
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </form>
     );
 };

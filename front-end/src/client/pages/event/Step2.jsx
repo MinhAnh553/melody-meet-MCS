@@ -265,11 +265,11 @@ const Step2 = ({ onLoadingChange, data, updateData, isEditMode }) => {
         formData.append('district', data.addressData.district);
         formData.append('ward', data.addressData.ward);
         formData.append('address', data.addressData.address);
-        if (data.organizerLogo !== null) {
-            formData.append('organizerLogo', data.organizerLogo);
-        }
-        formData.append('organizerName', data.organizerName);
-        formData.append('organizerInfo', data.organizerInfo);
+        // if (data.organizerLogo !== null) {
+        //     formData.append('organizerLogo', data.organizerLogo);
+        // }
+        // formData.append('organizerName', data.organizerName);
+        // formData.append('organizerInfo', data.organizerInfo);
         formData.append('startTime', data.startTime);
         formData.append('endTime', data.endTime);
         formData.append('ticketTypes', JSON.stringify(data.ticketTypes));
