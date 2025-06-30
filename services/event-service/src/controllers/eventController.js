@@ -813,7 +813,7 @@ const searchEvents = async (req, res) => {
         // Truy vấn sự kiện kèm ticketTypes
         const events = await eventModel
             .find(eventQuery)
-            .sort({ startTime: 1 })
+            .sort({ startTime: -1 })
             .select('_id name background startTime location organizer status')
             .lean();
         // Lấy ticketTypes cho từng event
