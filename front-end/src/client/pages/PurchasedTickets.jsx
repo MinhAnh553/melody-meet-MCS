@@ -154,11 +154,21 @@ function PurchasedTickets() {
     // Lọc theo status
     const filteredOrders = orders.filter((order) => {
         if (statusFilter === 'all') return true; // Lấy tất cả đơn hàng
-        if (statusFilter === 'upcoming')
-            return order.eventStatus !== 'event_over';
-        if (statusFilter === 'event_over')
-            return order.eventStatus === 'event_over';
-        return false;
+
+        const now = new Date();
+        const eventEndTime = new Date(order.endTime);
+
+        if (statusFilter === 'upcoming') {
+            // Chưa diễn ra: thời gian kết thúc sự kiện > thời gian hiện tại
+            return eventEndTime > now;
+        }
+
+        if (statusFilter === 'event_over') {
+            // Đã diễn ra: thời gian kết thúc sự kiện <= thời gian hiện tại
+            return eventEndTime <= now;
+        }
+
+        return true;
     });
 
     // Phân trang
@@ -193,15 +203,60 @@ function PurchasedTickets() {
             );
         }
         if (currentOrders.length === 0) {
+            let emptyMessage = 'Không có vé phù hợp';
+            let emptyDescription = 'Bạn chưa mua vé nào.';
+
+            if (statusFilter === 'upcoming') {
+                emptyMessage = 'Không có vé sắp diễn ra';
+                emptyDescription =
+                    'Bạn chưa có vé nào cho các sự kiện sắp diễn ra.';
+            } else if (statusFilter === 'event_over') {
+                emptyMessage = 'Không có vé đã diễn ra';
+                emptyDescription =
+                    'Bạn chưa có vé nào cho các sự kiện đã kết thúc.';
+            } else if (orders.length === 0) {
+                emptyMessage = 'Chưa có vé nào';
+                emptyDescription =
+                    'Bạn chưa mua vé nào. Hãy khám phá các sự kiện thú vị!';
+            } else {
+                emptyMessage = 'Không tìm thấy vé phù hợp';
+                emptyDescription = `Không có vé nào ${
+                    statusFilter === 'upcoming' ? 'sắp diễn ra' : 'đã diễn ra'
+                } trong bộ lọc hiện tại.`;
+            }
+
             return (
                 <div className="text-center mt-5">
                     <img
                         src={noTicket}
                         alt="No tickets"
                         className="mb-3 rounded"
-                        style={{ width: '200px' }}
+                        style={{ width: '200px', opacity: '0.7' }}
                     />
-                    <p className="fs-5">Không có vé phù hợp</p>
+                    <h4 className="text-white mb-2">{emptyMessage}</h4>
+                    <p className="text-white mb-4">{emptyDescription}</p>
+
+                    {orders.length === 0 && (
+                        <Button
+                            variant="primary"
+                            onClick={() => navigate('/')}
+                            className="px-4 py-2"
+                        >
+                            <i className="bi bi-search me-2"></i>
+                            Khám phá sự kiện
+                        </Button>
+                    )}
+
+                    {orders.length > 0 && statusFilter !== 'all' && (
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => setStatusFilter('all')}
+                            className="px-4 py-2"
+                        >
+                            <i className="bi bi-collection me-2"></i>
+                            Xem tất cả vé
+                        </Button>
+                    )}
                 </div>
             );
         }
@@ -227,22 +282,118 @@ function PurchasedTickets() {
                                     style={{ maxWidth: '95%' }}
                                 >
                                     {/* Hiển thị trên máy tính: Đơn hàng #123 | Tên sự kiện */}
-                                    <h5
-                                        className="fw-bold mb-1 text-truncate d-none d-md-block"
-                                        style={{
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                        }}
-                                    >
-                                        Đơn hàng #{order.orderCode} |{' '}
-                                        {order.eventName}
-                                    </h5>
+                                    <div className="d-flex align-items-center gap-2">
+                                        <h5
+                                            className="fw-bold mb-1 text-truncate d-none d-md-block"
+                                            style={{
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                        >
+                                            Đơn hàng #{order.orderCode} |{' '}
+                                            {order.eventName}
+                                        </h5>
+
+                                        {/* Event Status Badge */}
+                                        {(() => {
+                                            const now = new Date();
+                                            const eventStartTime = new Date(
+                                                order.startTime,
+                                            );
+                                            const eventEndTime = new Date(
+                                                order.endTime,
+                                            );
+
+                                            if (eventEndTime <= now) {
+                                                return (
+                                                    <span className="badge bg-secondary">
+                                                        <i className="bi bi-calendar-check me-1"></i>
+                                                        Đã kết thúc
+                                                    </span>
+                                                );
+                                            } else if (
+                                                eventStartTime <= now &&
+                                                eventEndTime > now
+                                            ) {
+                                                return (
+                                                    <span className="badge bg-warning text-dark">
+                                                        <i className="bi bi-play-circle me-1"></i>
+                                                        Đang diễn ra
+                                                    </span>
+                                                );
+                                            } else {
+                                                return (
+                                                    <span className="badge bg-success">
+                                                        <i className="bi bi-calendar-event me-1"></i>
+                                                        Sắp diễn ra
+                                                    </span>
+                                                );
+                                            }
+                                        })()}
+                                    </div>
 
                                     {/* Hiển thị trên mobile/tablet: Đơn hàng #123: */}
-                                    <h5 className="fw-bold mb-1 d-block d-md-none">
-                                        Đơn hàng #{order.orderCode}
-                                    </h5>
+                                    <div className="d-block d-md-none">
+                                        <h5 className="fw-bold mb-1">
+                                            Đơn hàng #{order.orderCode}
+                                        </h5>
+                                        <div className="d-flex align-items-center gap-2">
+                                            <small className="text-muted">
+                                                {order.eventName}
+                                            </small>
+                                            {(() => {
+                                                const now = new Date();
+                                                const eventStartTime = new Date(
+                                                    order.startTime,
+                                                );
+                                                const eventEndTime = new Date(
+                                                    order.endTime,
+                                                );
+
+                                                if (eventEndTime <= now) {
+                                                    return (
+                                                        <span
+                                                            className="badge bg-secondary"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.7rem',
+                                                            }}
+                                                        >
+                                                            Đã kết thúc
+                                                        </span>
+                                                    );
+                                                } else if (
+                                                    eventStartTime <= now &&
+                                                    eventEndTime > now
+                                                ) {
+                                                    return (
+                                                        <span
+                                                            className="badge bg-warning text-dark"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.7rem',
+                                                            }}
+                                                        >
+                                                            Đang diễn ra
+                                                        </span>
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <span
+                                                            className="badge bg-success"
+                                                            style={{
+                                                                fontSize:
+                                                                    '0.7rem',
+                                                            }}
+                                                        >
+                                                            Sắp diễn ra
+                                                        </span>
+                                                    );
+                                                }
+                                            })()}
+                                        </div>
+                                    </div>
                                 </div>
                                 <i
                                     className={`bi ${
@@ -609,50 +760,103 @@ function PurchasedTickets() {
 
                 <Col md={9} className="px-4">
                     <h2 className="mb-4 fw-bold">Vé đã mua</h2>
-                    <div className="d-flex mb-4">
-                        <Button
-                            variant={
-                                statusFilter === 'all' ? 'success' : 'secondary'
-                            }
-                            className="me-2 shadow-sm"
-                            style={{ padding: '5px' }}
-                            onClick={() => {
-                                setStatusFilter('all');
-                                handlePageChange(1);
-                            }}
-                        >
-                            Tất cả
-                        </Button>
-                        <Button
-                            variant={
-                                statusFilter === 'upcoming'
-                                    ? 'success'
-                                    : 'secondary'
-                            }
-                            style={{ padding: '5px' }}
-                            className="me-2 shadow-sm"
-                            onClick={() => {
-                                setStatusFilter('upcoming');
-                                handlePageChange(1);
-                            }}
-                        >
-                            Chưa diễn ra
-                        </Button>
-                        <Button
-                            variant={
-                                statusFilter === 'event_over'
-                                    ? 'success'
-                                    : 'secondary'
-                            }
-                            style={{ padding: '5px' }}
-                            className="shadow-sm"
-                            onClick={() => {
-                                setStatusFilter('event_over');
-                                handlePageChange(1);
-                            }}
-                        >
-                            Đã diễn ra
-                        </Button>
+
+                    {/* Filter Section */}
+                    <div className="mb-4">
+                        <div className="d-flex flex-wrap gap-2 mb-3">
+                            <Button
+                                variant={
+                                    statusFilter === 'all'
+                                        ? 'primary'
+                                        : 'primary'
+                                }
+                                className={`shadow-sm ${styles.filterButton} ${
+                                    statusFilter === 'all'
+                                        ? styles.filterButtonActive
+                                        : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('all');
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <i className="bi bi-collection me-1"></i>
+                                Tất cả
+                                <span className="badge bg-light text-dark ms-2">
+                                    {orders.length}
+                                </span>
+                            </Button>
+                            <Button
+                                variant={
+                                    statusFilter === 'upcoming'
+                                        ? 'success'
+                                        : 'success'
+                                }
+                                className={`shadow-sm ${styles.filterButton} ${
+                                    statusFilter === 'upcoming'
+                                        ? styles.filterButtonActive
+                                        : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('upcoming');
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <i className="bi bi-calendar-event me-1"></i>
+                                Chưa diễn ra
+                                <span className="badge bg-light text-dark ms-2">
+                                    {
+                                        orders.filter(
+                                            (order) =>
+                                                new Date(order.endTime) >
+                                                new Date(),
+                                        ).length
+                                    }
+                                </span>
+                            </Button>
+                            <Button
+                                variant={
+                                    statusFilter === 'event_over'
+                                        ? 'secondary'
+                                        : 'secondary'
+                                }
+                                className={`shadow-sm ${styles.filterButton} ${
+                                    statusFilter === 'event_over'
+                                        ? styles.filterButtonActive
+                                        : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('event_over');
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <i className="bi bi-calendar-check me-1"></i>
+                                Đã diễn ra
+                                <span className="badge bg-light text-dark ms-2">
+                                    {
+                                        orders.filter(
+                                            (order) =>
+                                                new Date(order.endTime) <=
+                                                new Date(),
+                                        ).length
+                                    }
+                                </span>
+                            </Button>
+                        </div>
+
+                        {/* Filter Summary */}
+                        {statusFilter !== 'all' && (
+                            <div
+                                className={`alert alert-info py-2 px-3 ${styles.filterSummary}`}
+                            >
+                                <i className="bi bi-info-circle me-2"></i>
+                                Hiển thị {filteredOrders.length} vé{' '}
+                                {statusFilter === 'upcoming'
+                                    ? 'chưa diễn ra '
+                                    : 'đã diễn ra '}
+                                trong tổng số {orders.length} vé
+                            </div>
+                        )}
                     </div>
 
                     {renderOrders()}
