@@ -118,6 +118,8 @@ app.use(
         const publicPatterns = [
             /^\/v1\/events\?/, // Query parameters
             /^\/v1\/events\/[^\/]+$/, // /v1/events/:id
+            /^\/v1\/events\/reviews\/event\/[^\/]+\/stats$/, // /v1/events/reviews/event/:id/stats
+            /^\/v1\/events\/reviews\/organizer\/[^\/]+(\?.*)?$/, //  /v1/events/reviews/organizer/:id?page=1&limit=10
         ];
 
         // Kiểm tra nếu route hiện tại match với bất kỳ pattern nào
