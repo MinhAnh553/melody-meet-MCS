@@ -238,6 +238,39 @@ app.use(
     }),
 );
 
+app.use(
+    '/v1/media',
+    authMiddleware.isAuthorized,
+    proxy(process.env.MEDIA_SERVICE_URL, {
+        ...proxyOptions,
+        proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+            if (srcReq?.jwtDecoded) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
+            }
+
+            if (
+                typeof srcReq.headers['content-type'] !== 'string' ||
+                !srcReq.headers['content-type'].startsWith(
+                    'multipart/form-data',
+                )
+            ) {
+                proxyReqOpts.headers['content-type'] = 'application/json';
+            }
+
+            return proxyReqOpts;
+        },
+        userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+            logger.info(
+                'Response received from media service:',
+                proxyRes.statusCode,
+            );
+            return proxyResData;
+        },
+        parseReqBody: false,
+    }),
+);
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
@@ -248,5 +281,6 @@ app.listen(PORT, () => {
     logger.info(
         `🚀 Ticket Service running on ${process.env.TICKET_SERVICE_URL}`,
     );
+    logger.info(`🚀 Media Service running on ${process.env.MEDIA_SERVICE_URL}`);
     logger.info(`Redis URL: ${process.env.REDIS_URL}`);
 });

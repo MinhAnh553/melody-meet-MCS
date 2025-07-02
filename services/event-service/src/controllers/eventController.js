@@ -941,6 +941,30 @@ const getEventSummary = async (req, res) => {
     }
 };
 
+// [GET] /events/organizer/total_ticket_sold
+const getTotalTicketSold = async (req, res) => {
+    try {
+        const organizerId = req.user.id;
+
+        // Lấy tất cả eventId do organizer tạo
+        const events = await eventModel.find({ createdBy: organizerId }, '_id');
+        const eventIds = events.map((e) => e._id);
+        // Lấy tổng quantitySold của tất cả ticketType thuộc các event này
+        const result = await ticketTypeModel.aggregate([
+            { $match: { eventId: { $in: eventIds } } },
+            { $group: { _id: null, totalTickets: { $sum: '$quantitySold' } } },
+        ]);
+        const totalTickets = result.length > 0 ? result[0].totalTickets : 0;
+        return res.status(200).json({ success: true, totalTickets });
+    } catch (error) {
+        logger.error('Get total ticket sold error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 // [GET] /events/admin/total-events
 const getTotalEvents = async (req, res) => {
     try {
@@ -1557,6 +1581,7 @@ export default {
     searchEvents,
     getEventSummary,
     getTotalEvents,
+    getTotalTicketSold,
     updateEventStatus,
     createReview,
     updateReview,

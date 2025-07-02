@@ -2,6 +2,16 @@ import axios from './axiosCustomize';
 
 const API_URL = '/v1';
 
+const uploadMedia = async (file) => {
+    const URL_API = `${API_URL}/media/upload`;
+    return axios.post(URL_API, file);
+};
+
+const deleteMedia = async (mediaId) => {
+    const URL_API = `${API_URL}/media/delete/${mediaId}`;
+    return axios.delete(URL_API);
+};
+
 const sendOTP = (data) => {
     const URL_API = `${API_URL}/auth/register/send-code`;
 
@@ -228,6 +238,19 @@ const getOrganizerInfo = async (organizerId) => {
     return axios.get(URL_API);
 };
 
+// Lấy thống kê ban tổ chức
+const getOrganizerStats = async (organizerId) => {
+    // Giả lập endpoint, cần backend thực tế trả về các trường: totalEvents, totalTickets, averageRating, totalReviews
+    const URL_API = `${API_URL}/events/organizer/${organizerId}/stats`;
+    return axios.get(URL_API);
+};
+
+// Cập nhật thông tin organizer
+const updateOrganizer = async (data) => {
+    const URL_API = `${API_URL}/auth/organizers/update`;
+    return axios.patch(URL_API, data);
+};
+
 export default {
     sendOTP,
     verifyOTPAndRegister,
@@ -270,4 +293,8 @@ export default {
     checkEventReview,
     // Lấy thông tin ban tổ chức
     getOrganizerInfo,
+    getOrganizerStats,
+    updateOrganizer,
+    uploadMedia,
+    deleteMedia,
 };

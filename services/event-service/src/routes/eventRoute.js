@@ -26,6 +26,12 @@ Router.route('/organizer/my').get(
     eventController.getMyEvents,
 );
 
+// Get ticket sold
+Router.route('/organizer/total_ticket_sold').get(
+    authMiddleware.isValidPermission(['organizer', 'admin']),
+    eventController.getTotalTicketSold,
+);
+
 // Get all events
 Router.route('/admin/all-events').get(
     authMiddleware.isValidPermission(['admin']),

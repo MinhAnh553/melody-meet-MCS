@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
         },
         organizer: {
             logo: { type: String },
+            logoMediaId: { type: String },
             name: { type: String },
             info: { type: String },
             email: { type: String },

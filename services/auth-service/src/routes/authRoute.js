@@ -21,6 +21,11 @@ Router.route('/user/update-address').patch(
     authController.updateUserAddress,
 );
 
+Router.route('/organizers/update').patch(
+    authMiddleware.isValidPermission(['organizer', 'admin']),
+    authController.updateOrganizer,
+);
+
 Router.route('/users/total').get(
     authMiddleware.isValidPermission(['admin']),
     authController.getTotalUsers,

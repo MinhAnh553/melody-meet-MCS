@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SidebarEvent = () => {
-    // Quản lý tab active
-    const [activeTab, setActiveTab] = useState('event');
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Xác định tab active dựa vào pathname
+    const getActiveTab = () => {
+        if (location.pathname.startsWith('/organizer/event')) return 'event';
+        if (location.pathname.startsWith('/organizer/infomation'))
+            return 'infomation';
+        // Thêm các tab khác nếu có
+        return '';
+    };
+    const activeTab = getActiveTab();
 
     const handleNavigation = (tab, path) => {
-        setActiveTab(tab);
         navigate(path);
     };
 
@@ -16,7 +24,7 @@ const SidebarEvent = () => {
             <h4
                 className="text-success mb-4 d-flex align-items-center"
                 style={{ cursor: 'pointer' }}
-                onClick={(e) => {
+                onClick={() => {
                     navigate('/');
                 }}
             >
@@ -32,12 +40,32 @@ const SidebarEvent = () => {
                             activeTab === 'event' ? 'active' : ''
                         }`}
                         onClick={(e) => {
-                            e.preventDefault(); // Ngăn reload trang
+                            e.preventDefault();
                             handleNavigation('event', '/organizer/event');
                         }}
                     >
                         <i className="bi bi-calendar-event me-2"></i>
                         <span>Sự kiện của tôi</span>
+                    </a>
+                </li>
+
+                {/* Thông tin BTC */}
+                <li className="nav-item mb-2">
+                    <a
+                        href="#"
+                        className={`nav-link text-light d-flex align-items-center ${
+                            activeTab === 'infomation' ? 'active' : ''
+                        }`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleNavigation(
+                                'infomation',
+                                '/organizer/infomation',
+                            );
+                        }}
+                    >
+                        <i className="bi bi-building me-2"></i>
+                        <span>Thông tin BTC</span>
                     </a>
                 </li>
 

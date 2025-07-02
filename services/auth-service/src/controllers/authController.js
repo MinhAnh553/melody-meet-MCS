@@ -11,6 +11,7 @@ import {
     validateLogin,
 } from '../utils/validation.js';
 import JwtProvider from '../providers/JwtProvider.js';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -240,7 +241,40 @@ const getAccount = async (req, res) => {
     logger.info(`Get account request received`);
     try {
         const user = await userModel.findById(req.user.id).select('-password');
-        res.status(200).json({ success: true, user });
+        if (user.role === 'organizer') {
+            // Lấy tổng số sự kiện đã tạo
+            const totalEvents = await axios.get(
+                `${process.env.EVENT_SERVICE_URL}/api/events/organizer/my?query=&page=1&limit=10&status=approved`,
+                {
+                    headers: {
+                        'x-user-id': req.user?.id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
+            );
+            // Lấy tổng số số vé đã bán
+            const totalTickets = await axios.get(
+                `${process.env.EVENT_SERVICE_URL}/api/events/organizer/total_ticket_sold`,
+                {
+                    headers: {
+                        'x-user-id': req.user?.id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
+            );
+
+            const organizerData = user.toObject();
+
+            organizerData.organizer.totalEvents =
+                totalEvents.data.totalEvents || 0;
+
+            organizerData.organizer.totalTickets =
+                totalTickets.data.totalTickets || 0;
+
+            return res.status(200).json({ success: true, user: organizerData });
+        }
+
+        return res.status(200).json({ success: true, user });
     } catch (error) {
         logger.error('Get account error:', error);
         res.status(500).json({
@@ -398,6 +432,27 @@ const getUserById = async (req, res) => {
     }
 };
 
+// Update organizer
+const updateOrganizer = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const data = req.body;
+        const organizer = await userModel.findByIdAndUpdate(id, data, {
+            new: true,
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Cập nhật thông tin ban tổ chức thành công',
+        });
+    } catch (error) {
+        logger.error('Update organizer error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -409,4 +464,5 @@ export default {
     getAllUsers,
     updateUser,
     getUserById,
+    updateOrganizer,
 };

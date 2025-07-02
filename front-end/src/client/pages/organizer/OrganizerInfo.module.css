@@ -1,0 +1,239 @@
+/** Organizer Info Page CSS Module - refactored to avoid global class conflicts **/
+
+.organizerContainer {
+    background: linear-gradient(135deg, #23243a 0%, #2d2e4a 100%);
+    min-height: 100vh;
+}
+
+.organizerCard {
+    background: rgb(49, 53, 62);
+    color: #f3f4f6;
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.organizerCard:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    transform: translateY(-2px) scale(1.01);
+}
+
+.organizerAvatar {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 3px solid #ffd700;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    background: #23243a;
+}
+
+.organizerStatsRow {
+}
+.organizerStatsCard {
+    background: rgb(49, 53, 62);
+    color: #f3f4f6;
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    padding: 1.5rem 1.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.organizerStatsCard:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    transform: translateY(-2px) scale(1.01);
+}
+.organizerStatNumber {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffd700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+.organizerStatLabel {
+    color: #b0b3b8;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.organizerInfoSection {
+    background: rgb(49, 53, 62);
+    color: #f3f4f6;
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.organizerInfoSection:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    transform: translateY(-2px) scale(1.01);
+}
+
+.organizerSectionTitle {
+    color: #ffd700;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #393c47;
+    letter-spacing: 0.5px;
+}
+
+.organizerInfoItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.1rem;
+    padding: 0.85rem 1rem;
+    background: rgba(60, 63, 72, 0.85);
+    border-radius: 0.75rem;
+    transition: background 0.2s, transform 0.2s;
+    color: #e2e2e2;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.organizerInfoItem:hover {
+    background: rgba(60, 63, 72, 1);
+    transform: translateX(4px) scale(1.01);
+}
+
+.organizerInfoIcon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
+    color: #23243a;
+    border-radius: 50%;
+    margin-right: 1.1rem;
+    flex-shrink: 0;
+    font-size: 1.3rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.organizerInfoLabel {
+    font-weight: 600;
+    color: #ffd700;
+    margin-bottom: 0.18rem;
+    font-size: 1rem;
+}
+.organizerInfoValue {
+    color: #e2e2e2;
+    font-size: 1.05rem;
+    font-weight: 400;
+}
+
+.organizerContactButton {
+    background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
+    border: none;
+    color: #23243a;
+    padding: 0.7rem 2rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.08);
+}
+.organizerContactButton:hover {
+    background: linear-gradient(135deg, #ffe066 60%, #ffd700 100%);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.18);
+    color: #23243a;
+    text-decoration: none;
+}
+
+.organizerRatingStars {
+    display: flex;
+    align-items: center;
+    gap: 0.18rem;
+    font-size: 1.1rem;
+}
+.organizerRatingText {
+    margin-left: 0.5rem;
+    color: #b0b3b8;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.organizerBadge {
+    background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
+    color: #23243a;
+    padding: 0.5rem 1.1rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.organizerReviewCard {
+    background: rgb(49, 53, 62);
+    color: #f3f4f6;
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+}
+.organizerReviewQuote {
+    color: #ffd700;
+    font-size: 1.2rem;
+    margin-right: 8px;
+}
+.organizerReviewUser {
+    color: #ffd700;
+    font-weight: 600;
+    font-size: 1.08rem;
+    margin-right: 0.5rem;
+}
+.organizerReviewEvent {
+    color: #b0b3b8;
+    font-weight: 500;
+    font-size: 1rem;
+}
+.organizerReviewTime {
+    color: #b0b3b8;
+    font-size: 0.95rem;
+    margin-left: auto;
+}
+.organizerReviewComment {
+    color: #e2e2e2;
+    font-size: 1.08rem;
+}
+
+@media (max-width: 768px) {
+    .organizerContainer {
+        padding: 1rem 0;
+    }
+    .organizerCard {
+        margin-bottom: 1rem;
+        padding: 1.2rem 0.7rem;
+    }
+    .organizerAvatar {
+        width: 80px;
+        height: 80px;
+    }
+    .organizerStatNumber {
+        font-size: 1.3rem;
+    }
+    .organizerInfoSection {
+        padding: 1.1rem 0.7rem;
+    }
+    .organizerInfoItem {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: center;
+        padding: 0.7rem 0.5rem;
+    }
+    .organizerInfoIcon {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}

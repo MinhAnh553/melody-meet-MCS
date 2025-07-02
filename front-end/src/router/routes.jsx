@@ -27,6 +27,7 @@ import NotFound from '../client/pages/NotFound.jsx';
 import RbacRoute from './RbacRoute.jsx';
 import { permissions } from '../config/rbacConfig';
 import Search from '../client/pages/Search.jsx';
+import OrganizerInfo from '../client/pages/organizer/OrganizerInfo.jsx';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -148,6 +149,25 @@ const AnimatedRoutes = () => {
                                         transition={{ duration: 0.5 }}
                                     >
                                         <EventSummary />
+                                    </motion.div>
+                                }
+                            />
+                        </Route>
+                        <Route
+                            path="infomation"
+                            element={<EventManagementLayout />}
+                        >
+                            <Route
+                                index
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <OrganizerInfo />
                                     </motion.div>
                                 }
                             />
