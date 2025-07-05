@@ -325,7 +325,7 @@ const EventsList = () => {
                             <Table
                                 responsive
                                 hover
-                                className={styles.eventTable}
+                                className={`${styles.eventTable} table-striped`}
                             >
                                 <thead>
                                     <tr>

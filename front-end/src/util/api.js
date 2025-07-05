@@ -251,6 +251,32 @@ const updateOrganizer = async (data) => {
     return axios.patch(URL_API, data);
 };
 
+// Upgrade request APIs
+const createUpgradeRequest = async (data) => {
+    const URL_API = `${API_URL}/auth/upgrade-request`;
+    return axios.post(URL_API, data);
+};
+
+const getUserUpgradeRequest = async () => {
+    const URL_API = `${API_URL}/auth/upgrade-request/user`;
+    return axios.get(URL_API);
+};
+
+const getUpgradeRequests = async (params) => {
+    const URL_API = `${API_URL}/auth/upgrade-requests`;
+    return axios.get(URL_API, { params });
+};
+
+const approveUpgradeRequest = async (requestId, adminNote = '') => {
+    const URL_API = `${API_URL}/auth/upgrade-requests/${requestId}/approve`;
+    return axios.patch(URL_API, { adminNote });
+};
+
+const rejectUpgradeRequest = async (requestId, adminNote = '') => {
+    const URL_API = `${API_URL}/auth/upgrade-requests/${requestId}/reject`;
+    return axios.patch(URL_API, { adminNote });
+};
+
 export default {
     sendOTP,
     verifyOTPAndRegister,
@@ -297,4 +323,9 @@ export default {
     updateOrganizer,
     uploadMedia,
     deleteMedia,
+    createUpgradeRequest,
+    getUserUpgradeRequest,
+    getUpgradeRequests,
+    approveUpgradeRequest,
+    rejectUpgradeRequest,
 };

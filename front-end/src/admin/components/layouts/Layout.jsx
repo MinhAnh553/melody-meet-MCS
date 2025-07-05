@@ -13,6 +13,7 @@ import {
     FaSignOutAlt,
     FaCog,
     FaChevronRight,
+    FaUserPlus,
 } from 'react-icons/fa';
 import avatar from '../../../assets/images/avatar.png';
 import swalCustomize from '../../../util/swalCustomize';
@@ -62,6 +63,11 @@ const Layout = () => {
         },
         // { path: '/admin/tickets', icon: <FaTicketAlt />, text: 'Quản lý vé' },
         { path: '/admin/users', icon: <FaUsers />, text: 'Quản lý người dùng' },
+        {
+            path: '/admin/upgrade-requests',
+            icon: <FaUserPlus />,
+            text: 'Quản lý yêu cầu nâng cấp',
+        },
     ];
 
     return (

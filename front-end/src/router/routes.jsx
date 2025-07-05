@@ -28,6 +28,9 @@ import RbacRoute from './RbacRoute.jsx';
 import { permissions } from '../config/rbacConfig';
 import Search from '../client/pages/Search.jsx';
 import OrganizerInfo from '../client/pages/organizer/OrganizerInfo.jsx';
+import UpgradeToOrganizer from '../client/pages/organizer/UpgradeToOrganizer.jsx';
+import UpgradeRequestsList from '../admin/components/UpgradeRequests/UpgradeRequestsList.jsx';
+import UpgradeStatus from '../client/pages/organizer/UpgradeStatus.jsx';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -173,7 +176,46 @@ const AnimatedRoutes = () => {
                             />
                         </Route>
                     </Route>
+
+                    <Route
+                        path="/user/upgrade"
+                        element={
+                            <RbacRoute
+                                requiredPermission={permissions.UPGRADE_USER}
+                            />
+                        }
+                    >
+                        <Route
+                            index
+                            element={
+                                <motion.div
+                                    variants={pageVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <UpgradeToOrganizer />
+                                </motion.div>
+                            }
+                        />
+                        <Route
+                            path="status"
+                            element={
+                                <motion.div
+                                    variants={pageVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <UpgradeStatus />
+                                </motion.div>
+                            }
+                        />
+                    </Route>
                 </Route>
+
                 <Route path="/event/:eventId" element={<ClientLayout />}>
                     <Route
                         index
@@ -209,6 +251,7 @@ const AnimatedRoutes = () => {
                         }
                     />
                 </Route>
+
                 <Route path="/orders" element={<ProtectedRoutes />}>
                     <Route
                         path="payment-success"
@@ -272,6 +315,10 @@ const AnimatedRoutes = () => {
                             <Route path="orders" element={<OrdersList />} />
                             <Route path="tickets" element={<TicketsList />} />
                             <Route path="users" element={<UsersList />} />
+                            <Route
+                                path="upgrade-requests"
+                                element={<UpgradeRequestsList />}
+                            />
                         </Route>
                     </Route>
                 </Route>

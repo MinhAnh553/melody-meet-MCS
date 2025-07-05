@@ -281,7 +281,7 @@ const OrdersList = () => {
                             <Table
                                 responsive
                                 hover
-                                className={styles.orderTable}
+                                className={`${styles.orderTable} table-striped`}
                             >
                                 <thead>
                                     <tr>

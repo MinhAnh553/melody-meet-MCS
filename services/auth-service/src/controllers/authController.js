@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import userModel from '../models/userModel.js';
 import otpModel from '../models/otpModel.js';
+import upgradeRequestModel from '../models/upgradeRequestModel.js';
 import mailTemplate from '../templates/mailTemplate.js';
 import emailProvider from '../providers/emailProvider.js';
 import logger from '../utils/logger.js';
@@ -453,6 +454,230 @@ const updateOrganizer = async (req, res) => {
     }
 };
 
+// Create upgrade request
+const createUpgradeRequest = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { organizer } = req.body;
+
+        // Check if user already has a pending request
+        const existingRequest = await upgradeRequestModel.findOne({
+            userId: id,
+            status: 'pending',
+        });
+
+        if (existingRequest) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bạn đã có yêu cầu nâng cấp đang chờ xử lý',
+            });
+        }
+
+        // Check if user is already an organizer
+        const user = await userModel.findById(id);
+        if (user.role === 'organizer') {
+            return res.status(400).json({
+                success: false,
+                message: 'Bạn đã là người tổ chức sự kiện',
+            });
+        }
+
+        // Create upgrade request
+        const upgradeRequest = new upgradeRequestModel({
+            userId: id,
+            organizer,
+        });
+
+        await upgradeRequest.save();
+
+        logger.info(`Upgrade request created for user: ${id}`);
+        res.status(201).json({
+            success: true,
+            message:
+                'Yêu cầu nâng cấp đã được gửi thành công! Vui lòng chờ admin xem xét.',
+        });
+    } catch (error) {
+        logger.error('Create upgrade request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// Get upgrade requests (admin only)
+const getUpgradeRequests = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const status = req.query.status || 'all';
+        const startIndex = (page - 1) * limit;
+
+        const query = {};
+        if (status !== 'all') {
+            query.status = status;
+        }
+
+        const upgradeRequests = await upgradeRequestModel
+            .find(query)
+            .populate('userId', 'email name')
+            .populate('adminId', 'email name')
+            .sort({ createdAt: -1 })
+            .skip(startIndex)
+            .limit(limit);
+
+        const totalRequests = await upgradeRequestModel.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            upgradeRequests,
+            currentPage: page,
+            totalPages: Math.ceil(totalRequests / limit),
+            totalRequests,
+        });
+    } catch (error) {
+        logger.error('Get upgrade requests error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// Approve upgrade request (admin only)
+const approveUpgradeRequest = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        const { adminNote } = req.body;
+        const adminId = req.user.id;
+
+        const upgradeRequest = await upgradeRequestModel.findById(requestId);
+        if (!upgradeRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy yêu cầu nâng cấp',
+            });
+        }
+
+        if (upgradeRequest.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: 'Yêu cầu này đã được xử lý',
+            });
+        }
+
+        // Update user role to organizer
+        await userModel.findByIdAndUpdate(upgradeRequest.userId, {
+            role: 'organizer',
+            organizer: upgradeRequest.organizer,
+        });
+
+        // Update request status
+        upgradeRequest.status = 'approved';
+        upgradeRequest.adminId = adminId;
+        upgradeRequest.adminNote = adminNote;
+        await upgradeRequest.save();
+
+        // Send email notification to user
+        const user = await userModel.findById(upgradeRequest.userId);
+        if (user) {
+            await emailProvider.sendMail(
+                user.email,
+                'Melody Meet: Yêu cầu nâng cấp được duyệt',
+                mailTemplate.upgradeApprovedTemplate(
+                    upgradeRequest.organizer.name,
+                ),
+            );
+        }
+
+        logger.info(`Upgrade request approved: ${requestId}`);
+        res.status(200).json({
+            success: true,
+            message: 'Yêu cầu nâng cấp đã được duyệt thành công',
+        });
+    } catch (error) {
+        logger.error('Approve upgrade request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// Reject upgrade request (admin only)
+const rejectUpgradeRequest = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        const { adminNote } = req.body;
+        const adminId = req.user.id;
+
+        const upgradeRequest = await upgradeRequestModel.findById(requestId);
+        if (!upgradeRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy yêu cầu nâng cấp',
+            });
+        }
+
+        if (upgradeRequest.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: 'Yêu cầu này đã được xử lý',
+            });
+        }
+
+        // Update request status
+        upgradeRequest.status = 'rejected';
+        upgradeRequest.adminId = adminId;
+        upgradeRequest.adminNote = adminNote;
+        await upgradeRequest.save();
+
+        // Send email notification to user
+        const user = await userModel.findById(upgradeRequest.userId);
+        if (user) {
+            await emailProvider.sendMail(
+                user.email,
+                'Melody Meet: Yêu cầu nâng cấp bị từ chối',
+                mailTemplate.upgradeRejectedTemplate(adminNote),
+            );
+        }
+
+        logger.info(`Upgrade request rejected: ${requestId}`);
+        res.status(200).json({
+            success: true,
+            message: 'Yêu cầu nâng cấp đã bị từ chối',
+        });
+    } catch (error) {
+        logger.error('Reject upgrade request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+// Get user's upgrade request status
+const getUserUpgradeRequest = async (req, res) => {
+    try {
+        const { id } = req.user;
+
+        const upgradeRequest = await upgradeRequestModel
+            .findOne({ userId: id })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            upgradeRequest,
+        });
+    } catch (error) {
+        logger.error('Get user upgrade request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     sendVerificationCode,
     verifyAndRegister,
@@ -465,4 +690,9 @@ export default {
     updateUser,
     getUserById,
     updateOrganizer,
+    createUpgradeRequest,
+    getUpgradeRequests,
+    approveUpgradeRequest,
+    rejectUpgradeRequest,
+    getUserUpgradeRequest,
 };

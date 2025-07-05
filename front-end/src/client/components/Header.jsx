@@ -143,16 +143,32 @@ const Header = () => {
                     >
                         <SearchBar />
                         <ul className="navbar-nav mb-2 mb-lg-0 gap-2 align-items-center">
-                            {hasPermission(permissions.VIEW_ORGANIZERS) && (
+                            {/* {hasPermission(permissions.VIEW_ORGANIZERS) && (
                                 <li className="nav-item">
                                     <Link
                                         className={`nav-link ${styles.createEvent}`}
-                                        to="/organizer/event/create"
+                                        to={
+                                            user?.role === 'client'
+                                                ? '/user/upgrade'
+                                                : '/organizer/event/create'
+                                        }
                                     >
                                         Tạo sự kiện
                                     </Link>
                                 </li>
-                            )}
+                            )} */}
+                            <li className="nav-item">
+                                <Link
+                                    className={`nav-link ${styles.createEvent}`}
+                                    to={
+                                        user?.role === 'client'
+                                            ? '/user/upgrade'
+                                            : '/organizer/event/create'
+                                    }
+                                >
+                                    Tạo sự kiện
+                                </Link>
+                            </li>
                             <li className="nav-item">
                                 <Link
                                     className={`nav-link ${styles.navLink} d-flex align-items-center`}

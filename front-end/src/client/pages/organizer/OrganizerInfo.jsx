@@ -176,7 +176,6 @@ const OrganizerInfo = () => {
     const handleSave = async () => {
         let logoUrl = organizerInfo?.logo;
         let logoMediaId = organizerInfo?.logoMediaId;
-        console.log('MinhAnh553: handleSave -> logoMediaId', logoMediaId);
 
         // Có thay đổi logo
         if (file && file.logo instanceof File) {

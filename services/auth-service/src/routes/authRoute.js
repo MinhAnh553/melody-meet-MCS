@@ -44,4 +44,30 @@ Router.route('/users/update/:id').patch(
 // Get user by ID (for external services)
 Router.route('/users/:id').get(authController.getUserById);
 
+// Upgrade request routes
+Router.route('/upgrade-request').post(
+    authMiddleware.isValidPermission(['client']),
+    authController.createUpgradeRequest,
+);
+
+Router.route('/upgrade-request/user').get(
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
+    authController.getUserUpgradeRequest,
+);
+
+Router.route('/upgrade-requests').get(
+    authMiddleware.isValidPermission(['admin']),
+    authController.getUpgradeRequests,
+);
+
+Router.route('/upgrade-requests/:requestId/approve').patch(
+    authMiddleware.isValidPermission(['admin']),
+    authController.approveUpgradeRequest,
+);
+
+Router.route('/upgrade-requests/:requestId/reject').patch(
+    authMiddleware.isValidPermission(['admin']),
+    authController.rejectUpgradeRequest,
+);
+
 export default Router;

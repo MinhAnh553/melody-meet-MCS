@@ -285,7 +285,11 @@ const TicketsList = () => {
             {/* List View */}
             {viewMode === 'list' && (
                 <div className={styles.tableWrapper}>
-                    <Table responsive hover className={styles.ticketTable}>
+                    <Table
+                        responsive
+                        hover
+                        className={`${styles.ticketTable} table-striped`}
+                    >
                         <thead>
                             <tr>
                                 <th>Hình ảnh</th>

@@ -1,0 +1,347 @@
+.upgradeRequestsContainer {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header Card */
+.headerCard {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(to right, #ffffff, #f8f9fa);
+}
+
+.pageTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.pageSubtitle {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+}
+
+.searchFilter {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.searchInput {
+    flex: 1;
+    max-width: 400px;
+}
+
+.searchInput input {
+    border-left: none;
+    transition: all 0.3s ease;
+}
+
+.searchInput input:focus {
+    box-shadow: none;
+    border-color: #007bff;
+    background-color: inherit;
+}
+
+.searchInput .input-group-text {
+    border-right: none;
+    background-color: inherit;
+    transition: all 0.3s ease;
+}
+
+.searchInput:focus-within .input-group-text {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.filterDropdown {
+    min-width: 150px;
+}
+
+/* Table Card */
+.tableCard {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: white;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.upgradeRequestsTable {
+    margin-bottom: 0;
+}
+
+.upgradeRequestsTable thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    color: #495057;
+    font-weight: 600;
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+
+.sortableColumn {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortableColumn:hover {
+    background-color: #e9ecef;
+}
+
+.sortIcon {
+    margin-left: 4px;
+    color: #6c757d;
+}
+
+.actionColumn {
+    width: 120px;
+    text-align: center;
+}
+
+.tableActions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Status Badges */
+.statusBadge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statusBadgePending {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: #f39c12 !important;
+}
+
+.statusBadgeApproved {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+    color: #2ecc71 !important;
+}
+
+.statusBadgeRejected {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    color: #e74c3c !important;
+}
+
+/* Action Buttons */
+.actionButton {
+    padding: 6px;
+    color: #6c757d;
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    color: #2c3e50;
+    transform: scale(1.1);
+}
+
+.approveButton:hover {
+    color: #28a745;
+}
+
+.rejectButton:hover {
+    color: #dc3545;
+}
+
+/* Loading State */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+/* Empty State */
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.emptyState h4 {
+    margin: 16px 0 8px;
+    color: #2c3e50;
+}
+
+.emptyState p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Pagination */
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.paginationContainer .pagination {
+    margin: 0;
+}
+
+.paginationContainer .page-link {
+    color: #2c3e50;
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    transition: all 0.2s;
+}
+
+.paginationContainer .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.paginationContainer .page-link:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #2c3e50;
+}
+
+/* Modal Styles */
+.actionModal {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modalHeader {
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modalTitle {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.modalBody {
+    padding: 20px;
+    background-color: #ffffff;
+}
+
+.modalFooter {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 15px 20px;
+}
+
+.modalButton {
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.modalButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modalButton:active {
+    transform: translateY(0);
+}
+
+/* Request Info Styles */
+.requestInfo {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.requestInfo h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.infoRow:last-child {
+    border-bottom: none;
+}
+
+.infoLabel {
+    font-weight: 600;
+    color: #495057;
+    min-width: 120px;
+}
+
+.infoValue {
+    color: #6c757d;
+    text-align: right;
+    flex: 1;
+    margin-left: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .searchFilter {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .searchInput {
+        max-width: 100%;
+    }
+
+    .upgradeRequestsTable th,
+    .upgradeRequestsTable td {
+        padding: 8px 4px;
+        font-size: 14px;
+    }
+
+    .tableActions {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .actionButton {
+        padding: 4px;
+    }
+
+    .infoRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .infoValue {
+        text-align: left;
+        margin-left: 0;
+    }
+}

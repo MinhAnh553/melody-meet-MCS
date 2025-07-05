@@ -15,7 +15,7 @@ const upload = multer({
 
 // Upload media
 Router.route('/upload').post(
-    authMiddleware.isValidPermission(['organizer', 'admin']),
+    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
     (req, res, next) => {
         upload(req, res, function (err) {
             if (err instanceof multer.MulterError) {
