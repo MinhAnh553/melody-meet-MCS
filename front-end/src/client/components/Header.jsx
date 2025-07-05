@@ -157,18 +157,21 @@ const Header = () => {
                                     </Link>
                                 </li>
                             )} */}
-                            <li className="nav-item">
-                                <Link
-                                    className={`nav-link ${styles.createEvent}`}
-                                    to={
-                                        user?.role === 'client'
-                                            ? '/user/upgrade'
-                                            : '/organizer/event/create'
-                                    }
-                                >
-                                    Tạo sự kiện
-                                </Link>
-                            </li>
+
+                            {hasPermission(permissions.VIEW_CREATE_EVENT) && (
+                                <li className="nav-item">
+                                    <Link
+                                        className={`nav-link ${styles.createEvent}`}
+                                        to={
+                                            user?.role === 'client'
+                                                ? '/user/upgrade'
+                                                : '/organizer/event/create'
+                                        }
+                                    >
+                                        Tạo sự kiện
+                                    </Link>
+                                </li>
+                            )}
                             <li className="nav-item">
                                 <Link
                                     className={`nav-link ${styles.navLink} d-flex align-items-center`}

@@ -8,7 +8,7 @@ export const permissions = {
     VIEW_ORGANIZERS: 'view_organizers',
     VIEW_ADMIN: 'view_admin',
     UPGRADE_USER: 'upgrade_user',
-    // VIEW_CREATE_EVENT: 'view_create_event',
+    VIEW_CREATE_EVENT: 'view_create_event',
     // VIEW_ANALYTICS: 'view_analytics',
     // CREATE_EVENT: 'create_event',
     // READ_EVENT: 'read_event',
@@ -29,7 +29,10 @@ export const permissions = {
 };
 
 export const rolesPermissions = {
-    [roles.CLIENT]: [permissions.UPGRADE_USER],
-    [roles.ORGANIZER]: [permissions.VIEW_ORGANIZERS],
-    [roles.ADMIN]: Object.values(permissions), // Admin has all permissions
+    [roles.CLIENT]: [permissions.UPGRADE_USER, permissions.VIEW_CREATE_EVENT],
+    [roles.ORGANIZER]: [
+        permissions.VIEW_ORGANIZERS,
+        permissions.VIEW_CREATE_EVENT,
+    ],
+    [roles.ADMIN]: [permissions.VIEW_ADMIN],
 };
