@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     
     redis:
@@ -52,6 +50,7 @@ services:
             - EVENT_SERVICE_URL=http://event-service:3002
             - ORDER_SERVICE_URL=http://order-service:3003
             - TICKET_SERVICE_URL=http://ticket-service:3004
+            - MEDIA_SERVICE_URL=http://media-service:3005
             - REDIS_URL=redis://redis:6379
             - RABBITMQ_URL=amqp://rabbitmq:5672
 
@@ -67,6 +66,7 @@ services:
             - EVENT_SERVICE_URL=http://event-service:3002
             - ORDER_SERVICE_URL=http://order-service:3003
             - TICKET_SERVICE_URL=http://ticket-service:3004
+            - MEDIA_SERVICE_URL=http://media-service:3005
             - REDIS_URL=redis://redis:6379
             - RABBITMQ_URL=amqp://rabbitmq:5672
         
@@ -99,6 +99,17 @@ services:
             - EVENT_SERVICE_URL=http://event-service:3002
             - ORDER_SERVICE_URL=http://order-service:3003
             - TICKET_SERVICE_URL=http://ticket-service:3004
+            - REDIS_URL=redis://redis:6379
+            - RABBITMQ_URL=amqp://rabbitmq:5672
+
+    media-service:
+        build: ./media-service
+        env_file: 
+            - ./media-service/.env
+        depends_on:
+            - redis
+            - rabbitmq
+        environment:
             - REDIS_URL=redis://redis:6379
             - RABBITMQ_URL=amqp://rabbitmq:5672
 
