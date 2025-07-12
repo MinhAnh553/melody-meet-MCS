@@ -3,7 +3,6 @@ import carousel from '../../../assets/images/carousel.jpg';
 import EventList from '../../components/EventList';
 import { Link } from 'react-router-dom';
 import api from '../../../util/api';
-import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const HomePage = () => {
     const [loading, setLoading] = useState(true);
@@ -56,44 +55,45 @@ const HomePage = () => {
                     </div>
                 </div>
             </div>
-            {loading ? (
-                <LoadingSpinner />
-            ) : (
-                <>
-                    <section className="events py-4" id="trendingEvents">
-                        <div className="container">
-                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h2 className="section-title text-white">
-                                    🔥Sự kiện xu hướng
-                                </h2>
-                            </div>
-                            <EventList
-                                events={trendingEvent}
-                                type={'trending'}
-                            />
-                        </div>
-                    </section>
 
-                    <section className="events pb-5" id="specialEvents">
-                        <div className="container">
-                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h2 className="section-title text-white">
-                                    Sự kiện đặc sắc
-                                </h2>
-                                <Link
-                                    to={'/search'}
-                                    className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center"
-                                    style={{ color: 'rgb(166, 166, 176)' }}
-                                >
-                                    Xem thêm{' '}
-                                    <i className="bi bi-chevron-right ml-1"></i>
-                                </Link>
-                            </div>
-                            <EventList events={specialEvents} />
-                        </div>
-                    </section>
-                </>
-            )}
+            <section className="events py-4" id="trendingEvents">
+                <div className="container">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h2 className="section-title text-white">
+                            🔥Sự kiện xu hướng
+                        </h2>
+                    </div>
+                    <EventList
+                        events={trendingEvent}
+                        type={'trending'}
+                        loading={loading}
+                        skeletonCount={4}
+                    />
+                </div>
+            </section>
+
+            <section className="events pb-5" id="specialEvents">
+                <div className="container">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h2 className="section-title text-white">
+                            Sự kiện đặc sắc
+                        </h2>
+                        <Link
+                            to={'/search'}
+                            className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center"
+                            style={{ color: 'rgb(166, 166, 176)' }}
+                        >
+                            Xem thêm{' '}
+                            <i className="bi bi-chevron-right ml-1"></i>
+                        </Link>
+                    </div>
+                    <EventList
+                        events={specialEvents}
+                        loading={loading}
+                        skeletonCount={8}
+                    />
+                </div>
+            </section>
         </>
     );
 };

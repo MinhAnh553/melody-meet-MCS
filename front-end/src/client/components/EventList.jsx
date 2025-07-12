@@ -1,12 +1,49 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
-const EventList = ({ events, type = 'special' }) => {
+const EventListSkeleton = ({ count = 8 }) => {
+    return (
+        <div className="row g-4">
+            {Array.from({ length: count }).map((_, index) => (
+                <div className="col-6 col-md-4 col-lg-3" key={index}>
+                    <div className="position-relative">
+                        <Skeleton
+                            height={150}
+                            style={{ borderRadius: '12px 12px 0 0' }}
+                        />
+                    </div>
+                    <div
+                        className="bg-dark text-white p-3"
+                        style={{ borderRadius: '0 0 12px 12px' }}
+                    >
+                        <Skeleton height={20} width="80%" className="mb-2" />
+                        <Skeleton height={16} width="60%" className="mb-2" />
+                        <Skeleton height={16} width="70%" className="mb-2" />
+                        <Skeleton height={16} width="50%" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const EventList = ({
+    events,
+    type = 'special',
+    loading = false,
+    skeletonCount = 8,
+}) => {
     const navigate = useNavigate();
 
     const formatCurrency = (price) => {
         return price.toLocaleString('vi-VN') + 'đ';
     };
+
+    if (loading) {
+        return <EventListSkeleton count={skeletonCount} />;
+    }
 
     return (
         <div className="row g-4">
