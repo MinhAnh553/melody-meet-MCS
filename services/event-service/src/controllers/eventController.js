@@ -585,6 +585,34 @@ const getEvents = async (req, res) => {
             ]);
         }
 
+        if (type == 'upcoming') {
+            // Lấy sự kiện sắp diễn ra (trong 30 ngày tới)
+            const thirtyDaysFromNow = new Date();
+            thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+            events = await eventModel.aggregate([
+                {
+                    $match: {
+                        status: 'approved',
+                        startTime: {
+                            $gte: new Date(),
+                            $lte: thirtyDaysFromNow,
+                        },
+                    },
+                },
+                { $sort: { startTime: 1 } },
+                { $limit: 8 },
+                {
+                    $lookup: {
+                        from: 'tickettypes',
+                        localField: '_id',
+                        foreignField: 'eventId',
+                        as: 'ticketTypes',
+                    },
+                },
+            ]);
+        }
+
         if (type == 'all') {
             events = await eventModel.aggregate([
                 {
