@@ -31,6 +31,7 @@ import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import styles from './OrganizerInfo.module.css';
 import UploadImage from '../../components/UploadImage';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const OrganizerInfo = () => {
     const [organizerInfo, setOrganizerInfo] = useState(null);
@@ -213,12 +214,7 @@ const OrganizerInfo = () => {
     if (loading) {
         return (
             <Container fluid className={`${styles.container} min-vh-100 p-4`}>
-                <div className="text-center my-5">
-                    <div className="spinner-border text-white" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2 text-white">Đang tải thông tin BTC...</p>
-                </div>
+                <LoadingSpinner />
             </Container>
         );
     }

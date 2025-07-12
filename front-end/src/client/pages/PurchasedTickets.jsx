@@ -11,6 +11,7 @@ import { usePermission } from '../../hooks/usePermission';
 import { permissions } from '../../config/rbacConfig';
 import ReviewForm from '../components/ReviewForm';
 import styles from './PurchasedTickets.module.css';
+import LoadingSpinner from '../components/loading/LoadingSpinner';
 
 function PurchasedTickets() {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ function PurchasedTickets() {
     const { hasPermission } = usePermission(user?.role);
 
     const [orders, setOrders] = useState([]);
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
     // Các state cho tìm kiếm, lọc, sắp xếp, phân trang
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -83,7 +84,7 @@ function PurchasedTickets() {
 
     const fetchOrders = async () => {
         try {
-            setLoadingLocal(true);
+            setLoading(true);
             const res = await api.getMyOrders();
             if (res.success) {
                 setOrders(res.orders);
@@ -91,7 +92,7 @@ function PurchasedTickets() {
         } catch (error) {
             console.error('fetchOrders -> error', error);
         } finally {
-            setLoadingLocal(false);
+            setLoading(false);
         }
     };
 
@@ -187,20 +188,8 @@ function PurchasedTickets() {
     };
 
     const renderOrders = () => {
-        if (loadingLocal) {
-            return (
-                <div className="mt-5">
-                    <div className="text-center my-5">
-                        <div
-                            className="spinner-border text-primary"
-                            role="status"
-                        >
-                            <span className="visually-hidden">Đang tải...</span>
-                        </div>
-                        <p className="mt-2">Đang tải...</p>
-                    </div>
-                </div>
-            );
+        if (loading) {
+            return <LoadingSpinner />;
         }
         if (currentOrders.length === 0) {
             let emptyMessage = 'Không có vé phù hợp';
@@ -518,7 +507,7 @@ function PurchasedTickets() {
                                                                 const reviewId =
                                                                     generateReviewId(
                                                                         order.eventId,
-                                                                        user.id,
+                                                                        user?.id,
                                                                     );
                                                                 const existingReview =
                                                                     eventReviews[

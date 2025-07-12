@@ -7,9 +7,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import HeaderEvent from '../../components/HeaderEvent';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const EventForm = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
     const { eventId } = useParams(); // Lấy eventId từ URL
     const isEditMode = Boolean(eventId); // Kiểm tra xem có đang chỉnh sửa không
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ const EventForm = () => {
     const fetchEventData = async () => {
         try {
             setStepLoading(true);
-            setLoadingLocal(true);
+            setLoading(true);
             const response = await api.getEventByIdToEdit(eventId);
             if (response.success) {
                 const eventData = response.data;
@@ -87,7 +88,7 @@ const EventForm = () => {
             // console.error('Lỗi khi tải dữ liệu sự kiện:', error);
             setStepLoading(false);
         } finally {
-            setLoadingLocal(false);
+            setLoading(false);
         }
     };
 
@@ -113,13 +114,8 @@ const EventForm = () => {
                 currentStep={step}
                 onStepClick={setStep}
             />
-            {loadingLocal && isEditMode ? (
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
+            {loading && isEditMode ? (
+                <LoadingSpinner />
             ) : (
                 <EventFormProvider>
                     <AnimatePresence mode="wait">

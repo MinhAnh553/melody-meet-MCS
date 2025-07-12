@@ -6,6 +6,7 @@ import api from '../../util/api';
 import TimeText from '../components/providers/TimeText';
 import swalCustomize from '../../util/swalCustomize';
 import styles from './OrganizerReviews.module.css';
+import LoadingSpinner from '../components/loading/LoadingSpinner';
 
 const OrganizerReviews = () => {
     const { organizerId } = useParams();
@@ -107,12 +108,7 @@ const OrganizerReviews = () => {
     if (loading) {
         return (
             <Container fluid className={`${styles.container} min-vh-100 p-4`}>
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải đánh giá...</p>
-                </div>
+                <LoadingSpinner />
             </Container>
         );
     }
@@ -357,19 +353,7 @@ const OrganizerReviews = () => {
             <Row>
                 <Col md={12} className="px-4">
                     {loading ? (
-                        <div className="text-center my-5">
-                            <div
-                                className={`spinner-border ${styles.loadingSpinner}`}
-                                role="status"
-                            >
-                                <span className="visually-hidden">
-                                    Loading...
-                                </span>
-                            </div>
-                            <p className="text-white mt-3">
-                                Đang tải đánh giá...
-                            </p>
-                        </div>
+                        <LoadingSpinner />
                     ) : reviews.length === 0 ? (
                         <div className="text-center my-5">
                             <div

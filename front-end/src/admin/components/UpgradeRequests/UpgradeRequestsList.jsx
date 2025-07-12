@@ -26,6 +26,7 @@ import { BsCheckCircle, BsXCircle } from 'react-icons/bs';
 import styles from './UpgradeRequests.module.css';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
+import LoadingSpinner from '../../../client/components/loading/LoadingSpinner';
 
 const UpgradeRequestsList = () => {
     const [upgradeRequests, setUpgradeRequests] = useState([]);
@@ -291,17 +292,7 @@ const UpgradeRequestsList = () => {
             <Card className={styles.tableCard}>
                 <Card.Body>
                     {loading ? (
-                        <div className={styles.loadingContainer}>
-                            <div
-                                className="spinner-border text-primary"
-                                role="status"
-                            >
-                                <span className="visually-hidden">
-                                    Đang tải...
-                                </span>
-                            </div>
-                            <p className="mt-3">Đang tải dữ liệu...</p>
-                        </div>
+                        <LoadingSpinner />
                     ) : upgradeRequests.length > 0 ? (
                         <div className={styles.tableWrapper}>
                             <Table

@@ -7,10 +7,11 @@ import TicketModal from '../payment/TicketModal';
 import ReviewForm from '../../components/ReviewForm';
 import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const EventDetail = () => {
     const { user } = useAuth();
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
@@ -31,7 +32,7 @@ const EventDetail = () => {
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                setLoadingLocal(true);
+                setLoading(true);
                 const res = await api.getEventById(eventId);
                 if (res.success) {
                     setEvent(res.data);
@@ -45,7 +46,7 @@ const EventDetail = () => {
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu sự kiện:', error);
             } finally {
-                setLoadingLocal(false);
+                setLoading(false);
             }
         };
         fetchEvent();
@@ -117,12 +118,7 @@ const EventDetail = () => {
                     borderRadius: '20px',
                 }}
             >
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
+                <LoadingSpinner />
             </div>
         );
 

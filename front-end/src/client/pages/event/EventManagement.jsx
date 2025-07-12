@@ -11,9 +11,10 @@ import {
 } from 'react-icons/bs';
 import api from '../../../util/api';
 import TimeText from '../../components/providers/TimeText';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const EventManagement = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const isFirstMount = useRef(true);
@@ -78,7 +79,7 @@ const EventManagement = () => {
     }, [page, activeTab, searchKey]);
 
     const fetchEvents = async (status) => {
-        setLoadingLocal(true);
+        setLoading(true);
         try {
             const res = await api.getMyEvents(page, limit, status, searchKey);
             if (res.success) {
@@ -94,7 +95,7 @@ const EventManagement = () => {
         } catch (error) {
             console.log('MinhAnh553: fetchEvents -> error', error);
         } finally {
-            setLoadingLocal(false);
+            setLoading(false);
         }
     };
 
@@ -184,13 +185,8 @@ const EventManagement = () => {
                 </Row>
             )} */}
 
-            {loadingLocal ? (
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
+            {loading ? (
+                <LoadingSpinner />
             ) : (
                 <>
                     {/* Danh sách sự kiện */}

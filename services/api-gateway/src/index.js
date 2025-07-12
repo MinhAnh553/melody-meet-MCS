@@ -24,7 +24,7 @@ app.use(express.json());
 // DDoS protection and rate limiting
 const rateLimitOptions = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 200,
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {

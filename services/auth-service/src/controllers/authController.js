@@ -99,7 +99,7 @@ const verifyAndRegister = async (req, res) => {
         });
         if (!verificationRecord) {
             logger.error('Validation error: Invalid verification code');
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: 'Mã xác minh không đúng hoặc đã hết hạn',
             });

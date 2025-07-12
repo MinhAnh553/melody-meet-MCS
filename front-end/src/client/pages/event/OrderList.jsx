@@ -19,9 +19,10 @@ import {
 } from '../../../admin/utils/formatters';
 import OrderDetails from '../../../admin/components/Orders/OrderDetails';
 import { BsCartX } from 'react-icons/bs';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const OrderList = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
     const { eventId } = useParams();
     const [orders, setOrders] = useState([]);
 
@@ -43,7 +44,7 @@ const OrderList = () => {
     }, []);
 
     const fetchOrders = async () => {
-        setLoadingLocal(true);
+        setLoading(true);
         try {
             const res = await api.getOrdersByEventId(eventId);
             if (res.success) {
@@ -52,7 +53,7 @@ const OrderList = () => {
         } catch (error) {
             console.error('Lỗi lấy danh sách đơn hàng:', error);
         } finally {
-            setLoadingLocal(false);
+            setLoading(false);
         }
     };
 
@@ -157,13 +158,8 @@ const OrderList = () => {
         setShowOrderDetails(true);
     };
 
-    return loadingLocal ? (
-        <div className="text-center my-5">
-            <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Đang tải...</span>
-            </div>
-            <p className="mt-2">Đang tải...</p>
-        </div>
+    return loading ? (
+        <LoadingSpinner />
     ) : orders.length > 0 ? (
         <div className={styles.ordersContainer}>
             {/* Table Header */}

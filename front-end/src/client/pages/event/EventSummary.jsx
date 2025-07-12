@@ -16,6 +16,7 @@ import {
     Legend,
     ArcElement,
 } from 'chart.js';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 // Đăng ký các thành phần của ChartJS
 ChartJS.register(
@@ -30,13 +31,13 @@ ChartJS.register(
 );
 
 const EventSummary = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
     const { eventId } = useParams();
     const [eventData, setEventData] = useState(null);
 
     useEffect(() => {
         const fetchEventSummary = async () => {
-            setLoadingLocal(true);
+            setLoading(true);
             try {
                 const res = await api.getEventSummary(eventId);
                 if (res.success) {
@@ -52,7 +53,7 @@ const EventSummary = () => {
                 console.error('Lỗi khi lấy dữ liệu doanh thu:', error);
                 swalCustomize.Toast('error', 'Lỗi kết nối máy chủ.');
             } finally {
-                setLoadingLocal(false);
+                setLoading(false);
             }
         };
 
@@ -137,17 +138,7 @@ const EventSummary = () => {
         ],
     };
 
-    if (!eventData || loadingLocal)
-        return (
-            <div className="mt-5">
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
-            </div>
-        );
+    if (!eventData || loading) return <LoadingSpinner />;
 
     return (
         <Container

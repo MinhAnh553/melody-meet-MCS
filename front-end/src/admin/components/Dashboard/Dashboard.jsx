@@ -35,6 +35,7 @@ ChartJS.register(
     ArcElement,
 );
 
+import LoadingSpinner from '../../../client/components/loading/LoadingSpinner';
 import styles from './Dashboard.module.css';
 import { formatCurrency } from '../../utils/formatters';
 import api from '../../../util/api';
@@ -60,14 +61,7 @@ const Dashboard = () => {
     };
 
     if (!dashboardData) {
-        return (
-            <div className="text-center my-5">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Đang tải...</span>
-                </div>
-                <p className="mt-2">Đang tải...</p>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     // ✅ Trích xuất dữ liệu từ API

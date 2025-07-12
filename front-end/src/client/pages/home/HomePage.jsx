@@ -3,22 +3,23 @@ import carousel from '../../../assets/images/carousel.jpg';
 import EventList from '../../components/EventList';
 import { Link } from 'react-router-dom';
 import api from '../../../util/api';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const HomePage = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [trendingEvent, setTrendingEvent] = useState([]);
     const [specialEvents, setSpecialEvents] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoadingLocal(true);
+            setLoading(true);
 
             const trending = await fetchEvents('trending');
             const special = await fetchEvents('special');
             setTrendingEvent(trending || []);
             setSpecialEvents(special || []);
 
-            setLoadingLocal(false);
+            setLoading(false);
         };
         fetchData();
     }, []);
@@ -55,13 +56,8 @@ const HomePage = () => {
                     </div>
                 </div>
             </div>
-            {loadingLocal ? (
-                <div className="text-center my-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2">Đang tải...</p>
-                </div>
+            {loading ? (
+                <LoadingSpinner />
             ) : (
                 <>
                     <section className="events py-4" id="trendingEvents">

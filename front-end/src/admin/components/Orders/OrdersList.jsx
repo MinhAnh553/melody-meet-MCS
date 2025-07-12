@@ -34,9 +34,10 @@ import OrderDetails from './OrderDetails';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import { BsCartX } from 'react-icons/bs';
+import LoadingSpinner from '../../../client/components/loading/LoadingSpinner';
 
 const OrdersList = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     const [orders, setOrders] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
@@ -59,7 +60,7 @@ const OrdersList = () => {
     }, [currentPage, searchTerm, statusFilter, sortBy, sortOrder]);
 
     const fetchOrders = async () => {
-        setLoadingLocal(true);
+        setLoading(true);
         try {
             const res = await api.getAllOrders({
                 page: currentPage,
@@ -77,7 +78,7 @@ const OrdersList = () => {
         } catch (error) {
             console.log('Lỗi khi gọi API getAllOrders:', error);
         } finally {
-            setLoadingLocal(false);
+            setLoading(false);
         }
     };
 
@@ -264,18 +265,8 @@ const OrdersList = () => {
             {/* Orders Table */}
             <Card className={styles.tableCard}>
                 <Card.Body>
-                    {loadingLocal ? (
-                        <div className={styles.loadingContainer}>
-                            <div
-                                className="spinner-border text-primary"
-                                role="status"
-                            >
-                                <span className="visually-hidden">
-                                    Đang tải...
-                                </span>
-                            </div>
-                            <p className="mt-3">Đang tải dữ liệu...</p>
-                        </div>
+                    {loading ? (
+                        <LoadingSpinner />
                     ) : orders.length > 0 ? (
                         <div className={styles.tableWrapper}>
                             <Table

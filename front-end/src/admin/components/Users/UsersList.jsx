@@ -30,9 +30,10 @@ import UserForm from './UserForm';
 import api from '../../../util/api';
 import { BsPerson } from 'react-icons/bs';
 import swalCustomize from '../../../util/swalCustomize';
+import LoadingSpinner from '../../../client/components/loading/LoadingSpinner';
 
 const UsersList = () => {
-    const [loadingLocal, setLoadingLocal] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     const [users, setUsers] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
@@ -55,7 +56,7 @@ const UsersList = () => {
     }, [currentPage, searchTerm, statusFilter, sortBy, sortUser]);
 
     const fetchUsers = async () => {
-        setLoadingLocal(true);
+        setLoading(true);
         try {
             const res = await api.getAllUsers({
                 page: currentPage,
@@ -73,7 +74,7 @@ const UsersList = () => {
         } catch (error) {
             console.log('Lỗi khi gọi API getAllUsers:', error);
         } finally {
-            setLoadingLocal(false);
+            setLoading(false);
         }
     };
 
@@ -219,18 +220,8 @@ const UsersList = () => {
             {/* Users Table */}
             <Card className={styles.tableCard}>
                 <Card.Body>
-                    {loadingLocal ? (
-                        <div className={styles.loadingContainer}>
-                            <div
-                                className="spinner-buser text-primary"
-                                role="status"
-                            >
-                                <span className="visually-hidden">
-                                    Đang tải...
-                                </span>
-                            </div>
-                            <p className="mt-3">Đang tải dữ liệu...</p>
-                        </div>
+                    {loading ? (
+                        <LoadingSpinner />
                     ) : users.length > 0 ? (
                         <div className={styles.tableWrapper}>
                             <Table

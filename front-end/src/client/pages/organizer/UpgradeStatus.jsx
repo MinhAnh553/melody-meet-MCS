@@ -5,6 +5,7 @@ import { BsHouseDoor, BsClock, BsCheckCircle, BsXCircle } from 'react-icons/bs';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import styles from './OrganizerInfo.module.css';
+import LoadingSpinner from '../../components/loading/LoadingSpinner';
 
 const UpgradeStatus = () => {
     const [upgradeRequest, setUpgradeRequest] = useState(null);
@@ -114,14 +115,7 @@ const UpgradeStatus = () => {
                     justifyContent: 'center',
                 }}
             >
-                <div className="text-center">
-                    <div className="spinner-border text-warning" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p className="mt-2 text-white">
-                        Đang tải thông tin yêu cầu nâng cấp...
-                    </p>
-                </div>
+                <LoadingSpinner />
             </div>
         );
     }
