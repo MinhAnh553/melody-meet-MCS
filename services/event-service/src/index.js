@@ -1,11 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import helmet from 'helmet';
 import cors from 'cors';
-import { RateLimiterRedis } from 'rate-limiter-flexible';
 import Redis from 'ioredis';
-import { rateLimit } from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
 
 import { connectDB } from './config/database.js';
 import eventRoutes from './routes/eventRoute.js';
@@ -22,7 +18,6 @@ await connectDB();
 const redisClient = new Redis(process.env.REDIS_URL);
 
 // Middleware
-app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
@@ -31,48 +26,6 @@ app.use((req, res, next) => {
     logger.info(`Request Body: ${JSON.stringify(req.body)}`);
     next();
 });
-
-// DDoS protection and rate limiting
-// const rateLimiter = new RateLimiterRedis({
-//     storeClient: redisClient,
-//     keyPrefix: 'middleware',
-//     points: 10,
-//     duration: 1,
-// });
-
-// app.use(async (req, res, next) => {
-//     try {
-//         await rateLimiter.consume(req.ip);
-//         next();
-//     } catch (err) {
-//         logger.warn('Rate limit exceeded for IP:', req.ip);
-//         res.status(429).json({
-//             success: false,
-//             message: 'Too many requests',
-//         });
-//     }
-// });
-
-// // IP based rate limiting for sensitive endpoints
-// const sensitiveEndpointsLimiter = rateLimit({
-//     windowMs: 15 * 60 * 1000,
-//     max: 50,
-//     standardHeaders: true,
-//     legacyHeaders: false,
-//     handler: (req, res) => {
-//         logger.warn('Sensitive endpoint rate limit exceeded for IP:', req.ip);
-//         res.status(429).json({
-//             success: false,
-//             message: 'Too many requests',
-//         });
-//     },
-//     store: new RedisStore({
-//         sendCommand: (...args) => redisClient.call(...args),
-//     }),
-// });
-
-// Apply this sensitiveEndpointsLimiter to our routes
-// app.use('/api/events/', sensitiveEndpointsLimiter);
 
 // Routes
 app.use(

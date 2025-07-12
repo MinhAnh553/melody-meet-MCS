@@ -1,11 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import helmet from 'helmet';
 import cors from 'cors';
-import { RateLimiterRedis } from 'rate-limiter-flexible';
 import Redis from 'ioredis';
-import { rateLimit } from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
 
 import { connectDB } from './config/database.js';
 import mediaRoutes from './routes/mediaRoute.js';
@@ -17,10 +13,9 @@ const app = express();
 const PORT = process.env.PORT || 3005;
 // Connect to database
 await connectDB();
-const redisClient = new Redis(process.env.REDIS_URI);
+// const redisClient = new Redis(process.env.REDIS_URI);
 
 // Middleware
-app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
