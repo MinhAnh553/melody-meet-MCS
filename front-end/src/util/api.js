@@ -131,6 +131,17 @@ const getEventSummary = (id) => {
     return axios.get(URL_API);
 };
 
+const getEventParticipants = (
+    eventId,
+    page = 1,
+    limit = 20,
+    searchTerm = '',
+    filterStatus = 'all',
+) => {
+    const URL_API = `${API_URL}/orders/event/${eventId}`;
+    return axios.get(URL_API);
+};
+
 const getOrdersByEventId = (id) => {
     const URL_API = `${API_URL}/orders/event/${id}`;
     return axios.get(URL_API);
@@ -302,6 +313,7 @@ export default {
     getMyEvents,
     getOrdersByEventId,
     getEventSummary,
+    getEventParticipants,
     getAllOrders,
     getAllUsers,
     getDashboard,

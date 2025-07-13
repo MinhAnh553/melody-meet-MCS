@@ -15,6 +15,7 @@ import PurchasedTickets from '../client/pages/PurchasedTickets.jsx';
 import EventManagement from '../client/pages/event/EventManagement.jsx';
 import OrderList from '../client/pages/event/OrderList.jsx';
 import EventSummary from '../client/pages/event/EventSummary.jsx';
+import EventParticipants from '../client/pages/event/EventParticipants.jsx';
 import Layout from '../admin/components/layouts/Layout.jsx';
 import Dashboard from '../admin/components/Dashboard/Dashboard.jsx';
 import EventsList from '../admin/components/Events/EventsList.jsx';
@@ -152,6 +153,20 @@ const AnimatedRoutes = () => {
                                         transition={{ duration: 0.5 }}
                                     >
                                         <EventSummary />
+                                    </motion.div>
+                                }
+                            />
+                            <Route
+                                path=":eventId/participants"
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <EventParticipants />
                                     </motion.div>
                                 }
                             />
