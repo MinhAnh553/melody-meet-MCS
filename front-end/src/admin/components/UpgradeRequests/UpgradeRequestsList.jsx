@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Table,
     Button,
     Form,
     InputGroup,
-    Badge,
     Pagination,
     Modal,
     Card,
@@ -12,17 +10,36 @@ import {
     Col,
     Dropdown,
 } from 'react-bootstrap';
+import { Table, Space, Tag, Tooltip, Empty } from 'antd';
+import {
+    CheckOutlined,
+    CloseOutlined,
+    SettingOutlined,
+    UserOutlined,
+    CalendarOutlined,
+    MailOutlined,
+    PhoneOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    CaretUpOutlined,
+    CaretDownOutlined,
+    EyeOutlined,
+} from '@ant-design/icons';
 import {
     FaSearch,
-    FaEye,
-    FaSort,
-    FaSortUp,
-    FaSortDown,
     FaFilter,
-    FaCheck,
     FaTimes,
+    FaChartBar,
+    FaCog,
+    FaUserTie,
+    FaAngleLeft,
+    FaAngleRight,
+    FaAngleDoubleLeft,
+    FaAngleDoubleRight,
 } from 'react-icons/fa';
 import { BsCheckCircle, BsXCircle } from 'react-icons/bs';
+
 import styles from './UpgradeRequests.module.css';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
@@ -45,6 +62,9 @@ const UpgradeRequestsList = () => {
     const [action, setAction] = useState(''); // 'approve' or 'reject'
     const [adminNote, setAdminNote] = useState('');
     const [processing, setProcessing] = useState(false);
+
+    // Modal xác nhận duyệt/từ chối
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const itemsPerPage = 10;
 
@@ -142,36 +162,28 @@ const UpgradeRequestsList = () => {
         }
     };
 
-    const getStatusBadge = (status) => {
+    const getStatusTag = (status) => {
         switch (status) {
             case 'pending':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgePending}`}
-                    >
+                    <Tag color="processing" icon={<ClockCircleOutlined />}>
                         Chờ xử lý
-                    </Badge>
+                    </Tag>
                 );
             case 'approved':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeApproved}`}
-                    >
+                    <Tag color="success" icon={<CheckCircleOutlined />}>
                         Đã duyệt
-                    </Badge>
+                    </Tag>
                 );
             case 'rejected':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeRejected}`}
-                    >
+                    <Tag color="error" icon={<CloseCircleOutlined />}>
                         Đã từ chối
-                    </Badge>
+                    </Tag>
                 );
             default:
-                return (
-                    <Badge className={styles.statusBadge}>Không xác định</Badge>
-                );
+                return <Tag>Không xác định</Tag>;
         }
     };
 
@@ -186,11 +198,35 @@ const UpgradeRequestsList = () => {
     };
 
     const getSortIcon = (field) => {
-        if (sortBy !== field) return <FaSort className={styles.sortIcon} />;
-        return sortOrder === 'asc' ? (
-            <FaSortUp className={styles.sortIcon} />
-        ) : (
-            <FaSortDown className={styles.sortIcon} />
+        const isActive = sortBy === field;
+        const isAsc = sortOrder === 'asc';
+        const activeColor = '#1890ff';
+        const defaultColor = '#bfbfbf';
+
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                }}
+            >
+                <CaretUpOutlined
+                    style={{
+                        color: isActive && isAsc ? activeColor : defaultColor,
+                        fontSize: '10px',
+                        marginBottom: '-2px',
+                    }}
+                />
+                <CaretDownOutlined
+                    style={{
+                        color: isActive && !isAsc ? activeColor : defaultColor,
+                        fontSize: '10px',
+                        marginTop: '-2px',
+                    }}
+                />
+            </div>
         );
     };
 
@@ -201,6 +237,81 @@ const UpgradeRequestsList = () => {
             : text;
     };
 
+    // Ant Design Table columns configuration
+    const columns = [
+        {
+            title: (
+                <Space>
+                    <MailOutlined />
+                    Email
+                </Space>
+            ),
+            dataIndex: 'userId',
+            key: 'email',
+            render: (userId) => (
+                <Space>
+                    <MailOutlined />
+                    {truncateText(userId?.email || '', 25)}
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <CalendarOutlined />
+                    Ngày yêu cầu
+                    <span onClick={() => handleSortChange('createdAt')}>
+                        {getSortIcon('createdAt')}
+                    </span>
+                </Space>
+            ),
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (createdAt) => (
+                <Space>
+                    <CalendarOutlined />
+                    {formatDate(createdAt)}
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <CheckCircleOutlined />
+                    Trạng thái
+                </Space>
+            ),
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => getStatusTag(status),
+        },
+        {
+            title: (
+                <Space>
+                    <SettingOutlined />
+                    Thao tác
+                </Space>
+            ),
+            key: 'action',
+            width: 150,
+            render: (_, record) => (
+                <Space>
+                    <Tooltip title="Xem chi tiết">
+                        <span
+                            onClick={() => {
+                                setSelectedRequest(record);
+                                setShowModal(true);
+                            }}
+                            style={{ color: '#1890ff', cursor: 'pointer' }}
+                        >
+                            <EyeOutlined />
+                        </span>
+                    </Tooltip>
+                </Space>
+            ),
+        },
+    ];
+
     return (
         <div className={styles.upgradeRequestsContainer}>
             {/* Header Section */}
@@ -208,12 +319,25 @@ const UpgradeRequestsList = () => {
                 <Card.Body>
                     <Row className="align-items-center">
                         <Col md={6}>
-                            <h2 className={styles.pageTitle}>
-                                Quản lý yêu cầu nâng cấp
-                            </h2>
-                            <p className={styles.pageSubtitle}>
-                                Tổng số yêu cầu: {totalRequests}
-                            </p>
+                            <div className={styles.titleSection}>
+                                <div className={styles.titleIcon}>
+                                    <FaUserTie />
+                                </div>
+                                <div>
+                                    <h2 className={styles.pageTitle}>
+                                        <FaCog
+                                            className={styles.titleIconSmall}
+                                        />
+                                        Quản lý yêu cầu nâng cấp
+                                    </h2>
+                                    <p className={styles.pageSubtitle}>
+                                        <FaChartBar
+                                            className={styles.subtitleIcon}
+                                        />
+                                        Tổng số yêu cầu: {totalRequests}
+                                    </p>
+                                </div>
+                            </div>
                         </Col>
                         <Col md={6}>
                             <div className={styles.searchFilter}>
@@ -291,150 +415,43 @@ const UpgradeRequestsList = () => {
             {/* Upgrade Requests Table */}
             <Card className={styles.tableCard}>
                 <Card.Body>
-                    {loading ? (
-                        <LoadingSpinner />
-                    ) : upgradeRequests.length > 0 ? (
-                        <div className={styles.tableWrapper}>
-                            <Table
-                                responsive
-                                hover
-                                className={`${styles.upgradeRequestsTable} table-striped`}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th>Người dùng</th>
-                                        <th>Tên ban tổ chức</th>
-                                        <th>Email</th>
-                                        <th>Số điện thoại</th>
-                                        <th>Trạng thái</th>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('createdAt')
-                                            }
-                                        >
-                                            Ngày tạo {getSortIcon('createdAt')}
-                                        </th>
-                                        <th className={styles.actionColumn}>
-                                            Thao tác
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {upgradeRequests.map((request) => (
-                                        <tr key={request._id}>
-                                            <td>
-                                                <div>
-                                                    <strong>
-                                                        {request.userId?.email}
-                                                    </strong>
-                                                    {request.userId?.name && (
-                                                        <>
-                                                            <br />
-                                                            <small className="text-muted">
-                                                                {
-                                                                    request
-                                                                        .userId
-                                                                        .name
-                                                                }
-                                                            </small>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div>
-                                                    <strong>
-                                                        {request.organizer.name}
-                                                    </strong>
-                                                    {request.organizer.info && (
-                                                        <>
-                                                            <br />
-                                                            <small className="text-muted">
-                                                                {truncateText(
-                                                                    request
-                                                                        .organizer
-                                                                        .info,
-                                                                    50,
-                                                                )}
-                                                            </small>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td>{request.organizer.email}</td>
-                                            <td>{request.organizer.phone}</td>
-                                            <td>
-                                                {getStatusBadge(request.status)}
-                                            </td>
-                                            <td>
-                                                {formatDate(request.createdAt)}
-                                            </td>
-                                            <td>
-                                                <div
-                                                    className={
-                                                        styles.tableActions
-                                                    }
-                                                >
-                                                    {request.status ===
-                                                        'pending' && (
-                                                        <>
-                                                            <Button
-                                                                variant="link"
-                                                                className={`${styles.actionButton} ${styles.approveButton}`}
-                                                                title="Duyệt yêu cầu"
-                                                                onClick={() =>
-                                                                    handleAction(
-                                                                        request,
-                                                                        'approve',
-                                                                    )
-                                                                }
-                                                            >
-                                                                <BsCheckCircle />
-                                                            </Button>
-                                                            <Button
-                                                                variant="link"
-                                                                className={`${styles.actionButton} ${styles.rejectButton}`}
-                                                                title="Từ chối yêu cầu"
-                                                                onClick={() =>
-                                                                    handleAction(
-                                                                        request,
-                                                                        'reject',
-                                                                    )
-                                                                }
-                                                            >
-                                                                <BsXCircle />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                    {request.status !==
-                                                        'pending' && (
-                                                        <small className="text-muted">
-                                                            {request.adminId
-                                                                ?.name ||
-                                                                'Admin'}{' '}
-                                                            -{' '}
-                                                            {formatDate(
-                                                                request.updatedAt,
-                                                            )}
-                                                        </small>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </div>
-                    ) : (
-                        <div className={styles.emptyState}>
-                            <BsXCircle size={48} className="text-muted mb-3" />
-                            <h4>Không có yêu cầu nâng cấp nào</h4>
-                            <p>
-                                Hiện tại chưa có yêu cầu nâng cấp nào được gửi.
-                            </p>
-                        </div>
-                    )}
+                    <div className={styles.tableWrapper}>
+                        <Table
+                            columns={columns}
+                            dataSource={loading ? [] : upgradeRequests}
+                            rowKey="_id"
+                            pagination={false}
+                            loading={loading}
+                            size="middle"
+                            className={styles.antTable}
+                            rowClassName={(record, index) =>
+                                index % 2 === 0 ? styles.evenRow : styles.oddRow
+                            }
+                            locale={{
+                                emptyText: loading ? (
+                                    <div style={{ padding: '40px 0' }}>
+                                        {/* <LoadingSpinner /> */}
+                                    </div>
+                                ) : (
+                                    <Empty
+                                        image={<BsXCircle size={60} />}
+                                        description={
+                                            <div>
+                                                <h4>
+                                                    Không có yêu cầu nâng cấp
+                                                </h4>
+                                                <p>
+                                                    Không tìm thấy yêu cầu nâng
+                                                    cấp nào phù hợp với bộ lọc
+                                                    hiện tại
+                                                </p>
+                                            </div>
+                                        }
+                                    />
+                                ),
+                            }}
+                        />
+                    </div>
 
                     {/* Pagination */}
                     {totalPages > 1 && (
@@ -443,127 +460,203 @@ const UpgradeRequestsList = () => {
                                 <Pagination.First
                                     onClick={() => handlePageChange(1)}
                                     disabled={currentPage === 1}
-                                />
+                                >
+                                    <FaAngleDoubleLeft />
+                                </Pagination.First>
                                 <Pagination.Prev
                                     onClick={() =>
                                         handlePageChange(currentPage - 1)
                                     }
                                     disabled={currentPage === 1}
-                                />
-                                {Array.from(
-                                    { length: totalPages },
-                                    (_, i) => i + 1,
-                                ).map((page) => (
+                                >
+                                    <FaAngleLeft />
+                                </Pagination.Prev>
+
+                                {[...Array(totalPages)].map((_, index) => (
                                     <Pagination.Item
-                                        key={page}
-                                        active={page === currentPage}
-                                        onClick={() => handlePageChange(page)}
+                                        key={index + 1}
+                                        active={index + 1 === currentPage}
+                                        onClick={() =>
+                                            handlePageChange(index + 1)
+                                        }
                                     >
-                                        {page}
+                                        {index + 1}
                                     </Pagination.Item>
                                 ))}
+
                                 <Pagination.Next
                                     onClick={() =>
                                         handlePageChange(currentPage + 1)
                                     }
                                     disabled={currentPage === totalPages}
-                                />
+                                >
+                                    <FaAngleRight />
+                                </Pagination.Next>
                                 <Pagination.Last
                                     onClick={() => handlePageChange(totalPages)}
                                     disabled={currentPage === totalPages}
-                                />
+                                >
+                                    <FaAngleDoubleRight />
+                                </Pagination.Last>
                             </Pagination>
                         </div>
                     )}
                 </Card.Body>
             </Card>
 
-            {/* Modal for approve/reject */}
+            {/* Modal Xem chi tiết organizer */}
             <Modal
                 show={showModal}
-                onHide={() => setShowModal(false)}
-                className={styles.actionModal}
+                onHide={() => {
+                    setShowModal(false);
+                    setSelectedRequest(null);
+                }}
+                centered
+                className={styles.upgradeRequestModal}
+                contentClassName={styles.modalContent}
+            >
+                <Modal.Header closeButton className={styles.modalHeader}>
+                    <Modal.Title className={styles.modalTitle}>
+                        Thông tin tổ chức đăng ký nâng cấp
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className={styles.modalBody}>
+                    {selectedRequest && selectedRequest.organizer && (
+                        <div className={styles.organizerCard}>
+                            <div className={styles.organizerCardHeader}>
+                                <img
+                                    src={selectedRequest.organizer.logo}
+                                    alt="logo"
+                                    className={styles.organizerLogo}
+                                />
+                                <div className={styles.organizerName}>
+                                    {selectedRequest.organizer.name}
+                                </div>
+                            </div>
+                            <div className={styles.organizerInfoRow}>
+                                <b>Giới thiệu:</b>{' '}
+                                {selectedRequest.organizer.info}
+                            </div>
+                            <div className={styles.organizerInfoRow}>
+                                <b>Email:</b> {selectedRequest.organizer.email}
+                            </div>
+                            <div className={styles.organizerInfoRow}>
+                                <b>Điện thoại:</b>{' '}
+                                {selectedRequest.organizer.phone}
+                            </div>
+                        </div>
+                    )}
+                </Modal.Body>
+                <Modal.Footer className={styles.modalFooter}>
+                    {selectedRequest &&
+                        selectedRequest.status === 'pending' && (
+                            <>
+                                <Button
+                                    variant="outline-success"
+                                    onClick={() => {
+                                        setAction('approve');
+                                        setShowModal(false);
+                                        setTimeout(
+                                            () => setShowConfirmModal(true),
+                                            200,
+                                        );
+                                    }}
+                                    className={styles.modalButton}
+                                >
+                                    <BsCheckCircle className="me-2" /> Duyệt
+                                </Button>
+                                <Button
+                                    variant="outline-danger"
+                                    onClick={() => {
+                                        setAction('reject');
+                                        setShowModal(false);
+                                        setTimeout(
+                                            () => setShowConfirmModal(true),
+                                            200,
+                                        );
+                                    }}
+                                    className={styles.modalButton}
+                                >
+                                    <BsXCircle className="me-2" /> Từ chối
+                                </Button>
+                            </>
+                        )}
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal xác nhận duyệt/từ chối */}
+            <Modal
+                show={showConfirmModal}
+                onHide={() => {
+                    setShowConfirmModal(false);
+                    setAdminNote('');
+                }}
+                centered
+                className={styles.upgradeRequestModal}
+                contentClassName={styles.modalContent}
             >
                 <Modal.Header closeButton className={styles.modalHeader}>
                     <Modal.Title className={styles.modalTitle}>
                         {action === 'approve'
-                            ? 'Duyệt yêu cầu nâng cấp'
-                            : 'Từ chối yêu cầu nâng cấp'}
+                            ? 'Xác nhận duyệt yêu cầu'
+                            : 'Xác nhận từ chối yêu cầu'}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body className={styles.modalBody}>
-                    {selectedRequest && (
-                        <div className={styles.requestInfo}>
-                            <h6>Thông tin yêu cầu:</h6>
-                            <div className={styles.infoRow}>
-                                <span className={styles.infoLabel}>
-                                    Người dùng:
-                                </span>
-                                <span className={styles.infoValue}>
-                                    {selectedRequest.userId?.email}
-                                </span>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <span className={styles.infoLabel}>
-                                    Tên BTC:
-                                </span>
-                                <span className={styles.infoValue}>
-                                    {selectedRequest.organizer.name}
-                                </span>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <span className={styles.infoLabel}>Email:</span>
-                                <span className={styles.infoValue}>
-                                    {selectedRequest.organizer.email}
-                                </span>
-                            </div>
-                            <div className={styles.infoRow}>
-                                <span className={styles.infoLabel}>
-                                    Số điện thoại:
-                                </span>
-                                <span className={styles.infoValue}>
-                                    {selectedRequest.organizer.phone}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                    <Form.Group className="mt-3">
-                        <Form.Label>
-                            {action === 'approve'
-                                ? 'Ghi chú (tùy chọn):'
-                                : 'Lý do từ chối:'}
-                        </Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            rows={3}
-                            value={adminNote}
-                            onChange={(e) => setAdminNote(e.target.value)}
-                            placeholder={
-                                action === 'approve'
-                                    ? 'Nhập ghi chú nếu cần...'
-                                    : 'Nhập lý do từ chối...'
-                            }
-                        />
-                    </Form.Group>
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <Form.Label>
+                                {action === 'approve'
+                                    ? 'Ghi chú khi duyệt (tùy chọn):'
+                                    : 'Lý do từ chối:'}
+                            </Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={4}
+                                value={adminNote}
+                                onChange={(e) => setAdminNote(e.target.value)}
+                                placeholder={
+                                    action === 'approve'
+                                        ? 'Nhập ghi chú khi duyệt...'
+                                        : 'Nhập lý do từ chối...'
+                                }
+                                className={styles.adminNoteInput}
+                            />
+                        </Form.Group>
+                    </Form>
                 </Modal.Body>
                 <Modal.Footer className={styles.modalFooter}>
                     <Button
-                        variant="secondary"
-                        onClick={() => setShowModal(false)}
+                        variant="outline-light"
+                        onClick={() => {
+                            setShowConfirmModal(false);
+                            setAdminNote('');
+                        }}
+                        className={styles.modalButton}
+                        disabled={processing}
                     >
+                        <FaTimes className="me-2" />
                         Hủy
                     </Button>
                     <Button
                         variant={action === 'approve' ? 'success' : 'danger'}
                         onClick={handleConfirmAction}
-                        disabled={processing}
                         className={styles.modalButton}
+                        disabled={processing}
                     >
-                        {processing
-                            ? 'Đang xử lý...'
-                            : action === 'approve'
-                            ? 'Duyệt'
-                            : 'Từ chối'}
+                        {processing ? (
+                            <LoadingSpinner />
+                        ) : action === 'approve' ? (
+                            <>
+                                <BsCheckCircle className="me-2" />
+                                Duyệt
+                            </>
+                        ) : (
+                            <>
+                                <BsXCircle className="me-2" />
+                                Từ chối
+                            </>
+                        )}
                     </Button>
                 </Modal.Footer>
             </Modal>

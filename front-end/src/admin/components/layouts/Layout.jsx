@@ -208,7 +208,7 @@ const Layout = () => {
                     </div>
                 </header>
 
-                <Container fluid className="py-3">
+                <Container fluid className="py-3 px-0">
                     <Outlet />
                 </Container>
             </div>

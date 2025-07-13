@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Table,
     Button,
     Form,
     InputGroup,
-    Badge,
     Pagination,
     Modal,
     Card,
@@ -12,24 +10,40 @@ import {
     Col,
     Dropdown,
 } from 'react-bootstrap';
+import { Table, Space, Tag, Tooltip, Empty } from 'antd';
+import {
+    EyeOutlined,
+    CheckOutlined,
+    CloseOutlined,
+    SettingOutlined,
+    ShoppingCartOutlined,
+    UserOutlined,
+    CalendarOutlined,
+    DollarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CaretUpOutlined,
+    CaretDownOutlined,
+} from '@ant-design/icons';
 import {
     FaSearch,
-    FaEye,
-    FaSort,
-    FaSortUp,
-    FaSortDown,
     FaFilter,
-    FaCheck,
     FaTimes,
+    FaChartBar,
+    FaCog,
+    FaShoppingCart,
+    FaAngleLeft,
+    FaAngleRight,
+    FaAngleDoubleLeft,
+    FaAngleDoubleRight,
 } from 'react-icons/fa';
-import styles from './Orders.module.css';
 
+import styles from './Orders.module.css';
 import {
     formatCurrency,
     formatDateTime,
     truncateText,
 } from '../../utils/formatters';
-
 import OrderDetails from './OrderDetails';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
@@ -96,34 +110,28 @@ const OrdersList = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const getStatusBadge = (status) => {
+    const getStatusTag = (status) => {
         switch (status) {
             case 'PAID':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgePaid}`}
-                    >
+                    <Tag color="success" icon={<CheckCircleOutlined />}>
                         Đã thanh toán
-                    </Badge>
+                    </Tag>
                 );
             case 'CANCELED':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeCanceled}`}
-                    >
+                    <Tag color="error" icon={<CloseOutlined />}>
                         Đã hủy
-                    </Badge>
+                    </Tag>
                 );
             case 'PENDING':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgePending}`}
-                    >
+                    <Tag color="processing" icon={<ClockCircleOutlined />}>
                         Đang chờ
-                    </Badge>
+                    </Tag>
                 );
             default:
-                return <Badge className={styles.statusBadge}>{status}</Badge>;
+                return <Tag>{status}</Tag>;
         }
     };
 
@@ -167,13 +175,172 @@ const OrdersList = () => {
     };
 
     const getSortIcon = (field) => {
-        if (sortBy !== field) return <FaSort className={styles.sortIcon} />;
-        return sortOrder === 'asc' ? (
-            <FaSortUp className={styles.sortIcon} />
-        ) : (
-            <FaSortDown className={styles.sortIcon} />
+        const isActive = sortBy === field;
+        const isAsc = sortOrder === 'asc';
+        const activeColor = '#1890ff';
+        const defaultColor = '#bfbfbf';
+
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                }}
+            >
+                <CaretUpOutlined
+                    style={{
+                        color: isActive && isAsc ? activeColor : defaultColor,
+                        fontSize: '10px',
+                        marginBottom: '-2px',
+                    }}
+                />
+                <CaretDownOutlined
+                    style={{
+                        color: isActive && !isAsc ? activeColor : defaultColor,
+                        fontSize: '10px',
+                        marginTop: '-2px',
+                    }}
+                />
+            </div>
         );
     };
+
+    // Ant Design Table columns configuration
+    const columns = [
+        {
+            title: (
+                <Space>
+                    <ShoppingCartOutlined />
+                    Mã đơn hàng
+                    <span onClick={() => handleSortChange('orderCode')}>
+                        {getSortIcon('orderCode')}
+                    </span>
+                </Space>
+            ),
+            dataIndex: 'orderCode',
+            key: 'orderCode',
+            render: (orderCode) => (
+                <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                    {orderCode}
+                </span>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <UserOutlined />
+                    Khách hàng
+                </Space>
+            ),
+            dataIndex: 'buyerInfo',
+            key: 'customer',
+            render: (buyerInfo) => (
+                <Space>
+                    <UserOutlined />
+                    {truncateText(buyerInfo?.email || '', 30)}
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <CalendarOutlined />
+                    Ngày đặt
+                    <span onClick={() => handleSortChange('createdAt')}>
+                        {getSortIcon('createdAt')}
+                    </span>
+                </Space>
+            ),
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (createdAt) => (
+                <Space>
+                    <CalendarOutlined />
+                    {formatDateTime(createdAt)}
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <DollarOutlined />
+                    Tổng tiền
+                    <span onClick={() => handleSortChange('totalPrice')}>
+                        {getSortIcon('totalPrice')}
+                    </span>
+                </Space>
+            ),
+            dataIndex: 'totalPrice',
+            key: 'totalPrice',
+            render: (totalPrice) => (
+                <Space>
+                    <DollarOutlined />
+                    <span style={{ fontWeight: 'bold' }}>
+                        {formatCurrency(totalPrice)}
+                    </span>
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <CheckCircleOutlined />
+                    Trạng thái
+                </Space>
+            ),
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => getStatusTag(status),
+        },
+        {
+            title: (
+                <Space>
+                    <SettingOutlined />
+                    Thao tác
+                </Space>
+            ),
+            key: 'action',
+            width: 200,
+            render: (_, record) => (
+                <Space>
+                    <Tooltip title="Xem chi tiết">
+                        <span
+                            onClick={() => handleViewOrderDetails(record)}
+                            style={{ color: '#1890ff', cursor: 'pointer' }}
+                        >
+                            <EyeOutlined />
+                        </span>
+                    </Tooltip>
+                    {record.status === 'PENDING' && (
+                        <>
+                            <Tooltip title="Hoàn thành">
+                                <Button
+                                    type="text"
+                                    icon={<CheckOutlined />}
+                                    onClick={() =>
+                                        handleCompleteClick(record._id)
+                                    }
+                                    style={{ color: '#52c41a' }}
+                                />
+                            </Tooltip>
+                            <Tooltip title="Hủy đơn">
+                                <Button
+                                    type="text"
+                                    icon={<CloseOutlined />}
+                                    onClick={() =>
+                                        handleCancelClick(record._id)
+                                    }
+                                    style={{ color: '#ff4d4f' }}
+                                />
+                            </Tooltip>
+                        </>
+                    )}
+                </Space>
+            ),
+        },
+    ];
 
     return (
         <div className={styles.ordersContainer}>
@@ -182,12 +349,25 @@ const OrdersList = () => {
                 <Card.Body>
                     <Row className="align-items-center">
                         <Col md={6}>
-                            <h2 className={styles.pageTitle}>
-                                Quản lý đơn hàng
-                            </h2>
-                            <p className={styles.pageSubtitle}>
-                                Tổng số đơn hàng: {totalOrders}
-                            </p>
+                            <div className={styles.titleSection}>
+                                <div className={styles.titleIcon}>
+                                    <FaShoppingCart />
+                                </div>
+                                <div>
+                                    <h2 className={styles.pageTitle}>
+                                        <FaCog
+                                            className={styles.titleIconSmall}
+                                        />
+                                        Quản lý đơn hàng
+                                    </h2>
+                                    <p className={styles.pageSubtitle}>
+                                        <FaChartBar
+                                            className={styles.subtitleIcon}
+                                        />
+                                        Tổng số đơn hàng: {totalOrders}
+                                    </p>
+                                </div>
+                            </div>
                         </Col>
                         <Col md={6}>
                             <div className={styles.searchFilter}>
@@ -265,138 +445,40 @@ const OrdersList = () => {
             {/* Orders Table */}
             <Card className={styles.tableCard}>
                 <Card.Body>
-                    {loading ? (
-                        <LoadingSpinner />
-                    ) : orders.length > 0 ? (
-                        <div className={styles.tableWrapper}>
-                            <Table
-                                responsive
-                                hover
-                                className={`${styles.orderTable} table-striped`}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('orderCode')
-                                            }
-                                        >
-                                            Mã ĐH {getSortIcon('orderCode')}
-                                        </th>
-                                        <th>Người dùng</th>
-                                        <th>Sự kiện</th>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('totalPrice')
-                                            }
-                                        >
-                                            Tổng tiền{' '}
-                                            {getSortIcon('totalPrice')}
-                                        </th>
-                                        <th>Trạng thái</th>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('createdAt')
-                                            }
-                                        >
-                                            Ngày đặt {getSortIcon('createdAt')}
-                                        </th>
-                                        <th className={styles.actionColumn}>
-                                            Thao tác
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orders.map((order) => (
-                                        <tr key={order._id}>
-                                            <td>{order.orderCode}</td>
-                                            <td>{order.buyerInfo.email}</td>
-                                            <td>
-                                                {truncateText(
-                                                    order.eventName,
-                                                    30,
-                                                )}
-                                            </td>
-                                            <td>
-                                                {formatCurrency(
-                                                    order.totalPrice,
-                                                )}
-                                            </td>
-                                            <td>
-                                                {getStatusBadge(order.status)}
-                                            </td>
-                                            <td>
-                                                {formatDateTime(
-                                                    order.createdAt,
-                                                )}
-                                            </td>
-                                            <td>
-                                                <div
-                                                    className={
-                                                        styles.tableActions
-                                                    }
-                                                >
-                                                    <Button
-                                                        variant="link"
-                                                        className={`${styles.actionButton} ${styles.viewButton}`}
-                                                        title="Xem chi tiết"
-                                                        onClick={() =>
-                                                            handleViewOrderDetails(
-                                                                order,
-                                                            )
-                                                        }
-                                                    >
-                                                        <FaEye />
-                                                    </Button>
-                                                    {order.status ===
-                                                        'PENDING' && (
-                                                        <>
-                                                            <Button
-                                                                variant="link"
-                                                                className={`${styles.actionButton} ${styles.completeButton}`}
-                                                                title="Hoàn thành đơn hàng"
-                                                                onClick={() =>
-                                                                    handleCompleteClick(
-                                                                        order._id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <FaCheck />
-                                                            </Button>
-                                                            <Button
-                                                                variant="link"
-                                                                className={`${styles.actionButton} ${styles.deleteButton}`}
-                                                                title="Hủy đơn hàng"
-                                                                onClick={() =>
-                                                                    handleCancelClick(
-                                                                        order._id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <FaTimes />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </div>
-                    ) : (
-                        <div className={styles.emptyState}>
-                            <BsCartX size={60} className="mb-3" />
-                            <h4>Không có đơn hàng</h4>
-                            <p>
-                                Không tìm thấy đơn hàng nào phù hợp với bộ lọc
-                                hiện tại
-                            </p>
-                        </div>
-                    )}
+                    <div className={styles.tableWrapper}>
+                        <Table
+                            columns={columns}
+                            dataSource={loading ? [] : orders}
+                            rowKey="_id"
+                            pagination={false}
+                            loading={loading}
+                            size="middle"
+                            className={styles.antTable}
+                            rowClassName={(record, index) =>
+                                index % 2 === 0 ? styles.evenRow : styles.oddRow
+                            }
+                            locale={{
+                                emptyText: loading ? (
+                                    <div style={{ padding: '40px 0' }}>
+                                        {/* <LoadingSpinner /> */}
+                                    </div>
+                                ) : (
+                                    <Empty
+                                        image={<BsCartX size={60} />}
+                                        description={
+                                            <div>
+                                                <h4>Không có đơn hàng</h4>
+                                                <p>
+                                                    Không tìm thấy đơn hàng nào
+                                                    phù hợp với bộ lọc hiện tại
+                                                </p>
+                                            </div>
+                                        }
+                                    />
+                                ),
+                            }}
+                        />
+                    </div>
 
                     {/* Pagination */}
                     {totalPages > 1 && (
@@ -405,13 +487,17 @@ const OrdersList = () => {
                                 <Pagination.First
                                     onClick={() => handlePageChange(1)}
                                     disabled={currentPage === 1}
-                                />
+                                >
+                                    <FaAngleDoubleLeft />
+                                </Pagination.First>
                                 <Pagination.Prev
                                     onClick={() =>
                                         handlePageChange(currentPage - 1)
                                     }
                                     disabled={currentPage === 1}
-                                />
+                                >
+                                    <FaAngleLeft />
+                                </Pagination.Prev>
 
                                 {[...Array(totalPages)].map((_, index) => (
                                     <Pagination.Item
@@ -430,22 +516,26 @@ const OrdersList = () => {
                                         handlePageChange(currentPage + 1)
                                     }
                                     disabled={currentPage === totalPages}
-                                />
+                                >
+                                    <FaAngleRight />
+                                </Pagination.Next>
                                 <Pagination.Last
                                     onClick={() => handlePageChange(totalPages)}
                                     disabled={currentPage === totalPages}
-                                />
+                                >
+                                    <FaAngleDoubleRight />
+                                </Pagination.Last>
                             </Pagination>
                         </div>
                     )}
                 </Card.Body>
             </Card>
 
-            {/* Order Details Modal */}
+            {/* Modal Chi tiết Đơn hàng */}
             <Modal
                 show={showOrderDetails}
                 onHide={() => setShowOrderDetails(false)}
-                size="lg"
+                size="xl"
                 centered
                 className={styles.orderModal}
                 contentClassName={styles.modalContent}
@@ -456,17 +546,23 @@ const OrdersList = () => {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body className={styles.modalBody}>
-                    {selectedOrder && <OrderDetails order={selectedOrder} />}
+                    {selectedOrder && (
+                        <OrderDetails
+                            order={selectedOrder}
+                            onClose={() => setShowOrderDetails(false)}
+                        />
+                    )}
                 </Modal.Body>
-                <Modal.Footer className={styles.modalFooter}>
+                {/* <Modal.Footer className={styles.modalFooter}>
                     <Button
                         variant="outline-light"
                         onClick={() => setShowOrderDetails(false)}
                         className={styles.modalButton}
                     >
+                        <FaTimes className="me-2" />
                         Đóng
                     </Button>
-                </Modal.Footer>
+                </Modal.Footer> */}
             </Modal>
         </div>
     );

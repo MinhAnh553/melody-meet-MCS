@@ -57,32 +57,32 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validate name
-        if (!formData.name.trim()) {
-            newErrors.name = 'Tên người dùng là bắt buộc';
-        } else if (formData.name.length < 2) {
-            newErrors.name = 'Tên người dùng phải có ít nhất 2 ký tự';
-        } else if (formData.name.length > 50) {
-            newErrors.name = 'Tên người dùng không được vượt quá 50 ký tự';
-        }
+        // // Validate name
+        // if (!formData.name.trim()) {
+        //     newErrors.name = 'Tên người dùng là bắt buộc';
+        // } else if (formData.name.length < 2) {
+        //     newErrors.name = 'Tên người dùng phải có ít nhất 2 ký tự';
+        // } else if (formData.name.length > 50) {
+        //     newErrors.name = 'Tên người dùng không được vượt quá 50 ký tự';
+        // }
 
-        // Validate email
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email là bắt buộc';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Email không hợp lệ';
-        }
+        // // Validate email
+        // if (!formData.email.trim()) {
+        //     newErrors.email = 'Email là bắt buộc';
+        // } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        //     newErrors.email = 'Email không hợp lệ';
+        // }
 
-        // Validate phone using libphonenumber-js
-        if (formData.phone) {
-            try {
-                if (!isValidPhoneNumber(formData.phone, 'VN')) {
-                    newErrors.phone = 'Số điện thoại không hợp lệ';
-                }
-            } catch (error) {
-                newErrors.phone = 'Số điện thoại không hợp lệ';
-            }
-        }
+        // // Validate phone using libphonenumber-js
+        // if (formData.phone) {
+        //     try {
+        //         if (!isValidPhoneNumber(formData.phone, 'VN')) {
+        //             newErrors.phone = 'Số điện thoại không hợp lệ';
+        //         }
+        //     } catch (error) {
+        //         newErrors.phone = 'Số điện thoại không hợp lệ';
+        //     }
+        // }
 
         // Validate password for new user
         if (!user && !formData.password) {
@@ -139,7 +139,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
         <div className={styles.userDetailsCard}>
             <Form onSubmit={handleSubmit}>
                 {/* Thông tin cơ bản */}
-                <div className={styles.formSection}>
+                {/* <div className={styles.formSection}>
                     <div className={styles.sectionHeader}>
                         <FaUser className={styles.sectionIcon} />
                         <h4 className={styles.sectionTitle}>
@@ -237,7 +237,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                             </div>
                         )}
                     </Form.Group>
-                </div>
+                </div> */}
 
                 {/* Thông tin tài khoản */}
                 <div className={styles.formSection}>
@@ -316,6 +316,23 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
                             {errors.password}
                         </Form.Control.Feedback>
                     </Form.Group>
+                </div>
+                <div className={styles.formActions}>
+                    <Button
+                        type="button"
+                        variant="outline-secondary"
+                        className={styles.formControl}
+                        onClick={onCancel}
+                    >
+                        Đóng
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        className={styles.formControl}
+                    >
+                        Lưu
+                    </Button>
                 </div>
             </Form>
         </div>

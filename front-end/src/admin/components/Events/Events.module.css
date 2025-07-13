@@ -1,15 +1,33 @@
 .eventsContainer {
     padding: 20px;
-    background-color: #f8f9fa;
+    /* background-color: #f8f9fa; */
     min-height: 100vh;
 }
 
 /* Header Card */
 .headerCard {
     margin-bottom: 20px;
-    border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     background: linear-gradient(to right, #ffffff, #f8f9fa);
+}
+
+.titleSection {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.titleIcon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .pageTitle {
@@ -17,12 +35,28 @@
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.titleIconSmall {
+    color: #667eea;
+    font-size: 18px;
 }
 
 .pageSubtitle {
     color: #6c757d;
     font-size: 14px;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.subtitleIcon {
+    color: #28a745;
+    font-size: 12px;
 }
 
 .searchFilter {
@@ -105,7 +139,6 @@
 
 /* Table Card */
 .tableCard {
-    border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     background-color: white;
 }
@@ -127,6 +160,18 @@
     white-space: nowrap;
 }
 
+.thContent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.columnIcon {
+    color: #6c757d;
+    font-size: 14px;
+    margin-right: 4px;
+}
+
 .sortableColumn {
     cursor: pointer;
     user-select: none;
@@ -134,6 +179,10 @@
 
 .sortableColumn:hover {
     background-color: #e9ecef;
+}
+
+.sortableColumn:hover .columnIcon {
+    color: #007bff;
 }
 
 .sortIcon {
@@ -170,11 +219,42 @@
 .eventName {
     font-weight: 500;
     color: #2c3e50;
+    transition: color 0.2s ease;
+}
+
+.eventName:hover {
+    color: #007bff;
+}
+
+.dateCell,
+.userCell,
+.revenueCell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cellIcon {
+    color: #6c757d;
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 .revenue {
     font-weight: 600;
     color: #28a745;
+}
+
+.revenueCell .cellIcon {
+    color: #28a745;
+}
+
+.dateCell .cellIcon {
+    color: #007bff;
+}
+
+.userCell .cellIcon {
+    color: #6c757d;
 }
 
 /* Status Badges */
@@ -207,18 +287,26 @@
 
 /* Action Buttons */
 .actionButton {
-    padding: 6px;
+    padding: 8px;
     color: #6c757d;
     transition: all 0.2s;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
 }
 
 .actionButton:hover {
     color: #2c3e50;
-    transform: scale(1.1);
+    transform: scale(1.05);
+    background-color: rgba(0, 123, 255, 0.1);
 }
 
 .viewButton:hover {
     color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
 }
 
 /* Loading State */
@@ -237,19 +325,25 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     color: #6c757d;
     text-align: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    margin: 20px 0;
 }
 
 .emptyState h4 {
     margin: 16px 0 8px;
     color: #2c3e50;
+    font-weight: 600;
 }
 
 .emptyState p {
     margin: 0;
     font-size: 14px;
+    color: #6c757d;
+    max-width: 300px;
 }
 
 /* Pagination */
@@ -267,16 +361,34 @@
     color: #2c3e50;
     border: 1px solid #dee2e6;
     padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    transition: all 0.2s ease;
 }
 
 .paginationContainer .page-item.active .page-link {
     background-color: #007bff;
     border-color: #007bff;
+    color: white;
 }
 
 .paginationContainer .page-link:hover {
     background-color: #e9ecef;
     color: #2c3e50;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.paginationContainer .page-link:disabled {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 /* Modal */
@@ -339,6 +451,9 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modalButton:hover {
@@ -686,4 +801,21 @@
     color: #e74c3c;
     line-height: 1.6;
     font-style: italic;
+}
+
+.eventRow:hover {
+    --bs-table-bg: #f1f9ff;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Ant Design Table Row Styles - Màu đậm hơn */
+.evenRow {
+    background-color: #e9ecef !important;
+    transition: background-color 0.3s ease;
+}
+
+.oddRow {
+    background-color: #ffffff !important;
+    transition: background-color 0.3s ease;
 }

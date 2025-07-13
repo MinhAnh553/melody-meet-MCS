@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Table,
     Button,
     Form,
     InputGroup,
-    Badge,
     Pagination,
     Modal,
     Card,
@@ -12,16 +10,39 @@ import {
     Col,
     Dropdown,
 } from 'react-bootstrap';
+import { Table, Space, Tag, Image, Tooltip, Empty } from 'antd';
+import {
+    EyeOutlined,
+    CalendarOutlined,
+    UserOutlined,
+    DollarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    ExclamationCircleOutlined,
+    PictureOutlined,
+    UnorderedListOutlined,
+    SettingOutlined,
+    CaretUpOutlined,
+    CaretDownOutlined,
+} from '@ant-design/icons';
 import {
     FaSearch,
-    FaEye,
-    FaSort,
-    FaSortUp,
-    FaSortDown,
     FaFilter,
+    FaTimesCircle,
+    FaCheck,
+    FaTimes,
+    FaExclamationTriangle,
+    FaListUl,
+    FaChartBar,
+    FaCog,
+    FaAngleLeft,
+    FaAngleRight,
+    FaAngleDoubleLeft,
+    FaAngleDoubleRight,
 } from 'react-icons/fa';
-import styles from './Events.module.css';
 
+import styles from './Events.module.css';
 import {
     formatDate,
     formatCurrency,
@@ -98,42 +119,34 @@ const EventsList = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const getStatusBadge = (status) => {
+    const getStatusTag = (status) => {
         switch (status) {
             case 'approved':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeApproved}`}
-                    >
+                    <Tag color="success" icon={<CheckCircleOutlined />}>
                         Đã duyệt
-                    </Badge>
+                    </Tag>
                 );
             case 'pending':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgePending}`}
-                    >
+                    <Tag color="processing" icon={<ClockCircleOutlined />}>
                         Đang chờ duyệt
-                    </Badge>
+                    </Tag>
                 );
             case 'rejected':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeRejected}`}
-                    >
+                    <Tag color="error" icon={<CloseCircleOutlined />}>
                         Đã từ chối
-                    </Badge>
+                    </Tag>
                 );
             case 'event_over':
                 return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeCompleted}`}
-                    >
+                    <Tag color="default" icon={<ExclamationCircleOutlined />}>
                         Đã diễn ra
-                    </Badge>
+                    </Tag>
                 );
             default:
-                return <Badge className={styles.statusBadge}>{status}</Badge>;
+                return <Tag>{status}</Tag>;
         }
     };
 
@@ -200,14 +213,180 @@ const EventsList = () => {
         setShowRejectModal(true);
     };
 
+    const handleEventNameClick = (eventId) => {
+        window.open(`/event/${eventId}`, '_blank');
+    };
+
     const getSortIcon = (field) => {
-        if (sortBy !== field) return <FaSort className={styles.sortIcon} />;
-        return sortOrder === 'asc' ? (
-            <FaSortUp className={styles.sortIcon} />
-        ) : (
-            <FaSortDown className={styles.sortIcon} />
+        const isActive = sortBy === field;
+        const isAsc = sortOrder === 'asc';
+        const activeColor = '#1890ff';
+        const defaultColor = '#bfbfbf';
+
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                }}
+            >
+                <CaretUpOutlined
+                    style={{
+                        color: isActive && isAsc ? activeColor : defaultColor,
+                        fontSize: '10px',
+                        marginBottom: '-2px',
+                    }}
+                />
+                <CaretDownOutlined
+                    style={{
+                        color: isActive && !isAsc ? activeColor : defaultColor,
+                        fontSize: '10px',
+                        marginTop: '-2px',
+                    }}
+                />
+            </div>
         );
     };
+
+    // Ant Design Table columns configuration
+    const columns = [
+        {
+            title: (
+                <Space>
+                    <PictureOutlined />
+                    Ảnh
+                </Space>
+            ),
+            dataIndex: 'background',
+            key: 'image',
+            width: 100,
+            render: (background, record) => (
+                <Image
+                    src={background}
+                    alt={record.name}
+                    width={100}
+                    height={60}
+                    style={{ objectFit: 'cover', borderRadius: '4px' }}
+                    fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+                />
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <UnorderedListOutlined />
+                    Tên sự kiện
+                    <span onClick={() => handleSortChange('name')}>
+                        {getSortIcon('name')}
+                    </span>
+                </Space>
+            ),
+            dataIndex: 'name',
+            key: 'name',
+            render: (name, record) => (
+                <span
+                    onClick={() => handleEventNameClick(record._id)}
+                    style={{
+                        color: '#1890ff',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                    }}
+                    title={name}
+                >
+                    {truncateText(name, 30)}
+                </span>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <CalendarOutlined />
+                    Ngày tổ chức
+                    <span onClick={() => handleSortChange('date')}>
+                        {getSortIcon('date')}
+                    </span>
+                </Space>
+            ),
+            dataIndex: 'startTime',
+            key: 'date',
+            render: (startTime) => (
+                <Space>
+                    <CalendarOutlined />
+                    {formatDate(startTime)}
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <UserOutlined />
+                    Người đăng
+                </Space>
+            ),
+            dataIndex: 'organizerInfo',
+            key: 'organizer',
+            render: (organizerInfo) => (
+                <Space>
+                    <UserOutlined />
+                    {truncateText(organizerInfo[0]?.email || '', 30)}
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <CheckCircleOutlined />
+                    Trạng thái
+                </Space>
+            ),
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => getStatusTag(status),
+        },
+        {
+            title: (
+                <Space>
+                    <DollarOutlined />
+                    Doanh thu
+                    {/* <span onClick={() => handleSortChange('revenue')}>
+                        {getSortIcon('revenue')}
+                    </span> */}
+                </Space>
+            ),
+            dataIndex: 'totalRevenue',
+            key: 'revenue',
+            render: (totalRevenue) => (
+                <Space>
+                    <DollarOutlined />
+                    <span style={{ fontWeight: 'bold' }}>
+                        {formatCurrency(totalRevenue || 0)}
+                    </span>
+                </Space>
+            ),
+        },
+        {
+            title: (
+                <Space>
+                    <SettingOutlined />
+                    Thao tác
+                </Space>
+            ),
+            key: 'action',
+            width: 100,
+            render: (_, record) => (
+                <Tooltip title="Xem chi tiết">
+                    <span
+                        onClick={() => handleViewEventDetails(record)}
+                        style={{ color: '#1890ff', cursor: 'pointer' }}
+                    >
+                        <EyeOutlined />
+                    </span>
+                </Tooltip>
+            ),
+        },
+    ];
 
     return (
         <div className={styles.eventsContainer}>
@@ -216,12 +395,25 @@ const EventsList = () => {
                 <Card.Body>
                     <Row className="align-items-center">
                         <Col md={6}>
-                            <h2 className={styles.pageTitle}>
-                                Quản lý sự kiện
-                            </h2>
-                            <p className={styles.pageSubtitle}>
-                                Tổng số sự kiện: {totalEvents}
-                            </p>
+                            <div className={styles.titleSection}>
+                                <div className={styles.titleIcon}>
+                                    <FaListUl />
+                                </div>
+                                <div>
+                                    <h2 className={styles.pageTitle}>
+                                        <FaCog
+                                            className={styles.titleIconSmall}
+                                        />
+                                        Quản lý sự kiện
+                                    </h2>
+                                    <p className={styles.pageSubtitle}>
+                                        <FaChartBar
+                                            className={styles.subtitleIcon}
+                                        />
+                                        Tổng số sự kiện: {totalEvents}
+                                    </p>
+                                </div>
+                            </div>
                         </Col>
                         <Col md={6}>
                             <div className={styles.searchFilter}>
@@ -309,130 +501,40 @@ const EventsList = () => {
             {/* Events Table */}
             <Card className={styles.tableCard}>
                 <Card.Body>
-                    {loading ? (
-                        <LoadingSpinner />
-                    ) : currentEvents.length > 0 ? (
-                        <div className={styles.tableWrapper}>
-                            <Table
-                                responsive
-                                hover
-                                className={`${styles.eventTable} table-striped`}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th className={styles.imageColumn}>
-                                            Ảnh
-                                        </th>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('name')
-                                            }
-                                        >
-                                            Tên sự kiện {getSortIcon('name')}
-                                        </th>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('date')
-                                            }
-                                        >
-                                            Ngày tổ chức {getSortIcon('date')}
-                                        </th>
-                                        <th>Người đăng</th>
-                                        <th>Trạng thái</th>
-                                        <th
-                                            className={styles.sortableColumn}
-                                            onClick={() =>
-                                                handleSortChange('revenue')
-                                            }
-                                        >
-                                            Doanh thu {getSortIcon('revenue')}
-                                        </th>
-                                        <th className={styles.actionColumn}>
-                                            Thao tác
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentEvents.map((event) => (
-                                        <tr key={event._id}>
-                                            <td>
-                                                <div
-                                                    className={
-                                                        styles.imageWrapper
-                                                    }
-                                                >
-                                                    <img
-                                                        src={event.background}
-                                                        alt={event.name}
-                                                        className={
-                                                            styles.eventImage
-                                                        }
-                                                    />
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div
-                                                    className={styles.eventName}
-                                                >
-                                                    {truncateText(
-                                                        event.name,
-                                                        30,
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {formatDate(event.startTime)}
-                                            </td>
-                                            <td>
-                                                {truncateText(
-                                                    event.organizerInfo[0]
-                                                        .email || '',
-                                                    30,
-                                                )}
-                                            </td>
-                                            <td>
-                                                {getStatusBadge(event.status)}
-                                            </td>
-                                            <td>
-                                                <span
-                                                    className={styles.revenue}
-                                                >
-                                                    {formatCurrency(
-                                                        event.totalRevenue || 0,
-                                                    )}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <Button
-                                                    variant="link"
-                                                    className={`${styles.actionButton} ${styles.viewButton}`}
-                                                    title="Xem chi tiết"
-                                                    onClick={() =>
-                                                        handleViewEventDetails(
-                                                            event,
-                                                        )
-                                                    }
-                                                >
-                                                    <FaEye />
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </div>
-                    ) : (
-                        <div className={styles.emptyState}>
-                            <BsCalendarX size={60} className="mb-3" />
-                            <h4>Không có sự kiện</h4>
-                            <p>
-                                Không tìm thấy sự kiện nào phù hợp với bộ lọc
-                                hiện tại
-                            </p>
-                        </div>
-                    )}
+                    <div className={styles.tableWrapper}>
+                        <Table
+                            columns={columns}
+                            dataSource={loading ? [] : currentEvents}
+                            rowKey="_id"
+                            pagination={false}
+                            loading={loading}
+                            size="middle"
+                            className={styles.antTable}
+                            rowClassName={(record, index) =>
+                                index % 2 === 0 ? styles.evenRow : styles.oddRow
+                            }
+                            locale={{
+                                emptyText: loading ? (
+                                    <div style={{ padding: '40px 0' }}>
+                                        {/* <LoadingSpinner /> */}
+                                    </div>
+                                ) : (
+                                    <Empty
+                                        image={<BsCalendarX size={60} />}
+                                        description={
+                                            <div>
+                                                <h4>Không có sự kiện</h4>
+                                                <p>
+                                                    Không tìm thấy sự kiện nào
+                                                    phù hợp với bộ lọc hiện tại
+                                                </p>
+                                            </div>
+                                        }
+                                    />
+                                ),
+                            }}
+                        />
+                    </div>
 
                     {/* Pagination */}
                     {totalPages > 1 && (
@@ -441,13 +543,17 @@ const EventsList = () => {
                                 <Pagination.First
                                     onClick={() => handlePageChange(1)}
                                     disabled={currentPage === 1}
-                                />
+                                >
+                                    <FaAngleDoubleLeft />
+                                </Pagination.First>
                                 <Pagination.Prev
                                     onClick={() =>
                                         handlePageChange(currentPage - 1)
                                     }
                                     disabled={currentPage === 1}
-                                />
+                                >
+                                    <FaAngleLeft />
+                                </Pagination.Prev>
 
                                 {[...Array(totalPages)].map((_, index) => (
                                     <Pagination.Item
@@ -466,11 +572,15 @@ const EventsList = () => {
                                         handlePageChange(currentPage + 1)
                                     }
                                     disabled={currentPage === totalPages}
-                                />
+                                >
+                                    <FaAngleRight />
+                                </Pagination.Next>
                                 <Pagination.Last
                                     onClick={() => handlePageChange(totalPages)}
                                     disabled={currentPage === totalPages}
-                                />
+                                >
+                                    <FaAngleDoubleRight />
+                                </Pagination.Last>
                             </Pagination>
                         </div>
                     )}
@@ -500,6 +610,7 @@ const EventsList = () => {
                         onClick={() => setShowEventDetails(false)}
                         className={styles.modalButton}
                     >
+                        <FaTimes className="me-2" />
                         Đóng
                     </Button>
                     {selectedEvent?.status !== 'event_over' && (
@@ -512,6 +623,7 @@ const EventsList = () => {
                                     }
                                     className={styles.modalButton}
                                 >
+                                    <FaCheck className="me-2" />
                                     Duyệt
                                 </Button>
                             )}
@@ -524,6 +636,7 @@ const EventsList = () => {
                                     }
                                     className={styles.modalButton}
                                 >
+                                    <FaTimesCircle className="me-2" />
                                     Từ chối
                                 </Button>
                             )}
@@ -576,6 +689,7 @@ const EventsList = () => {
                         }}
                         className={styles.modalButton}
                     >
+                        <FaTimes className="me-2" />
                         Hủy
                     </Button>
                     <Button
@@ -583,6 +697,7 @@ const EventsList = () => {
                         onClick={() => handleRejectEvent(selectedEventId)}
                         className={styles.modalButton}
                     >
+                        <FaExclamationTriangle className="me-2" />
                         Xác nhận từ chối
                     </Button>
                 </Modal.Footer>
