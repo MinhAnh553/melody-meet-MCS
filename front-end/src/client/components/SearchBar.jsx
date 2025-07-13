@@ -80,7 +80,10 @@ const SearchBar = () => {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => setShowResults(true)}
-                        onBlur={() => setShowResults(false)}
+                        onBlur={() => {
+                            // Delay để cho phép click trên Link được xử lý trước
+                            setTimeout(() => setShowResults(false), 150);
+                        }}
                     />
                 </div>
             </form>
@@ -106,6 +109,7 @@ const SearchBar = () => {
                                 backdropFilter: 'blur(55px)',
                                 border: 'none',
                             }}
+                            onClick={() => setShowResults(false)}
                         >
                             <Link
                                 to={`/event/${event._id}`}
