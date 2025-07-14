@@ -9,8 +9,10 @@ import ProtectedRoutes from '../client/components/ProtectedRoutes';
 import EventCreateWizard from '../client/pages/event/EventCreateWizard.jsx';
 import EventDetail from '../client/pages/event/EventDetail.jsx';
 import OrganizerReviews from '../client/pages/OrganizerReviews.jsx';
+import SelectTicket from '../client/pages/payment/SelectTicket.jsx';
+import PaymentInfo from '../client/pages/payment/PaymentInfo.jsx';
 import PaymentSuccess from '../client/pages/payment/PaymentSuccess.jsx';
-import OrderPage from '../client/pages/payment/OrderPage.jsx';
+import PaymentCancel from '../client/pages/payment/PaymentCancel.jsx';
 import PurchasedTickets from '../client/pages/PurchasedTickets.jsx';
 import EventManagement from '../client/pages/event/EventManagement.jsx';
 import OrderList from '../client/pages/event/OrderList.jsx';
@@ -22,7 +24,6 @@ import EventsList from '../admin/components/Events/EventsList.jsx';
 import OrdersList from '../admin/components/Orders/OrdersList.jsx';
 import TicketsList from '../admin/components/Tickets/TicketsList.jsx';
 import UsersList from '../admin/components/Users/UsersList.jsx';
-import PaymentCancel from '../client/pages/payment/PaymentCancel.jsx';
 import AccessDenied from '../client/pages/AccessDenied.jsx';
 import NotFound from '../client/pages/NotFound.jsx';
 import RbacRoute from './RbacRoute.jsx';
@@ -246,6 +247,64 @@ const AnimatedRoutes = () => {
                             </motion.div>
                         }
                     />
+                    <Route element={<ProtectedRoutes />}>
+                        <Route
+                            path="bookings/select-ticket"
+                            element={
+                                <motion.div
+                                    variants={pageVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <SelectTicket />
+                                </motion.div>
+                            }
+                        />
+                        <Route
+                            path="bookings/:orderId/payment-info"
+                            element={
+                                <motion.div
+                                    variants={pageVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <PaymentInfo />
+                                </motion.div>
+                            }
+                        />
+                        <Route
+                            path="bookings/:orderId/payment-success"
+                            element={
+                                <motion.div
+                                    variants={pageVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <PaymentSuccess />
+                                </motion.div>
+                            }
+                        />
+                        <Route
+                            path="bookings/:orderId/payment-cancel"
+                            element={
+                                <motion.div
+                                    variants={pageVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <PaymentCancel />
+                                </motion.div>
+                            }
+                        />
+                    </Route>
                 </Route>
                 <Route
                     path="/organizer/:organizerId/reviews"
@@ -267,50 +326,6 @@ const AnimatedRoutes = () => {
                     />
                 </Route>
 
-                <Route path="/orders" element={<ProtectedRoutes />}>
-                    <Route
-                        path="payment-success"
-                        element={
-                            <motion.div
-                                variants={pageVariants}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                transition={{ duration: 0.5 }}
-                            >
-                                <PaymentSuccess />
-                            </motion.div>
-                        }
-                    />
-                    <Route
-                        path="payment-cancel"
-                        element={
-                            <motion.div
-                                variants={pageVariants}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                transition={{ duration: 0.5 }}
-                            >
-                                <PaymentCancel />
-                            </motion.div>
-                        }
-                    />
-                    <Route
-                        path=":orderId"
-                        element={
-                            <motion.div
-                                variants={pageVariants}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                transition={{ duration: 0.5 }}
-                            >
-                                <OrderPage />
-                            </motion.div>
-                        }
-                    />
-                </Route>
                 <Route element={<ProtectedRoutes />}>
                     <Route
                         path="/admin"

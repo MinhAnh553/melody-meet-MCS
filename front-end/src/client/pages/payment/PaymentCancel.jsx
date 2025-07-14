@@ -36,7 +36,12 @@ function PaymentCancel() {
     }
 
     return (
-        <div className="container py-5">
+        <div
+            className="container py-5"
+            style={{
+                marginTop: '85px',
+            }}
+        >
             <div className="row justify-content-center">
                 <div className="col-md-6 text-center">
                     <div className="card shadow">

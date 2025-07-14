@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../../util/api';
 import TimeText from '../../components/providers/TimeText';
 import DOMPurify from 'dompurify';
-import TicketModal from '../payment/TicketModal';
 import ReviewForm from '../../components/ReviewForm';
 import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
@@ -135,9 +134,9 @@ const EventDetail = () => {
 
     const sanitizedDescription = DOMPurify.sanitize(event.description);
 
-    // Hàm mở modal mua vé
+    // Hàm chuyển đến trang chọn vé
     const handleBuyNow = () => {
-        setShowModal(true);
+        navigate(`/event/${eventId}/bookings/select-ticket`);
     };
 
     // Mở form đánh giá
@@ -548,13 +547,6 @@ const EventDetail = () => {
                     )}
                 </div>
             )}
-
-            {/* Modal mua vé */}
-            <TicketModal
-                show={showModal}
-                onHide={() => setShowModal(false)}
-                event={event}
-            />
 
             {/* Review Form Modal */}
             <ReviewForm
