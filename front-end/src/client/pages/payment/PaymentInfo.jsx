@@ -6,6 +6,7 @@ import PhoneInput from 'react-phone-input-2';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import 'react-phone-input-2/lib/material.css';
 
+import { useAuth } from '../../context/AuthContext';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 
@@ -48,6 +49,7 @@ const paymentMethods = [
 ];
 
 function OrderPage() {
+    const { user } = useAuth();
     const { orderId } = useParams();
     const navigate = useNavigate();
 
@@ -229,7 +231,7 @@ function OrderPage() {
             });
         }
         const buyerInfo = { name, phone };
-        const res = await api.updateUserAddress(buyerInfo);
+        const res = await api.updateUser(user._id, buyerInfo);
         if (res && res.success) {
             swalCustomize.Toast.fire({
                 icon: 'success',

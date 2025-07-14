@@ -70,11 +70,6 @@ const getEvents = (type, status = 'approved') => {
     return axios.get(URL_API);
 };
 
-const updateUserAddress = (data) => {
-    const URL_API = `${API_URL}/auth/user/update-address`;
-    return axios.patch(URL_API, data);
-};
-
 const createOrder = (eventId, data) => {
     const URL_API = `${API_URL}/events/order/${eventId}`;
     return axios.post(URL_API, data);
@@ -300,7 +295,6 @@ export default {
     getEventByIdToEdit,
     getEvents,
     getAllEvents,
-    updateUserAddress,
     updateUser,
     createOrder,
     cancelOrder,
