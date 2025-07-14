@@ -405,22 +405,30 @@ const EventManagement = () => {
                                                         <BsBagCheckFill />
                                                         Đơn hàng
                                                     </Button>
-                                                    <Button
-                                                        variant="dark"
-                                                        className="d-flex align-items-center gap-2"
-                                                        style={{
-                                                            border: '1px solid #555',
-                                                            borderRadius: '8px',
-                                                        }}
-                                                        onClick={() => {
-                                                            navigate(
-                                                                `/organizer/event/${event._id}/participants`,
-                                                            );
-                                                        }}
-                                                    >
-                                                        <BsPeopleFill />
-                                                        Danh sách người tham gia
-                                                    </Button>
+                                                    {event.status !==
+                                                        'pending' &&
+                                                        event.status !==
+                                                            'rejected' && (
+                                                            <Button
+                                                                variant="dark"
+                                                                className="d-flex align-items-center gap-2"
+                                                                style={{
+                                                                    border: '1px solid #555',
+                                                                    borderRadius:
+                                                                        '8px',
+                                                                }}
+                                                                onClick={() => {
+                                                                    navigate(
+                                                                        `/organizer/event/${event._id}/participants`,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <BsPeopleFill />
+                                                                Danh sách người
+                                                                tham gia
+                                                            </Button>
+                                                        )}
+
                                                     {event.status !==
                                                         'event_over' &&
                                                         event.status !==
