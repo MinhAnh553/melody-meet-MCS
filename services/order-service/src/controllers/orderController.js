@@ -5,7 +5,7 @@ import {
     deleteOrderExpireJob,
 } from '../providers/queueProvider.js';
 import { publishEvent } from '../providers/rabbitmqProvider.js';
-import payosProvider from '../providers/payosProvider.js';
+import paymentProvider from '../providers/paymentProvider.js';
 import emailProvider from '../providers/emailProvider.js';
 import mailTemplate from '../templates/mailTemplate.js';
 import axios from 'axios';
@@ -362,7 +362,7 @@ const selectPaymentMethod = async (req, res) => {
             transactionId = '';
         if (method === 'payos') {
             ({ redirectUrl, transactionId } =
-                await payosProvider.createPayOSOrder(order));
+                await paymentProvider.createPayOSOrder(order));
         } else if (method === 'vnpay') {
             ({ redirectUrl, transactionId } = await payWithVNPAY(order));
         } else if (method === 'zalopay') {
@@ -403,7 +403,7 @@ const webhookHandler = async (req, res) => {
         const { data, code, desc, success } = req.body;
 
         // Kiểm tra signature
-        const isValidSignature = payosProvider.verifyWebhookSignature(
+        const isValidSignature = paymentProvider.verifyWebhookSignature(
             req.body,
             process.env.PAYOS_CHECKSUM_KEY,
         );

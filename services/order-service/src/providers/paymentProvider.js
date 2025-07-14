@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import PayOS from '@payos/node';
-import { createHmac } from 'crypto';
+import CryptoJS from 'crypto-js';
 dotenv.config();
 
 const payOS = new PayOS(
@@ -79,9 +79,11 @@ const verifyWebhookSignature = (data, checksumKey) => {
         const { signature, data: webhookData } = data;
         const sortedDataByKey = sortObjDataByKey(webhookData);
         const dataQueryStr = convertObjToQueryStr(sortedDataByKey);
-        const calculatedSignature = createHmac('sha256', checksumKey)
-            .update(dataQueryStr)
-            .digest('hex');
+
+        const calculatedSignature = CryptoJS.HmacSHA256(
+            dataQueryStr,
+            checksumKey,
+        ).toString(CryptoJS.enc.Hex);
 
         return calculatedSignature === signature;
     } catch (error) {
