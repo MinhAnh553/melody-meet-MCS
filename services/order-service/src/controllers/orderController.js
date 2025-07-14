@@ -335,7 +335,7 @@ const selectPaymentMethod = async (req, res) => {
 
         // Hiện tại chỉ có payos
         if (method !== 'payos') {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: 'Phương thức thanh toán không hợp lệ',
             });
@@ -352,21 +352,39 @@ const selectPaymentMethod = async (req, res) => {
 
         // Chỉ cho phép chọn phương thức thanh toán nếu đơn hàng đang chờ thanh toán
         if (order.status !== 'PENDING') {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: 'Đơn hàng đã được xử lý hoặc hủy bỏ',
             });
         }
 
-        const paymentUrl = await payosProvider.createPayOSOrder(
-            order.buyerInfo,
-            order,
-            order.tickets,
-        );
+        let redirectUrl = '',
+            transactionId = '';
+        if (method === 'payos') {
+            ({ redirectUrl, transactionId } =
+                await payosProvider.createPayOSOrder(order));
+        } else if (method === 'vnpay') {
+            ({ redirectUrl, transactionId } = await payWithVNPAY(order));
+        } else if (method === 'zalopay') {
+            ({ redirectUrl, transactionId } = await payWithZaloPay(order));
+        } else {
+            return res
+                .status(200)
+                .json({ success: false, message: 'Unsupported method' });
+        }
+
+        order.payment.method = method.toUpperCase();
+        order.payment.attempts.push({
+            method: method.toUpperCase(),
+            transactionId,
+            redirectUrl,
+        });
+
+        await order.save();
 
         return res.status(200).json({
             success: true,
-            payUrl: paymentUrl,
+            payUrl: redirectUrl,
             message: 'Phương thức thanh toán đã được chọn thành công',
         });
     } catch (error) {
@@ -382,7 +400,7 @@ const selectPaymentMethod = async (req, res) => {
 const webhookHandler = async (req, res) => {
     logger.info('Webhook handler');
     try {
-        const { data, code, desc } = req.body;
+        const { data, code, desc, success } = req.body;
 
         // Kiểm tra signature
         const isValidSignature = payosProvider.verifyWebhookSignature(
@@ -411,7 +429,7 @@ const webhookHandler = async (req, res) => {
 
         // Tìm đơn hàng theo orderCode
         const order = await orderModel.findOne({
-            orderCode,
+            'payment.attempts.transactionId': orderCode,
             status: 'PENDING',
         });
         if (!order) {
@@ -422,9 +440,14 @@ const webhookHandler = async (req, res) => {
             });
         }
 
-        // Nếu webhook có success true => thanh toán thành công
-        if (req.body.success === true) {
+        if (success === true) {
             order.status = 'PAID';
+            // ✅ Tìm và cập nhật attempt tương ứng (nếu có)
+            const attempt = order.payment.attempts.find(
+                (a) => a.transactionId.toString() === orderCode.toString(),
+            );
+            if (attempt) attempt.status = 'PAID';
+
             // Tạo vé cho người dùng
             await createTicketsForOrder(order);
             // Xóa job hết hạn đơn hàng
@@ -432,27 +455,23 @@ const webhookHandler = async (req, res) => {
             // Xóa cache event đó
             await invalidateEventCacheById(req, order.eventId);
             await invalidateEventCache(req);
-        } else {
-            order.status = 'CANCELED';
-            // Xóa job hết hạn đơn hàng
-            await deleteOrderExpireJob(order._id);
+
+            // 🔔 Gửi mail chỉ khi thành công
+            const event = await axios.get(
+                `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+            );
+
+            await emailProvider.sendMail(
+                order.buyerInfo.email,
+                'Melody Meet: Giao Dịch Thành Công',
+                mailTemplate.ticketInfoTemplate(
+                    order.buyerInfo.name,
+                    event.data.data,
+                    order,
+                    order.tickets,
+                ),
+            );
         }
-
-        const event = await axios.get(
-            `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
-        );
-
-        // Gửi email thông báo cho người dùng
-        await emailProvider.sendMail(
-            order.buyerInfo.email,
-            'Melody Meet: Giao Dịch Thành Công',
-            mailTemplate.ticketInfoTemplate(
-                order.buyerInfo.name,
-                event.data.data,
-                order,
-                order.tickets,
-            ),
-        );
 
         invalidateOrderCache(req);
 

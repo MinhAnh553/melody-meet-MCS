@@ -9,45 +9,31 @@ const payOS = new PayOS(
     process.env.PAYOS_CHECKSUM_KEY,
 );
 
-const createPayOSOrder = async (userInfo, order, tickets) => {
+const createPayOSOrder = async (order) => {
     const YOUR_DOMAIN = process.env.FONTEND_URL;
+    const timestamp = Date.now(); // ví dụ: 1720855374685
+    const random2 = Math.floor(10 + Math.random() * 90); // 2 số: 10–99
+    const orderCode = `${timestamp}${random2}`; // ví dụ: '172085537468552'
 
     const body = {
-        orderCode: parseInt(order.orderCode),
-        buyerName: userInfo.name,
-        buyerEmail: userInfo.email,
-        buyerPhone: userInfo.phone,
+        orderCode: parseInt(orderCode),
+        buyerName: order.buyerInfo.name,
+        buyerEmail: order.buyerInfo.email,
+        buyerPhone: order.buyerInfo.phone,
         amount: order.totalPrice,
-        items: tickets,
+        items: order.tickets,
         description: 'Melody Meet',
         expiredAt: Math.floor(new Date(order.expiredAt).getTime() / 1000),
         returnUrl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-success`,
-        cancelUrl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-cancel`,
+        cancelUrl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-info`,
     };
 
     try {
         const paymentLinkResponse = await payOS.createPaymentLink(body);
 
-        return paymentLinkResponse.checkoutUrl;
-    } catch (error) {
-        console.error(error);
-        return { success: false, message: error.message };
-    }
-};
-
-const getInfoPayOSOrder = async (orderCode) => {
-    try {
-        const order = await payOS.getPaymentLinkInformation(orderCode);
-        if (!order) {
-            return {
-                success: false,
-                message: 'Không tìm thấy đơn hàng!',
-            };
-        }
-
         return {
-            success: true,
-            data: order,
+            redirectUrl: paymentLinkResponse.checkoutUrl,
+            transactionId: orderCode,
         };
     } catch (error) {
         console.error(error);
@@ -106,6 +92,5 @@ const verifyWebhookSignature = (data, checksumKey) => {
 
 export default {
     createPayOSOrder,
-    getInfoPayOSOrder,
     verifyWebhookSignature,
 };

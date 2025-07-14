@@ -24,6 +24,29 @@ const orderSchema = new mongoose.Schema(
             enum: ['PENDING', 'PAID', 'CANCELED', 'EXPIRED'],
             default: 'PENDING',
         },
+        payment: {
+            method: {
+                type: String,
+                enum: ['PAYOS', 'ZALOPAY', 'VNPAY'],
+                default: null,
+            },
+            attempts: [
+                {
+                    method: {
+                        type: String,
+                        enum: ['PAYOS', 'ZALOPAY', 'VNPAY'],
+                    },
+                    status: {
+                        type: String,
+                        enum: ['PENDING', 'PAID', 'CANCELED', 'EXPIRED'],
+                        default: 'CANCELED',
+                    },
+                    createdAt: { type: Date, default: Date.now },
+                    transactionId: String,
+                    redirectUrl: String,
+                },
+            ],
+        },
         expiredAt: Date,
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date, default: Date.now },
