@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { FaCheckCircle } from 'react-icons/fa';
 import api from '../../../util/api';
@@ -8,33 +8,28 @@ import styles from './PaymentSuccess.module.css';
 import TimeText from '../../components/providers/TimeText';
 
 function PaymentSuccess() {
-    const [searchParams] = useSearchParams();
+    const { orderId } = useParams();
     const navigate = useNavigate();
 
-    const orderCode = searchParams.get('orderCode'); // ?orderCode=xxx
     const [order, setOrder] = useState(null);
     const [tickets, setTickets] = useState([]);
     const [event, setEvent] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!orderCode) return;
-
+            if (!orderId) return;
             try {
                 // Lấy thông tin đơn hàng
-                const orderRes = await api.getOrderByOrderCode(orderCode);
+                const orderRes = await api.getOrder(orderId);
                 if (orderRes.success) {
                     if (orderRes.order.status === 'PAID') {
                         setOrder(orderRes.order);
                         setTickets(orderRes.order.tickets);
-
-                        // Lấy thông tin sự kiện sau khi có order
+                        // Lấy thông tin sự kiện
                         const eventRes = await api.getEventById(
                             orderRes.order.eventId,
                         );
-                        if (eventRes.success) {
-                            setEvent(eventRes.data);
-                        }
+                        if (eventRes.success) setEvent(eventRes.data);
                     } else {
                         navigate('/');
                     }
@@ -43,9 +38,8 @@ function PaymentSuccess() {
                 console.error(err);
             }
         };
-
         fetchData();
-    }, [orderCode]);
+    }, [orderId]);
 
     if (!order || !event) {
         return null;
@@ -117,7 +111,7 @@ function PaymentSuccess() {
 
     return (
         <div
-            className="container py-5"
+            className="container pb-5"
             style={{
                 marginTop: '85px',
             }}

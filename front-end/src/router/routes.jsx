@@ -12,7 +12,6 @@ import OrganizerReviews from '../client/pages/OrganizerReviews.jsx';
 import SelectTicket from '../client/pages/payment/SelectTicket.jsx';
 import PaymentInfo from '../client/pages/payment/PaymentInfo.jsx';
 import PaymentSuccess from '../client/pages/payment/PaymentSuccess.jsx';
-import PaymentCancel from '../client/pages/payment/PaymentCancel.jsx';
 import PurchasedTickets from '../client/pages/PurchasedTickets.jsx';
 import EventManagement from '../client/pages/event/EventManagement.jsx';
 import OrderList from '../client/pages/event/OrderList.jsx';
@@ -287,20 +286,6 @@ const AnimatedRoutes = () => {
                                     transition={{ duration: 0.5 }}
                                 >
                                     <PaymentSuccess />
-                                </motion.div>
-                            }
-                        />
-                        <Route
-                            path="bookings/:orderId/payment-cancel"
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <PaymentCancel />
                                 </motion.div>
                             }
                         />
