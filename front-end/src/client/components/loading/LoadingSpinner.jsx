@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LoadingSpinner = () => {
+const LoadingSpinner = ({ content = 'Đang tải dữ liệu' }) => {
     return (
         <div
             style={{
@@ -9,13 +9,12 @@ const LoadingSpinner = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '40px',
-                // color: '#6c757d',
             }}
         >
             <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Đang tải dữ liệu...</span>
+                <span className="visually-hidden">{content}...</span>
             </div>
-            <p className="mt-2">Đang tải dữ liệu...</p>
+            <p className="mt-2">{content}...</p>
         </div>
     );
 };

@@ -105,6 +105,11 @@ const checkStatusOrder = (id) => {
     return axios.get(URL_API);
 };
 
+const verifyReturnUrl = (orderId, queryObj) => {
+    const URL_API = `${API_URL}/orders/${orderId}/verify-return-url`;
+    return axios.post(URL_API, queryObj);
+};
+
 const getMyOrders = () => {
     const URL_API = `${API_URL}/orders/my`;
     return axios.get(URL_API);
@@ -301,6 +306,7 @@ export default {
     getOrder,
     selectPayment,
     checkStatusOrder,
+    verifyReturnUrl,
     updateStatusOrder,
     getOrderByOrderCode,
     getMyOrders,

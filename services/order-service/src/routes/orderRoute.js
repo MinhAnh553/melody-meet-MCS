@@ -18,8 +18,12 @@ Router.route('/create').post(
     orderController.createOrder,
 );
 
+Router.route('/:id/verify-return-url').post(
+    orderController.verifyReturnUrlHandler,
+);
+
 // Webhook
-Router.route('/webhook').post(orderController.webhookHandler);
+Router.route('/webhook/payos').post(orderController.payosWebhookHandler);
 
 // Lấy danh sách đơn hàng của user
 Router.route('/my').get(

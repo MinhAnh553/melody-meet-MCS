@@ -80,7 +80,7 @@ function getVietQRUrl({
     description,
     accountName,
 }) {
-    return `https://img.vietqr.io/image/${bin}-${accountNumber}-QNQVuqN.jpg?amount=${amount}&addInfo=${encodeURIComponent(
+    return `https://img.vietqr.io/image/${bin}-${accountNumber}-mm.jpg?amount=${amount}&addInfo=${encodeURIComponent(
         description,
     )}&accountName=${encodeURIComponent(accountName)}`;
 }
@@ -310,6 +310,13 @@ function OrderPage() {
                 {`
                 .ant-tabs-nav-wrap {
                     justify-content: center !important;
+                }
+                .ant-radio-group-solid .ant-radio-button-wrapper:not(:first-child)::before,
+                .ant-radio-button-wrapper:not(:first-child)::before {
+                    display: none !important;
+                }
+                .ant-radio-button-wrapper {
+                    border-left: none !important;
                 }
                 `}
             </style>
@@ -668,29 +675,59 @@ function OrderPage() {
                                 onChange={(e) =>
                                     setSelectedPayment(e.target.value)
                                 }
-                                style={{ width: '100%' }}
+                                style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    gap: 32,
+                                    justifyContent: 'center',
+                                    margin: '32px 0',
+                                    flexWrap: 'wrap',
+                                }}
                             >
                                 {paymentMethods.map((m) => (
-                                    <div
+                                    <Radio.Button
                                         key={m.value}
+                                        value={m.value}
                                         style={{
-                                            marginBottom: 10,
+                                            padding: '28px 40px',
+                                            borderRadius: 18,
+                                            fontSize: 22,
+                                            fontWeight: 700,
+                                            background:
+                                                selectedPayment === m.value
+                                                    ? '#e0ffe0'
+                                                    : '#fff',
+                                            boxShadow:
+                                                selectedPayment === m.value
+                                                    ? '0 4px 24px #a3e63544'
+                                                    : 'none',
+                                            border:
+                                                '2px solid ' +
+                                                (selectedPayment === m.value
+                                                    ? '#22c55e'
+                                                    : 'transparent'),
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 10,
+                                            gap: 18,
+                                            transition:
+                                                'border-color 0.2s, box-shadow 0.2s, background 0.2s',
+                                            minWidth: 240,
+                                            justifyContent: 'center',
+                                            color:
+                                                selectedPayment === m.value
+                                                    ? '#16a34a'
+                                                    : '#232323',
+                                            marginBottom: 16,
                                         }}
                                     >
-                                        <Radio
-                                            value={m.value}
-                                            style={{
-                                                color: '#d4d4d8',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                            }}
-                                        >
-                                            {m.icon} {m.label}
-                                        </Radio>
-                                    </div>
+                                        {React.cloneElement(m.icon, {
+                                            style: {
+                                                height: 40,
+                                                marginRight: 16,
+                                            },
+                                        })}
+                                        {m.label}
+                                    </Radio.Button>
                                 ))}
                             </Radio.Group>
                         </Card>

@@ -3,6 +3,8 @@ import PayOS from '@payos/node';
 import CryptoJS from 'crypto-js';
 import axios from 'axios';
 import moment from 'moment';
+import qs from 'qs';
+import { VNPay, ignoreLogger } from 'vnpay';
 
 dotenv.config();
 
@@ -21,6 +23,26 @@ const ZaloPay = {
     endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
     callback_url: 'link webhook',
 };
+
+const vnpay = new VNPay({
+    // ⚡ Cấu hình bắt buộc
+    tmnCode: 'GSSH88UZ',
+    secureSecret: 'K707ZDJQ3HTKIR9FJFZF6SNQYINMT66F',
+    vnpayHost: 'https://sandbox.vnpayment.vn',
+
+    // 🔧 Cấu hình tùy chọn
+    testMode: true, // Chế độ test
+    hashAlgorithm: 'SHA512', // Thuật toán mã hóa
+    enableLog: true, // Bật/tắt log
+    loggerFn: ignoreLogger, // Custom logger
+
+    // 🔧 Custom endpoints
+    endpoints: {
+        paymentEndpoint: 'paymentv2/vpcpay.html',
+        queryDrRefundEndpoint: 'merchant_webapi/api/transaction',
+        getBankListEndpoint: 'qrpayauth/api/merchant/get_bank_list',
+    },
+});
 
 // Sắp xếp object theo key
 const sortObjDataByKey = (object) => {
@@ -137,7 +159,7 @@ const createZaloPayOrder = async (order) => {
     );
 
     const embed_data = JSON.stringify({
-        redirecturl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-success`,
+        redirecturl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-verify`,
     });
 
     const dataToSign = [
@@ -187,8 +209,118 @@ const createZaloPayOrder = async (order) => {
     }
 };
 
+// 3. VNPay
+const createVNPayOrder = async (order, req) => {
+    const transactionId = randomTransId();
+    const paymentUrl = vnpay.buildPaymentUrl({
+        vnp_Amount: order.totalPrice,
+        vnp_IpAddr:
+            req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.ip,
+        vnp_TxnRef: transactionId,
+        vnp_OrderInfo: `Thanh toan Melody Meet #${order.orderCode}`,
+        vnp_OrderType: 190003,
+        vnp_ReturnUrl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-verify`,
+        vnp_Locale: 'vn', // 'vn' hoặc 'en'
+        vnp_CreateDate: moment(order.createdAt).format('YYYYMMDDHHmmss'),
+        vnp_ExpireDate: moment(order.expiredAt).format('YYYYMMDDHHmmss'),
+    });
+
+    return {
+        redirectUrl: paymentUrl,
+        transactionId: transactionId,
+    };
+    // try {
+    //     const res = await axios.post(endpoint, null, { params: payload });
+
+    //     if (res.data.return_code === 1) {
+
+    //     } else {
+    //         throw new Error(res.data.sub_return_message || 'ZaloPay failed');
+    //     }
+    // } catch (error) {
+    //     console.error('[ZaloPay ERROR]', error.response?.data || error.message);
+    //     return { success: false, message: error.message };
+    // }
+};
+
+const verifyVNPayReturnUrl = async (query) => {
+    let verify;
+    try {
+        verify = vnpay.verifyReturnUrl(query);
+        if (!verify.isVerified) {
+            return {
+                success: false,
+                message: 'Xác thực tính toàn vẹn dữ liệu thất bại',
+            };
+        }
+        if (!verify.isSuccess) {
+            return {
+                success: false,
+                message: 'Đơn hàng thanh toán thất bại',
+            };
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: 'Dữ liệu không hợp lệ',
+        };
+    }
+
+    return {
+        success: true,
+        message: 'Xác thực URL trả về thành công',
+    };
+};
+
+const verifyZaloPayReturnUrl = async (query) => {
+    const app_trans_id = query.apptransid;
+
+    let postData = {
+        app_id: ZaloPay.app_id,
+        app_trans_id,
+    };
+
+    let data =
+        postData.app_id + '|' + postData.app_trans_id + '|' + ZaloPay.key1; // appid|app_trans_id|key1
+    postData.mac = CryptoJS.HmacSHA256(data, ZaloPay.key1).toString();
+
+    try {
+        const res = await axios.post(
+            'https://sb-openapi.zalopay.vn/v2/query',
+            qs.stringify(postData),
+        );
+
+        if (res.data.return_code === 1) {
+            return {
+                success: true,
+                message: 'Đơn hàng đã được thanh toán!',
+            };
+        } else if (res.data.return_code === 2) {
+            return {
+                success: false,
+                message: 'Giao dịch hết hạn thanh toán!',
+            };
+        }
+        if (res.data.return_code === 3) {
+            return {
+                success: false,
+                message: 'Đơn hàng chưa thanh toán hoặc giao dịch đang xử lý!',
+            };
+        }
+    } catch (error) {
+        console.error('[ZaloPay ERROR]', error.response?.data || error.message);
+        return { success: false, message: error.message };
+    }
+};
+
 export default {
     createPayOSOrder,
     verifyWebhookSignature,
     createZaloPayOrder,
+    verifyZaloPayReturnUrl,
+    createVNPayOrder,
+    verifyVNPayReturnUrl,
 };

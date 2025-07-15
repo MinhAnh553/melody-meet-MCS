@@ -366,7 +366,7 @@ const selectPaymentMethod = async (req, res) => {
                 await paymentProvider.createPayOSOrder(order));
         } else if (method === 'vnpay') {
             ({ redirectUrl, transactionId } =
-                await paymentProvider.createZaloPayOrder(order));
+                await paymentProvider.createVNPayOrder(order, req));
         } else if (method === 'zalopay') {
             ({ redirectUrl, transactionId } =
                 await paymentProvider.createZaloPayOrder(order));
@@ -401,7 +401,7 @@ const selectPaymentMethod = async (req, res) => {
 };
 
 // Webhook handler for PayOS
-const webhookHandler = async (req, res) => {
+const payosWebhookHandler = async (req, res) => {
     logger.info('Webhook handler');
     try {
         const { data, code, desc, success } = req.body;
@@ -936,6 +936,113 @@ const updateStatusOrder = async (req, res) => {
     }
 };
 
+const verifyReturnUrlHandler = async (req, res) => {
+    try {
+        const { id: orderId } = req.params;
+        const query = req.body;
+
+        // Xác định cổng thanh toán
+        let provider = null;
+        if (query.vnp_TxnRef) provider = 'vnpay';
+        else if (query.apptransid) provider = 'zalopay';
+        else {
+            return res.status(400).json({
+                success: false,
+                message: 'Không xác định được cổng thanh toán',
+            });
+        }
+
+        let transactionId = '';
+        let verifyResult = { success: false };
+
+        if (provider === 'vnpay') {
+            transactionId = query.vnp_TxnRef;
+            verifyResult = await paymentProvider.verifyVNPayReturnUrl(query);
+        }
+
+        if (provider === 'zalopay') {
+            transactionId = query.apptransid;
+            verifyResult = await paymentProvider.verifyZaloPayReturnUrl(query);
+        }
+
+        // Xác thực thất bại
+        if (!verifyResult.success) {
+            return res.status(200).json({
+                success: false,
+                status: 'UNPAID',
+            });
+        }
+
+        const order = await orderModel.findOne({
+            _id: orderId,
+            'payment.attempts.transactionId': transactionId,
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Đơn hàng không tồn tại',
+            });
+        }
+
+        if (order.status == 'PAID') {
+            return res.status(200).json({
+                success: true,
+                status: 'PAID',
+            });
+        }
+        if (order.status == 'CANCELED') {
+            return res.status(404).json({
+                success: false,
+                message: 'Đơn hàng đã bị hủy!',
+            });
+        }
+
+        order.status = 'PAID';
+        const attempt = order.payment.attempts.find(
+            (a) => a.transactionId.toString() === transactionId.toString(),
+        );
+        if (attempt) attempt.status = 'PAID';
+
+        // Tạo vé cho người dùng
+        await createTicketsForOrder(order);
+        // Xóa job hết hạn đơn hàng
+        await deleteOrderExpireJob(order._id);
+        // Xóa cache event đó
+        await invalidateEventCacheById(req, order.eventId);
+        await invalidateEventCache(req);
+
+        // 🔔 Gửi mail chỉ khi thành công
+        const event = await axios.get(
+            `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
+        );
+
+        await emailProvider.sendMail(
+            order.buyerInfo.email,
+            'Melody Meet: Giao Dịch Thành Công',
+            mailTemplate.ticketInfoTemplate(
+                order.buyerInfo.name,
+                event.data.data,
+                order,
+                order.tickets,
+            ),
+        );
+
+        await order.save();
+
+        return res.status(200).json({
+            success: true,
+            status: 'PAID',
+        });
+    } catch (error) {
+        console.error('[verifyReturnUrlHandler]', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 export default {
     getRevenue,
     getRevenueByEventId,
@@ -945,10 +1052,11 @@ export default {
     getOrderByOrderCode,
     cancelOrder,
     selectPaymentMethod,
-    webhookHandler,
+    payosWebhookHandler,
     getMyOrders,
     getOrdersByEventId,
     getDashboard,
     getAllOrders,
     updateStatusOrder,
+    verifyReturnUrlHandler,
 };
