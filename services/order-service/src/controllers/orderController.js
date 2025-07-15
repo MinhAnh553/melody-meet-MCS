@@ -333,8 +333,7 @@ const selectPaymentMethod = async (req, res) => {
             });
         }
 
-        // Hiện tại chỉ có payos
-        if (method !== 'payos') {
+        if (method !== 'payos' && method !== 'zalopay' && method !== 'vnpay') {
             return res.status(200).json({
                 success: false,
                 message: 'Phương thức thanh toán không hợp lệ',
@@ -359,14 +358,18 @@ const selectPaymentMethod = async (req, res) => {
         }
 
         let redirectUrl = '',
-            transactionId = '';
+            transactionId = '',
+            paymentPayosLinkResponse = '',
+            qrCode = '';
         if (method === 'payos') {
-            ({ redirectUrl, transactionId } =
+            ({ transactionId, paymentPayosLinkResponse } =
                 await paymentProvider.createPayOSOrder(order));
         } else if (method === 'vnpay') {
-            ({ redirectUrl, transactionId } = await payWithVNPAY(order));
+            ({ redirectUrl, transactionId } =
+                await paymentProvider.createZaloPayOrder(order));
         } else if (method === 'zalopay') {
-            ({ redirectUrl, transactionId } = await payWithZaloPay(order));
+            ({ redirectUrl, transactionId } =
+                await paymentProvider.createZaloPayOrder(order));
         } else {
             return res
                 .status(200)
@@ -385,6 +388,7 @@ const selectPaymentMethod = async (req, res) => {
         return res.status(200).json({
             success: true,
             payUrl: redirectUrl,
+            paymentPayosLinkResponse,
             message: 'Phương thức thanh toán đã được chọn thành công',
         });
     } catch (error) {

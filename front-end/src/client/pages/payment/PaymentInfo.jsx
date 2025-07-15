@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, Card, Button, Typography, Radio, Modal } from 'antd';
+import {
+    Row,
+    Col,
+    Card,
+    Button,
+    Typography,
+    Radio,
+    Modal,
+    Tabs,
+    Input,
+    message,
+} from 'antd';
 import { CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import PhoneInput from 'react-phone-input-2';
 import { isValidPhoneNumber } from 'libphonenumber-js';
@@ -48,6 +59,32 @@ const paymentMethods = [
     },
 ];
 
+// Mapping BIN sang tên ngân hàng phổ biến
+const bankMap = {
+    970422: 'Vietcombank',
+    970405: 'BIDV',
+    970418: 'Techcombank',
+    970436: 'VietinBank',
+    970407: 'MB Bank',
+    970423: 'ACB',
+    970430: 'Sacombank',
+    970441: 'TPBank',
+    970406: 'Agribank',
+    970448: 'OCB',
+};
+
+function getVietQRUrl({
+    bin,
+    accountNumber,
+    amount,
+    description,
+    accountName,
+}) {
+    return `https://img.vietqr.io/image/${bin}-${accountNumber}-QNQVuqN.jpg?amount=${amount}&addInfo=${encodeURIComponent(
+        description,
+    )}&accountName=${encodeURIComponent(accountName)}`;
+}
+
 function OrderPage() {
     const { user } = useAuth();
     const { orderId } = useParams();
@@ -64,6 +101,9 @@ function OrderPage() {
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [expiredModal, setExpiredModal] = useState(false);
+    const [payosModal, setPayosModal] = useState(false);
+    const [payosTab, setPayosTab] = useState('qr');
+    const [payosData, setPayosData] = useState(null);
 
     useEffect(() => {
         if (order && order.buyerInfo) {
@@ -92,7 +132,9 @@ function OrderPage() {
                             title: 'Đơn hàng đã bị hủy!',
                         });
                     } else if (res.order.status === 'PAID') {
-                        navigate(`/my-tickets`);
+                        navigate(
+                            `/event/${res.order.eventId}/bookings/${res.order._id}/payment-success`,
+                        );
                         swalCustomize.Toast.fire({
                             icon: 'success',
                             title: 'Đơn hàng đã được thanh toán!',
@@ -125,7 +167,9 @@ function OrderPage() {
             const res = await api.checkStatusOrder(orderId);
             if (res.success) {
                 if (res.status === 'PAID') {
-                    navigate(`/my-tickets`);
+                    navigate(
+                        `/event/${order.eventId}/bookings/${order._id}/payment-success`,
+                    );
                     swalCustomize.Toast.fire({
                         icon: 'success',
                         title: 'Đơn hàng đã được thanh toán!',
@@ -171,21 +215,16 @@ function OrderPage() {
         return `${mmStr}:${ssStr}`;
     }
 
-    const handleCancelOrder = () => {
-        swalCustomize.Swal.fire({
-            title: 'Hủy đơn hàng?',
-            text: 'Bạn có chắc chắn muốn hủy đơn hàng này?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Có, hủy đơn',
-            cancelButtonText: 'Không',
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                await api.cancelOrder({ orderId });
-                navigate(`/event/${order?.eventId || ''}`);
-            }
-        });
-    };
+    function formatPayosCountdown(sec) {
+        const mm = Math.floor(sec / 60);
+        const ss = sec % 60;
+        return `${mm < 10 ? '0' : ''}${mm} : ${ss < 10 ? '0' : ''}${ss}`;
+    }
+
+    function handleCopy(text) {
+        navigator.clipboard.writeText(text);
+        message.success('Đã sao chép!');
+    }
 
     const handlePayment = async () => {
         if (!name.trim() || !phone.trim()) {
@@ -199,7 +238,17 @@ function OrderPage() {
         try {
             const res = await api.selectPayment(orderId, selectedPayment);
             if (res.success) {
-                window.location.href = res.payUrl;
+                if (
+                    selectedPayment === 'payos' &&
+                    res.paymentPayosLinkResponse
+                ) {
+                    setPayosData(res.paymentPayosLinkResponse);
+
+                    setPayosTab('qr');
+                    setPayosModal(true);
+                } else if (res.payUrl) {
+                    window.location.href = res.payUrl;
+                }
             } else {
                 swalCustomize.Toast.fire({
                     icon: 'error',
@@ -257,6 +306,13 @@ function OrderPage() {
                 marginTop: '85px',
             }}
         >
+            <style>
+                {`
+                .ant-tabs-nav-wrap {
+                    justify-content: center !important;
+                }
+                `}
+            </style>
             <Row
                 justify="center"
                 style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 0' }}
@@ -882,6 +938,532 @@ function OrderPage() {
                 >
                     Đặt vé mới
                 </Button>
+            </Modal>
+            {/* Popup PayOS custom */}
+            <Modal
+                open={payosModal}
+                onCancel={() => setPayosModal(false)}
+                footer={null}
+                closable={false}
+                centered
+                width={800}
+                bodyStyle={{ borderRadius: 16, padding: 0, overflow: 'hidden' }}
+            >
+                <div
+                    style={{
+                        background: '#fff',
+                        borderRadius: 16,
+                        minHeight: 420,
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '24px 32px 0 32px',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                            }}
+                        >
+                            <img
+                                src="https://salt.tkbcdn.com/ts/ds/0c/ae/fb/6bdb675e0df2f9f13a47726f432934e6.png"
+                                alt="VietQR"
+                                style={{ height: 28 }}
+                            />
+                            <span
+                                style={{
+                                    fontWeight: 700,
+                                    fontSize: 22,
+                                    marginLeft: 8,
+                                }}
+                            >
+                                Thanh toán bằng VietQR
+                            </span>
+                        </div>
+                        <Button
+                            type="link"
+                            style={{ color: '#22c55e', fontWeight: 600 }}
+                            onClick={() => setPayosModal(false)}
+                        >
+                            Đổi phương thức khác
+                        </Button>
+                    </div>
+                    <Tabs
+                        activeKey={payosTab}
+                        onChange={setPayosTab}
+                        style={{ margin: '0 32px', marginTop: 16 }}
+                        items={[
+                            {
+                                key: 'qr',
+                                label: (
+                                    <span
+                                        style={{
+                                            fontWeight: 600,
+                                            fontSize: 17,
+                                            color:
+                                                payosTab === 'qr'
+                                                    ? '#22c55e'
+                                                    : '#222',
+                                        }}
+                                    >
+                                        Thanh toán bằng VietQR
+                                    </span>
+                                ),
+                                children: (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            marginTop: 8,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                flex: 1,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                // padding: 16,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    background: '#f8f9fa',
+                                                    borderRadius: 16,
+                                                    // padding: 16,
+                                                    marginBottom: 12,
+                                                }}
+                                            >
+                                                <img
+                                                    src={
+                                                        payosData
+                                                            ? getVietQRUrl({
+                                                                  bin: payosData.bin,
+                                                                  accountNumber:
+                                                                      payosData.accountNumber,
+                                                                  amount: payosData.amount,
+                                                                  description:
+                                                                      payosData.description,
+                                                                  accountName:
+                                                                      payosData.accountName,
+                                                              })
+                                                            : ''
+                                                    }
+                                                    alt="QR VietQR"
+                                                    style={{
+                                                        width: 268,
+                                                        height: 268,
+                                                        background: '#fff',
+                                                        borderRadius: 8,
+                                                    }}
+                                                />
+                                            </div>
+                                            <div
+                                                style={{
+                                                    color: '#888',
+                                                    fontWeight: 500,
+                                                    fontSize: 15,
+                                                    marginTop: 8,
+                                                }}
+                                            >
+                                                Tổng tiền
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontWeight: 700,
+                                                    fontSize: 20,
+                                                    color: '#222',
+                                                }}
+                                            >
+                                                {payosData?.amount?.toLocaleString(
+                                                    'vi-VN',
+                                                )}{' '}
+                                                đ
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                flex: 1,
+                                                padding: 24,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontWeight: 700,
+                                                    fontSize: 20,
+                                                    marginBottom: 12,
+                                                }}
+                                            >
+                                                Quét mã QR để thanh toán
+                                            </div>
+                                            <ol
+                                                style={{
+                                                    paddingLeft: 20,
+                                                    marginBottom: 16,
+                                                }}
+                                            >
+                                                <li>
+                                                    Mở ứng dụng Ngân hàng trên
+                                                    điện thoại
+                                                </li>
+                                                <li>
+                                                    Chọn biểu tượng{' '}
+                                                    <b>Quét mã QR</b>
+                                                </li>
+                                                <li>Quét mã QR ở trang này</li>
+                                                <li>
+                                                    Thực hiện thanh toán và xem
+                                                    kết quả giao dịch tại trang
+                                                    này (không tắt popup)
+                                                </li>
+                                            </ol>
+                                            <div
+                                                style={{
+                                                    background: '#f3f4f6',
+                                                    borderRadius: 8,
+                                                    padding: 12,
+                                                    textAlign: 'center',
+                                                    marginTop: 'auto',
+                                                }}
+                                            >
+                                                Giao dịch sẽ kết thúc sau
+                                                <span
+                                                    style={{
+                                                        color: '#22c55e',
+                                                        fontWeight: 700,
+                                                        fontSize: 18,
+                                                        marginLeft: 8,
+                                                    }}
+                                                >
+                                                    {formatCountdown(timeLeft)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ),
+                            },
+                            {
+                                key: 'bank',
+                                label: (
+                                    <span
+                                        style={{
+                                            fontWeight: 600,
+                                            fontSize: 17,
+                                            color:
+                                                payosTab === 'bank'
+                                                    ? '#22c55e'
+                                                    : '#222',
+                                        }}
+                                    >
+                                        Chuyển khoản ngân hàng
+                                    </span>
+                                ),
+                                children: (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            marginTop: 8,
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                flex: 1,
+                                                background: '#f8f9fa',
+                                                borderRadius: 16,
+                                                padding: 20,
+                                                marginRight: 16,
+                                            }}
+                                        >
+                                            <div style={{ marginBottom: 10 }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: 500,
+                                                        color: '#888',
+                                                        marginBottom: 2,
+                                                    }}
+                                                >
+                                                    Tên ngân hàng
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 700,
+                                                        }}
+                                                    >
+                                                        {bankMap[
+                                                            payosData?.bin
+                                                        ] ||
+                                                            payosData?.bin ||
+                                                            '---'}
+                                                    </span>
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            handleCopy(
+                                                                bankMap[
+                                                                    payosData
+                                                                        ?.bin
+                                                                ] ||
+                                                                    payosData?.bin ||
+                                                                    '---',
+                                                            )
+                                                        }
+                                                    >
+                                                        Copy
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: 10 }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: 500,
+                                                        color: '#888',
+                                                        marginBottom: 2,
+                                                    }}
+                                                >
+                                                    Tên tài khoản
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 700,
+                                                        }}
+                                                    >
+                                                        {payosData?.accountName ||
+                                                            '---'}
+                                                    </span>
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            handleCopy(
+                                                                payosData?.accountName,
+                                                            )
+                                                        }
+                                                    >
+                                                        Copy
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: 10 }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: 500,
+                                                        color: '#888',
+                                                        marginBottom: 2,
+                                                    }}
+                                                >
+                                                    Số tài khoản
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 700,
+                                                        }}
+                                                    >
+                                                        {payosData?.accountNumber ||
+                                                            '---'}
+                                                    </span>
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            handleCopy(
+                                                                payosData?.accountNumber,
+                                                            )
+                                                        }
+                                                    >
+                                                        Copy
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: 10 }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: 500,
+                                                        color: '#888',
+                                                        marginBottom: 2,
+                                                    }}
+                                                >
+                                                    Số tiền
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 700,
+                                                        }}
+                                                    >
+                                                        {payosData?.amount?.toLocaleString(
+                                                            'vi-VN',
+                                                        ) || '---'}{' '}
+                                                        đ
+                                                    </span>
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            handleCopy(
+                                                                payosData?.amount?.toString(),
+                                                            )
+                                                        }
+                                                    >
+                                                        Copy
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: 10 }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: 500,
+                                                        color: '#888',
+                                                        marginBottom: 2,
+                                                    }}
+                                                >
+                                                    Nội dung
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 700,
+                                                        }}
+                                                    >
+                                                        {payosData?.description ||
+                                                            '---'}
+                                                    </span>
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            handleCopy(
+                                                                payosData?.description,
+                                                            )
+                                                        }
+                                                    >
+                                                        Copy
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                flex: 1,
+                                                padding: 24,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontWeight: 700,
+                                                    fontSize: 20,
+                                                    marginBottom: 12,
+                                                }}
+                                            >
+                                                Chuyển khoản ngân hàng
+                                            </div>
+                                            <ol
+                                                style={{
+                                                    paddingLeft: 20,
+                                                    marginBottom: 16,
+                                                }}
+                                            >
+                                                <li>
+                                                    Mở ứng dụng Ngân hàng trên
+                                                    điện thoại
+                                                </li>
+                                                <li>
+                                                    Chọn tính năng chuyển tiền,
+                                                    chọn ngân hàng và sao chép
+                                                    &quot;Số tài khoản&quot;
+                                                </li>
+                                                <li>
+                                                    Nhập chính xác &quot;Số
+                                                    tiền&quot; và sao chép
+                                                    &quot;Nội dung chuyển
+                                                    khoản&quot;
+                                                </li>
+                                                <li>
+                                                    Thực hiện thanh toán và xem
+                                                    kết quả giao dịch tại trang
+                                                    này (không tắt popup)
+                                                </li>
+                                            </ol>
+                                            <div
+                                                style={{
+                                                    color: 'red',
+                                                    fontWeight: 600,
+                                                    marginBottom: 8,
+                                                }}
+                                            >
+                                                Lưu ý: Nhập chính xác &quot;Số
+                                                tiền&quot; thanh toán
+                                            </div>
+                                            <div
+                                                style={{
+                                                    background: '#f3f4f6',
+                                                    borderRadius: 8,
+                                                    padding: 12,
+                                                    textAlign: 'center',
+                                                    marginTop: 'auto',
+                                                }}
+                                            >
+                                                Giao dịch sẽ kết thúc sau
+                                                <span
+                                                    style={{
+                                                        color: '#22c55e',
+                                                        fontWeight: 700,
+                                                        fontSize: 18,
+                                                        marginLeft: 8,
+                                                    }}
+                                                >
+                                                    {formatCountdown(timeLeft)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ),
+                            },
+                        ]}
+                    />
+                </div>
             </Modal>
         </div>
     );
