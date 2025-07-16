@@ -131,14 +131,42 @@ const OrderDetails = ({ order, onClose }) => {
                             PHƯƠNG THỨC THANH TOÁN
                         </div>
                         <div className={styles.orderDetailsBoxContent}>
-                            <div>
-                                Tiền mặt:{' '}
-                                {formatCurrency(paymentInfo?.cash || 0)}
-                            </div>
-                            <div>
-                                Chuyển khoản:{' '}
-                                {formatCurrency(paymentInfo?.bank || 0)}
-                            </div>
+                            {/* Hiển thị phương thức mới nếu có */}
+                            {order.payment && order.payment.method ? (
+                                <>
+                                    <div>
+                                        Phương thức:{' '}
+                                        <b>{order.payment.method}</b>
+                                    </div>
+                                    {/* Nếu có attempts, hiển thị trạng thái lần gần nhất */}
+                                    {Array.isArray(order.payment.attempts) &&
+                                        order.payment.attempts.length > 0 && (
+                                            <div>
+                                                Trạng thái:{' '}
+                                                <b>
+                                                    {
+                                                        order.payment.attempts[
+                                                            order.payment
+                                                                .attempts
+                                                                .length - 1
+                                                        ].status
+                                                    }
+                                                </b>
+                                            </div>
+                                        )}
+                                </>
+                            ) : (
+                                <>
+                                    <div>
+                                        Tiền mặt:{' '}
+                                        {formatCurrency(paymentInfo?.cash || 0)}
+                                    </div>
+                                    <div>
+                                        Chuyển khoản:{' '}
+                                        {formatCurrency(paymentInfo?.bank || 0)}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                     {/* Box tổng kết */}

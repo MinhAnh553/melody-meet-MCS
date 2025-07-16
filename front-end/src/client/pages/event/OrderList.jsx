@@ -1,47 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
+    Row,
+    Col,
+    Card,
+    Statistic,
+    Input,
+    Select,
     Table,
+    Tag,
     Button,
-    Form,
-    InputGroup,
-    Badge,
-    Pagination,
+    Spin,
     Modal,
-} from 'react-bootstrap';
-import { FaSearch, FaEye } from 'react-icons/fa';
+    Tooltip,
+    message,
+} from 'antd';
+import {
+    SearchOutlined,
+    EyeOutlined,
+    NumberOutlined,
+    DollarOutlined,
+    FileExcelOutlined,
+    UserOutlined,
+    MailOutlined,
+} from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import api from '../../../util/api';
-import styles from '../../../admin/components/Orders/Orders.module.css';
-import {
-    formatCurrency,
-    truncateText,
-    formatDateTime,
-} from '../../../admin/utils/formatters';
 import OrderDetails from '../../../admin/components/Orders/OrderDetails';
-import { BsCartX } from 'react-icons/bs';
-import LoadingSpinner from '../../components/loading/LoadingSpinner';
+
+const { Option } = Select;
 
 const OrderList = () => {
     const [loading, setLoading] = useState(true);
     const { eventId } = useParams();
     const [orders, setOrders] = useState([]);
-
-    // Các state cho tìm kiếm, lọc, sắp xếp, phân trang
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [sortBy, setSortBy] = useState('createdAt'); // Mặc định sắp xếp theo ngày tạo
-    const [sortOrder, setSortOrder] = useState('desc');
     const [currentPage, setCurrentPage] = useState(1);
-
-    // State cho Modal chi tiết
+    const [pageSize, setPageSize] = useState(10);
     const [showOrderDetails, setShowOrderDetails] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
 
-    const itemsPerPage = 10;
-
     useEffect(() => {
         fetchOrders();
-    }, []);
+        // eslint-disable-next-line
+    }, [eventId]);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -51,311 +53,296 @@ const OrderList = () => {
                 setOrders(res.orders);
             }
         } catch (error) {
-            console.error('Lỗi lấy danh sách đơn hàng:', error);
+            message.error('Lỗi lấy danh sách đơn hàng');
         } finally {
             setLoading(false);
         }
     };
 
-    // Lọc theo searchTerm & status
-    const filteredOrders = orders.filter((order) => {
-        // 1. Kiểm tra searchTerm (tìm trong orderCode, email người mua)
-        const matchesSearch =
-            order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.buyerInfo.email
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase());
+    // Filtered & searched orders
+    const filteredOrders = useMemo(() => {
+        return orders.filter((order) => {
+            const matchesSearch =
+                order.orderCode
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase()) ||
+                order.buyerInfo.email
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase());
+            const matchesStatus =
+                statusFilter === 'all' || order.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        });
+    }, [orders, searchTerm, statusFilter]);
 
-        // 2. Kiểm tra statusFilter
-        const matchesStatus =
-            statusFilter === 'all' || order.status === statusFilter;
+    // Pagination
+    const pagedOrders = useMemo(() => {
+        const start = (currentPage - 1) * pageSize;
+        return filteredOrders.slice(start, start + pageSize);
+    }, [filteredOrders, currentPage, pageSize]);
 
-        return matchesSearch && matchesStatus;
-    });
-
-    // Sắp xếp
-    const sortedOrders = [...filteredOrders].sort((a, b) => {
-        switch (sortBy) {
-            case 'orderCode':
-                // Sắp xếp theo mã đơn hàng
-                return sortOrder === 'asc'
-                    ? a.orderCode.localeCompare(b.orderCode)
-                    : b.orderCode.localeCompare(a.orderCode);
-            case 'totalPrice':
-                // Sắp xếp theo tổng tiền
-                return sortOrder === 'asc'
-                    ? a.totalPrice - b.totalPrice
-                    : b.totalPrice - a.totalPrice;
-            case 'createdAt':
-                // Sắp xếp theo ngày tạo
-                return sortOrder === 'asc'
-                    ? new Date(a.createdAt) - new Date(b.createdAt)
-                    : new Date(b.createdAt) - new Date(a.createdAt);
-            default:
-                return 0;
-        }
-    });
-
-    // Phân trang
-    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
-    const indexOfLastOrder = currentPage * itemsPerPage;
-    const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;
-    const currentOrders = sortedOrders.slice(
-        indexOfFirstOrder,
-        indexOfLastOrder,
+    // Statistics
+    const totalOrders = filteredOrders.length;
+    const totalTickets = filteredOrders.reduce(
+        (sum, order) => sum + order.tickets.reduce((s, t) => s + t.quantity, 0),
+        0,
+    );
+    const totalRevenue = filteredOrders.reduce(
+        (sum, order) => sum + order.totalPrice,
+        0,
     );
 
-    // Xử lý thay đổi cột sắp xếp
-    const handleSortChange = (field) => {
-        if (sortBy === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortBy(field);
-            setSortOrder('asc');
-        }
+    // CSV Export
+    const handleExportCSV = () => {
+        const headers = [
+            'STT',
+            'Mã ĐH',
+            'Email người mua',
+            'Số vé',
+            'Tổng tiền',
+            'Trạng thái',
+            'Ngày đặt',
+        ];
+        const rows = filteredOrders.map((order, idx) => [
+            idx + 1,
+            order.orderCode,
+            order.buyerInfo.email,
+            order.tickets.reduce((sum, t) => sum + t.quantity, 0),
+            order.totalPrice.toLocaleString('vi-VN'),
+            order.status,
+            new Date(order.createdAt).toLocaleDateString('vi-VN'),
+        ]);
+        const csv = [
+            '\uFEFF' + headers.join(','),
+            ...rows.map((row) => row.join(',')),
+        ].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', `orders_${eventId}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
-    // Chuyển trang
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
-
-    // Badge trạng thái
-    const getStatusBadge = (status) => {
+    // Status Tag
+    const getStatusTag = (status) => {
         switch (status) {
             case 'PAID':
-                return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeCompleted}`}
-                    >
-                        Đã thanh toán
-                    </Badge>
-                );
+                return <Tag color="green">Đã thanh toán</Tag>;
             case 'CANCELED':
-                return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgeCancelled}`}
-                    >
-                        Đã hủy
-                    </Badge>
-                );
+                return <Tag color="red">Đã hủy</Tag>;
             case 'PENDING':
-                return (
-                    <Badge
-                        className={`${styles.statusBadge} ${styles.statusBadgePending}`}
-                    >
-                        Đang chờ
-                    </Badge>
-                );
+                return <Tag color="orange">Đang chờ</Tag>;
             default:
-                return <Badge className={styles.statusBadge}>{status}</Badge>;
+                return <Tag>{status}</Tag>;
         }
     };
 
-    // Xem chi tiết đơn hàng
-    const handleViewOrderDetails = (order) => {
-        setSelectedOrder(order);
-        setShowOrderDetails(true);
-    };
-
-    return loading ? (
-        <LoadingSpinner />
-    ) : orders.length > 0 ? (
-        <div className={styles.ordersContainer}>
-            {/* Table Header */}
-            <div className={styles.tableHeader}>
-                <div className={styles.searchFilter}>
-                    {/* Ô tìm kiếm */}
-                    <InputGroup className={styles.searchInput}>
-                        <InputGroup.Text id="search-addon">
-                            <FaSearch />
-                        </InputGroup.Text>
-                        <Form.Control
-                            placeholder="Tìm kiếm đơn hàng..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </InputGroup>
-
-                    {/* Dropdown lọc trạng thái */}
-                    <Form.Select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            handlePageChange(1);
-                        }}
-                    >
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="PAID">Đã thanh toán</option>
-                        <option value="CANCELED">Đã hủy</option>
-                        <option value="PENDING">Đang chờ</option>
-                    </Form.Select>
-                </div>
-            </div>
-
-            {/* Orders Table */}
-            {currentOrders.length > 0 ? (
-                <>
-                    <div className={styles.tableWrapper}>
-                        <Table responsive hover className={styles.orderTable}>
-                            <thead>
-                                <tr>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('orderCode')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Mã ĐH{' '}
-                                        {sortBy === 'orderCode' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Người mua</th>
-                                    <th>Số vé</th>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('totalPrice')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Tổng tiền{' '}
-                                        {sortBy === 'totalPrice' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Trạng thái</th>
-                                    <th
-                                        onClick={() =>
-                                            handleSortChange('createdAt')
-                                        }
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        Ngày đặt{' '}
-                                        {sortBy === 'createdAt' &&
-                                            (sortOrder === 'asc' ? '↑' : '↓')}
-                                    </th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentOrders.map((order) => (
-                                    <tr key={order._id}>
-                                        <td>{order.orderCode}</td>
-                                        <td>{order.buyerInfo.email}</td>
-                                        <td>
-                                            {order.tickets.reduce(
-                                                (sum, ticket) =>
-                                                    sum + ticket.quantity,
-                                                0,
-                                            )}
-                                        </td>
-                                        <td>
-                                            {formatCurrency(order.totalPrice)}
-                                        </td>
-                                        <td>{getStatusBadge(order.status)}</td>
-                                        <td>
-                                            {formatDateTime(order.createdAt)}
-                                        </td>
-                                        <td>
-                                            <div
-                                                className={styles.tableActions}
-                                            >
-                                                <Button
-                                                    variant="link"
-                                                    className={`${styles.actionButton} ${styles.viewButton}`}
-                                                    title="Xem chi tiết"
-                                                    onClick={() =>
-                                                        handleViewOrderDetails(
-                                                            order,
-                                                        )
-                                                    }
-                                                >
-                                                    <FaEye />
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+    // Table columns
+    const columns = [
+        {
+            title: 'STT',
+            dataIndex: 'index',
+            width: 60,
+            align: 'center',
+            render: (_, __, idx) => (currentPage - 1) * pageSize + idx + 1,
+        },
+        {
+            title: 'Mã ĐH',
+            dataIndex: 'orderCode',
+            render: (text) => <span style={{ fontWeight: 600 }}>{text}</span>,
+        },
+        {
+            title: 'Người mua',
+            dataIndex: 'buyerInfo',
+            render: (buyerInfo) => (
+                <div>
+                    <div style={{ fontWeight: 500 }}>
+                        <UserOutlined /> {buyerInfo.email}
                     </div>
-
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className={styles.paginationContainer}>
-                            <Pagination>
-                                <Pagination.First
-                                    onClick={() => handlePageChange(1)}
-                                    disabled={currentPage === 1}
-                                />
-                                <Pagination.Prev
-                                    onClick={() =>
-                                        handlePageChange(currentPage - 1)
-                                    }
-                                    disabled={currentPage === 1}
-                                />
-
-                                {[...Array(totalPages)].map((_, index) => (
-                                    <Pagination.Item
-                                        key={index + 1}
-                                        active={index + 1 === currentPage}
-                                        onClick={() =>
-                                            handlePageChange(index + 1)
-                                        }
-                                    >
-                                        {index + 1}
-                                    </Pagination.Item>
-                                ))}
-
-                                <Pagination.Next
-                                    onClick={() =>
-                                        handlePageChange(currentPage + 1)
-                                    }
-                                    disabled={currentPage === totalPages}
-                                />
-                                <Pagination.Last
-                                    onClick={() => handlePageChange(totalPages)}
-                                    disabled={currentPage === totalPages}
-                                />
-                            </Pagination>
-                        </div>
-                    )}
-                </>
-            ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center my-5">
-                    <BsCartX size={60} className="mb-3" />
-                    <p className="fs-5">Không có đơn hàng</p>
                 </div>
-            )}
-
-            {/* Order Details Modal */}
-            <Modal
-                show={showOrderDetails}
-                onHide={() => setShowOrderDetails(false)}
-                size="lg"
-                centered
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title className={styles.modalTitle}>
-                        Chi tiết đơn hàng
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {selectedOrder && <OrderDetails order={selectedOrder} />}
-                </Modal.Body>
-                <Modal.Footer className={styles.modalFooter}>
+            ),
+        },
+        {
+            title: 'Số vé',
+            dataIndex: 'tickets',
+            align: 'center',
+            render: (tickets) => (
+                <Tag color="geekblue">
+                    <NumberOutlined />{' '}
+                    {tickets.reduce((sum, t) => sum + t.quantity, 0)}
+                </Tag>
+            ),
+        },
+        {
+            title: 'Tổng tiền',
+            dataIndex: 'totalPrice',
+            align: 'right',
+            render: (val) => (
+                <span style={{ fontWeight: 600, color: '#1976d2' }}>
+                    <DollarOutlined /> {val.toLocaleString('vi-VN')}đ
+                </span>
+            ),
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            align: 'center',
+            render: (status) => getStatusTag(status),
+        },
+        {
+            title: 'Ngày đặt',
+            dataIndex: 'createdAt',
+            align: 'center',
+            render: (val) => new Date(val).toLocaleDateString('vi-VN'),
+        },
+        {
+            title: 'Thao tác',
+            dataIndex: 'action',
+            align: 'center',
+            render: (_, record) => (
+                <Tooltip title="Xem chi tiết">
                     <Button
-                        variant="secondary"
-                        onClick={() => setShowOrderDetails(false)}
-                    >
-                        Đóng
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </div>
-    ) : (
-        <div className="text-center my-5">
-            <BsCartX size={50} className="text-white mb-3" />
-            <p className="fs-5 text-white">Không có đơn hàng</p>
+                        type="primary"
+                        icon={<EyeOutlined />}
+                        size="small"
+                        onClick={() => {
+                            setSelectedOrder(record);
+                            setShowOrderDetails(true);
+                        }}
+                    />
+                </Tooltip>
+            ),
+        },
+    ];
+
+    return (
+        <div style={{ padding: 24, background: '#23242a', minHeight: '100vh' }}>
+            <Spin spinning={loading} tip="Đang tải...">
+                <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
+                    <Col xs={24} sm={12} md={8} lg={6}>
+                        <Card bordered={false} style={{ borderRadius: 14 }}>
+                            <Statistic
+                                title="Tổng đơn hàng"
+                                value={totalOrders}
+                                prefix={<FileExcelOutlined />}
+                            />
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={6}>
+                        <Card bordered={false} style={{ borderRadius: 14 }}>
+                            <Statistic
+                                title="Tổng số vé"
+                                value={totalTickets}
+                                prefix={<NumberOutlined />}
+                            />
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={6}>
+                        <Card bordered={false} style={{ borderRadius: 14 }}>
+                            <Statistic
+                                title="Tổng doanh thu"
+                                value={totalRevenue}
+                                prefix={<DollarOutlined />}
+                                valueStyle={{ color: '#1976d2' }}
+                                suffix="đ"
+                            />
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={8} lg={6}>
+                        <Card bordered={false} style={{ borderRadius: 14 }}>
+                            <Button
+                                type="primary"
+                                icon={<FileExcelOutlined />}
+                                block
+                                onClick={handleExportCSV}
+                            >
+                                Xuất CSV
+                            </Button>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row
+                    gutter={[16, 16]}
+                    align="middle"
+                    style={{ marginBottom: 24 }}
+                >
+                    <Col xs={24} md={16}>
+                        <Input
+                            allowClear
+                            prefix={<SearchOutlined />}
+                            placeholder="Tìm kiếm theo mã đơn hàng, email..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            size="large"
+                            style={{ borderRadius: 12 }}
+                        />
+                    </Col>
+                    <Col xs={24} md={8}>
+                        <Select
+                            value={statusFilter}
+                            onChange={(val) => {
+                                setStatusFilter(val);
+                                setCurrentPage(1);
+                            }}
+                            size="large"
+                            style={{ minWidth: 200, borderRadius: 12 }}
+                        >
+                            <Option value="all">Tất cả trạng thái</Option>
+                            <Option value="PAID">Đã thanh toán</Option>
+                            <Option value="CANCELED">Đã hủy</Option>
+                            <Option value="PENDING">Đang chờ</Option>
+                        </Select>
+                    </Col>
+                </Row>
+                <Card bordered={false} style={{ borderRadius: 14 }}>
+                    <Table
+                        columns={columns}
+                        dataSource={pagedOrders}
+                        rowKey={(record) => record._id}
+                        pagination={{
+                            current: currentPage,
+                            pageSize: pageSize,
+                            total: filteredOrders.length,
+                            showSizeChanger: true,
+                            pageSizeOptions: ['5', '10', '20', '50'],
+                            onChange: (page, size) => {
+                                setCurrentPage(page);
+                                setPageSize(size);
+                            },
+                            showTotal: (total, range) =>
+                                `${range[0]}-${range[1]} trên ${total} đơn hàng`,
+                        }}
+                        scroll={{ x: 900 }}
+                        bordered={false}
+                        size="middle"
+                        locale={{ emptyText: 'Không có đơn hàng nào' }}
+                    />
+                </Card>
+                <Modal
+                    visible={showOrderDetails}
+                    onCancel={() => setShowOrderDetails(false)}
+                    footer={null}
+                    width={800}
+                    centered
+                    title={
+                        <span style={{ fontWeight: 600 }}>
+                            Chi tiết đơn hàng
+                        </span>
+                    }
+                >
+                    {selectedOrder && (
+                        <OrderDetails
+                            order={selectedOrder}
+                            onClose={() => setShowOrderDetails(false)}
+                        />
+                    )}
+                </Modal>
+            </Spin>
         </div>
     );
 };
