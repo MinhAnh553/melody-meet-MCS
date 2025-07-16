@@ -22,6 +22,13 @@ const Step1 = ({
             });
         }
 
+        if (!isEditMode && !data.eventBackground) {
+            return swalCustomize.Toast.fire({
+                icon: 'error',
+                title: 'Vui lòng tải lên ảnh nền sự kiện',
+            });
+        }
+
         if (
             !data.addressData.venueName ||
             !data.addressData.province ||
@@ -46,13 +53,6 @@ const Step1 = ({
         //     return swalCustomize.Toast.fire({
         //         icon: 'error',
         //         title: 'Vui lòng nhập thông tin ban tổ chức',
-        //     });
-        // }
-
-        // if (!isEditMode && (!data.eventBackground || !data.organizerLogo)) {
-        //     return swalCustomize.Toast.fire({
-        //         icon: 'error',
-        //         title: 'Vui lòng tải lên đầy đủ hình ảnh',
         //     });
         // }
 
