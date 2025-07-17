@@ -7,6 +7,7 @@ import ReviewForm from '../../components/ReviewForm';
 import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/loading/LoadingSpinner';
+import { BsChevronDown, BsChevronUp } from 'react-icons/bs';
 
 const EventDetail = () => {
     const { user } = useAuth();
@@ -27,6 +28,7 @@ const EventDetail = () => {
     });
 
     const navigate = useNavigate();
+    const [descExpanded, setDescExpanded] = useState(false);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -402,8 +404,41 @@ const EventDetail = () => {
                         dangerouslySetInnerHTML={{
                             __html: sanitizedDescription,
                         }}
-                        style={{ color: '#fff', whiteSpace: 'pre-line' }}
+                        style={{
+                            color: '#fff',
+                            whiteSpace: 'pre-line',
+                            maxHeight: descExpanded ? 'none' : '6em', // 3 dòng x 1.5em
+                            overflow: descExpanded ? 'visible' : 'hidden',
+                            display: '-webkit-box',
+                            WebkitLineClamp: descExpanded ? 'unset' : 3,
+                            WebkitBoxOrient: 'vertical',
+                            transition: 'max-height 0.3s',
+                        }}
                     ></p>
+                    {event.description && event.description.length > 120 && (
+                        <div className="d-flex justify-content-center mt-2">
+                            <button
+                                className="btn btn-link p-0"
+                                style={{
+                                    color: '#fff',
+                                    fontWeight: 500,
+                                    fontSize: '1.05rem',
+                                    textDecoration: 'none', // Bỏ gạch chân
+                                }}
+                                onClick={() => setDescExpanded((prev) => !prev)}
+                            >
+                                {descExpanded ? (
+                                    <>
+                                        <BsChevronUp /> Thu gọn
+                                    </>
+                                ) : (
+                                    <>
+                                        <BsChevronDown /> Xem thêm
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
             {/* Thông tin ban tổ chức */}
