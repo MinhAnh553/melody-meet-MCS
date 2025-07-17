@@ -8,8 +8,9 @@ function ClientLayout() {
     const location = useLocation();
 
     // Ẩn footer khi đường dẫn chứa /bookings/
-    const shouldHideFooter = location.pathname.includes('/bookings/');
-
+    const shouldHideFooter =
+        location.pathname.includes('/bookings/') ||
+        location.pathname.includes('/user/upgrade');
     return (
         <>
             <Header />

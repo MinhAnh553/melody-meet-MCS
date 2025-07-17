@@ -30,9 +30,8 @@ import RbacRoute from './RbacRoute.jsx';
 import { permissions } from '../config/rbacConfig';
 import Search from '../client/pages/Search.jsx';
 import OrganizerInfo from '../client/pages/organizer/OrganizerInfo.jsx';
-import UpgradeToOrganizer from '../client/pages/organizer/UpgradeToOrganizer.jsx';
+import UpgradeRequestPage from '../client/pages/organizer/UpgradeRequestPage.jsx';
 import UpgradeRequestsList from '../admin/components/UpgradeRequests/UpgradeRequestsList.jsx';
-import UpgradeStatus from '../client/pages/organizer/UpgradeStatus.jsx';
 
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -201,34 +200,22 @@ const AnimatedRoutes = () => {
                             />
                         }
                     >
-                        <Route
-                            index
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <UpgradeToOrganizer />
-                                </motion.div>
-                            }
-                        />
-                        <Route
-                            path="status"
-                            element={
-                                <motion.div
-                                    variants={pageVariants}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <UpgradeStatus />
-                                </motion.div>
-                            }
-                        />
+                        <Route element={<ClientLayout />}>
+                            <Route
+                                index
+                                element={
+                                    <motion.div
+                                        variants={pageVariants}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <UpgradeRequestPage />
+                                    </motion.div>
+                                }
+                            />
+                        </Route>
                     </Route>
                 </Route>
 

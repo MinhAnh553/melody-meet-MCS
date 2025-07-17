@@ -62,9 +62,13 @@ const OrganizerInfo = () => {
                     email: userInfo.user.organizer.email,
                     phone: userInfo.user.organizer.phone,
                     name: userInfo.user.organizer.name,
-                    info: userInfo.user.organizer.info,
+                    description: userInfo.user.organizer.description,
+                    website: userInfo.user.organizer.website,
                     logo: userInfo.user.organizer.logo,
                     logoMediaId: userInfo.user.organizer.logoMediaId,
+                    accountName: userInfo.user.organizer.accountName,
+                    accountNumber: userInfo.user.organizer.accountNumber,
+                    bankName: userInfo.user.organizer.bankName,
                 });
             } else {
                 throw new Error('Không tìm thấy thông tin BTC');
@@ -308,7 +312,7 @@ const OrganizerInfo = () => {
                                                 ({stats.totalReviews} đánh giá)
                                             </span>
                                         </div>
-                                        {organizerInfo.verified && (
+                                        {true && (
                                             <span
                                                 className={
                                                     styles.organizerBadge
@@ -320,7 +324,7 @@ const OrganizerInfo = () => {
                                         )}
                                     </div>
                                     <div className="d-flex gap-2">
-                                        {!editMode && (
+                                        {/* {!editMode && (
                                             <Button
                                                 variant="outline-primary"
                                                 size="sm"
@@ -328,7 +332,7 @@ const OrganizerInfo = () => {
                                             >
                                                 Chỉnh sửa
                                             </Button>
-                                        )}
+                                        )} */}
                                         <Link
                                             to={`/organizer/${organizerInfo._id}/reviews`}
                                             className={
@@ -356,9 +360,9 @@ const OrganizerInfo = () => {
                                         />
                                     </Form.Group>
                                 ) : (
-                                    organizerInfo.info && (
+                                    organizerInfo.description && (
                                         <p className="mb-0 text-white">
-                                            {organizerInfo.info}
+                                            {organizerInfo.description}
                                         </p>
                                     )
                                 )}
@@ -575,9 +579,86 @@ const OrganizerInfo = () => {
                                 </div>
                             </div>
                         )}
-                        <p className="text-white text-center py-3">
-                            Chưa có thông tin mạng xã hội
-                        </p>
+                        {organizerInfo.website ? (
+                            <div className="d-flex flex-column align-items-center gap-2 mt-2">
+                                <a
+                                    href={organizerInfo.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-info fw-bold"
+                                >
+                                    <BsGlobe className="me-1" /> Website/Fanpage
+                                </a>
+                            </div>
+                        ) : (
+                            <p className="text-white text-center py-3">
+                                Chưa có thông tin mạng xã hội
+                            </p>
+                        )}
+                    </div>
+                </Col>
+            </Row>
+
+            {/* Bank Account Information */}
+            <Row className="mb-4">
+                <Col md={12} className="px-4">
+                    <div className={styles.organizerInfoSection}>
+                        <h4 className={styles.organizerSectionTitle}>
+                            <BsTicketPerforated className="me-2" />
+                            Thông tin tài khoản ngân hàng
+                        </h4>
+                        {organizerInfo.accountName ||
+                        organizerInfo.accountNumber ||
+                        organizerInfo.bankName ? (
+                            <>
+                                {organizerInfo.accountName && (
+                                    <div className={styles.organizerInfoItem}>
+                                        <div
+                                            className={
+                                                styles.organizerInfoLabel
+                                            }
+                                        >
+                                            Tên tài khoản
+                                        </div>
+                                        <div style={{ marginLeft: '5px' }}>
+                                            {organizerInfo.accountName}
+                                        </div>
+                                    </div>
+                                )}
+                                {organizerInfo.accountNumber && (
+                                    <div className={styles.organizerInfoItem}>
+                                        <div
+                                            className={
+                                                styles.organizerInfoLabel
+                                            }
+                                        >
+                                            Số tài khoản
+                                        </div>
+                                        <div style={{ marginLeft: '5px' }}>
+                                            {organizerInfo.accountNumber}
+                                        </div>
+                                    </div>
+                                )}
+                                {organizerInfo.bankName && (
+                                    <div className={styles.organizerInfoItem}>
+                                        <div
+                                            className={
+                                                styles.organizerInfoLabel
+                                            }
+                                        >
+                                            Ngân hàng
+                                        </div>
+                                        <div style={{ marginLeft: '5px' }}>
+                                            {organizerInfo.bankName}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-white text-center py-3">
+                                Chưa có thông tin tài khoản ngân hàng
+                            </p>
+                        )}
                     </div>
                 </Col>
             </Row>

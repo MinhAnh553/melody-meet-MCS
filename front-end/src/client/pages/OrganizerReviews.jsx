@@ -140,6 +140,25 @@ const OrganizerReviews = () => {
             {/* Organizer Info Section */}
             <Row className="pt-4">
                 <Col md={12} className="px-4">
+                    {/* Mạng xã hội */}
+                    <div className="mb-3">
+                        {organizerInfo?.website ? (
+                            <a
+                                href={organizerInfo.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-info fw-bold"
+                                style={{ fontSize: '1.08rem' }}
+                            >
+                                <i className="bi bi-globe me-2" />{' '}
+                                Website/Fanpage
+                            </a>
+                        ) : (
+                            <span className="text-muted">
+                                Chưa có thông tin mạng xã hội
+                            </span>
+                        )}
+                    </div>
                     <div className="d-flex justify-content-between align-items-start mb-5">
                         {/* Organizer Info Card */}
                         <div className="flex-grow-1 me-4">

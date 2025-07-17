@@ -10,7 +10,7 @@ import {
     Col,
     Dropdown,
 } from 'react-bootstrap';
-import { Table, Space, Tag, Tooltip, Empty } from 'antd';
+import { Table, Space, Tag, Tooltip, Empty, Image } from 'antd';
 import {
     CheckOutlined,
     CloseOutlined,
@@ -44,6 +44,7 @@ import styles from './UpgradeRequests.module.css';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 import LoadingSpinner from '../../../client/components/loading/LoadingSpinner';
+import orderStyles from '../Orders/Orders.module.css';
 
 const UpgradeRequestsList = () => {
     const [upgradeRequests, setUpgradeRequests] = useState([]);
@@ -63,8 +64,21 @@ const UpgradeRequestsList = () => {
     const [adminNote, setAdminNote] = useState('');
     const [processing, setProcessing] = useState(false);
 
-    // Modal xác nhận duyệt/từ chối
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    // Modal xác nhận duyệt/từ chối (inline trong modal chi tiết)
+    const [showInlineConfirm, setShowInlineConfirm] = useState(false);
+    const [inlineAction, setInlineAction] = useState(''); // 'approve' or 'reject'
+
+    // Ref cho vùng xác nhận
+    const inlineConfirmRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (showInlineConfirm && inlineConfirmRef.current) {
+            inlineConfirmRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
+    }, [showInlineConfirm]);
 
     const itemsPerPage = 10;
 
@@ -119,35 +133,41 @@ const UpgradeRequestsList = () => {
         setAction(actionType);
         setAdminNote('');
         setShowModal(true);
+        setShowInlineConfirm(false);
+        setInlineAction('');
     };
 
-    const handleConfirmAction = async () => {
+    const handleInlineConfirm = async () => {
         if (!selectedRequest) return;
-
+        if (inlineAction === 'reject' && !adminNote.trim()) {
+            swalCustomize.Toast.fire({
+                icon: 'warning',
+                title: 'Vui lòng nhập lý do từ chối!',
+            });
+            return;
+        }
         setProcessing(true);
         try {
             let res;
-            if (action === 'approve') {
-                res = await api.approveUpgradeRequest(
-                    selectedRequest._id,
-                    adminNote,
-                );
+            if (inlineAction === 'approve') {
+                res = await api.approveUpgradeRequest(selectedRequest._id);
             } else {
                 res = await api.rejectUpgradeRequest(
                     selectedRequest._id,
                     adminNote,
                 );
             }
-
             if (res && res.success) {
                 swalCustomize.Toast.fire({
                     icon: 'success',
                     title:
-                        action === 'approve'
+                        inlineAction === 'approve'
                             ? 'Đã duyệt yêu cầu nâng cấp'
                             : 'Đã từ chối yêu cầu nâng cấp',
                 });
                 setShowModal(false);
+                setShowInlineConfirm(false);
+                setInlineAction('');
                 fetchUpgradeRequests();
             } else {
                 throw new Error(res?.message || 'Lỗi xử lý yêu cầu');
@@ -511,55 +531,587 @@ const UpgradeRequestsList = () => {
                     setShowModal(false);
                     setSelectedRequest(null);
                 }}
+                size="xl"
                 centered
                 className={styles.upgradeRequestModal}
                 contentClassName={styles.modalContent}
+                dialogClassName="modal-lg"
             >
-                <Modal.Header closeButton className={styles.modalHeader}>
-                    <Modal.Title className={styles.modalTitle}>
-                        Thông tin tổ chức đăng ký nâng cấp
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body className={styles.modalBody}>
-                    {selectedRequest && selectedRequest.organizer && (
-                        <div className={styles.organizerCard}>
-                            <div className={styles.organizerCardHeader}>
-                                <img
-                                    src={selectedRequest.organizer.logo}
-                                    alt="logo"
-                                    className={styles.organizerLogo}
-                                />
-                                <div className={styles.organizerName}>
-                                    {selectedRequest.organizer.name}
+                {selectedRequest && (
+                    <>
+                        {/* Header */}
+                        <div
+                            className={orderStyles.orderDetailsGridHeader}
+                            style={{
+                                background: '#fff',
+                                borderBottom: '1px solid #e5e7eb',
+                                borderTopLeftRadius: 16,
+                                borderTopRightRadius: 16,
+                                padding: 20,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                }}
+                            >
+                                {getStatusTag(selectedRequest.status)}
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <div
+                                    className={
+                                        orderStyles.orderDetailsOrderCodeLink
+                                    }
+                                    style={{ fontSize: 17 }}
+                                >
+                                    Mã yêu cầu: <b>{selectedRequest._id}</b>
+                                </div>
+                                <div
+                                    className={
+                                        orderStyles.orderDetailsOrderDate
+                                    }
+                                    style={{ fontSize: 15 }}
+                                >
+                                    {formatDate(selectedRequest.createdAt)}
                                 </div>
                             </div>
-                            <div className={styles.organizerInfoRow}>
-                                <b>Giới thiệu:</b>{' '}
-                                {selectedRequest.organizer.info}
-                            </div>
-                            <div className={styles.organizerInfoRow}>
-                                <b>Email:</b> {selectedRequest.organizer.email}
-                            </div>
-                            <div className={styles.organizerInfoRow}>
-                                <b>Điện thoại:</b>{' '}
-                                {selectedRequest.organizer.phone}
-                            </div>
                         </div>
-                    )}
-                </Modal.Body>
+                        <Modal.Body
+                            className={orderStyles.orderDetailsContent}
+                            style={{
+                                background: '#fff',
+                                borderBottomLeftRadius: 16,
+                                borderBottomRightRadius: 16,
+                                padding: 32,
+                            }}
+                        >
+                            {/* Organization Section */}
+                            <div
+                                className={orderStyles.orderDetailsBox}
+                                style={{ marginBottom: 24 }}
+                            >
+                                <div
+                                    className={orderStyles.orderDetailsBoxTitle}
+                                    style={{
+                                        color: '#1976d2',
+                                        fontSize: '1.15rem',
+                                    }}
+                                >
+                                    TỔ CHỨC
+                                </div>
+                                <div
+                                    className={
+                                        orderStyles.orderDetailsBoxContent
+                                    }
+                                >
+                                    {selectedRequest.organization?.logo && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                marginBottom: 16,
+                                            }}
+                                        >
+                                            <Image
+                                                src={
+                                                    selectedRequest.organization
+                                                        .logo
+                                                }
+                                                alt="logo"
+                                                width={100}
+                                                height={100}
+                                                style={{
+                                                    objectFit: 'cover',
+                                                    borderRadius: '50%',
+                                                    background: '#fff',
+                                                    boxShadow:
+                                                        '0 4px 16px rgba(80,120,255,0.10)',
+                                                    border: '1px solid black',
+                                                    cursor: 'pointer',
+                                                }}
+                                                preview={false}
+                                                onClick={() =>
+                                                    window.open(
+                                                        selectedRequest
+                                                            .organization.logo,
+                                                        '_blank',
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                    <div
+                                        className={
+                                            orderStyles.orderDetailsInfoGrid
+                                        }
+                                        style={{ marginTop: 8 }}
+                                    >
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Tên tổ chức:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.name || '-'}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Mã số thuế:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.tax || '-'}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Website/Fanpage:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.website || '-'}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                            style={{ alignItems: 'flex-start' }}
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{
+                                                    fontSize: '1.05rem',
+                                                    marginTop: 4,
+                                                }}
+                                            >
+                                                Mô tả:
+                                            </span>
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1rem',
+                                                    fontWeight: 400,
+                                                    marginLeft: 8,
+                                                    background: '#f8f9fa',
+                                                    border: '1px solid #e0e0e0',
+                                                    borderRadius: 8,
+                                                    padding: '8px 12px',
+                                                    maxHeight: 120,
+                                                    overflowY: 'auto',
+                                                    display: 'block',
+                                                    minWidth: 200,
+                                                    whiteSpace: 'pre-line',
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.description || '-'}
+                                            </span>
+                                        </div>
+                                        {selectedRequest.organization
+                                            ?.licenseUrl && (
+                                            <div
+                                                className={
+                                                    orderStyles.orderDetailsInfoItem
+                                                }
+                                                style={{ gridColumn: '1/-1' }}
+                                            >
+                                                <span
+                                                    className={
+                                                        orderStyles.orderDetailsInfoLabel
+                                                    }
+                                                    style={{
+                                                        fontSize: '1.05rem',
+                                                    }}
+                                                >
+                                                    Giấy phép hoạt động:
+                                                </span>{' '}
+                                                {selectedRequest.organization.licenseUrl.match(
+                                                    /\.(jpg|jpeg|png|webp)$/i,
+                                                ) ? (
+                                                    <Image
+                                                        src={
+                                                            selectedRequest
+                                                                .organization
+                                                                .licenseUrl
+                                                        }
+                                                        alt="license"
+                                                        width={100}
+                                                        height={100}
+                                                        style={{
+                                                            objectFit: 'cover',
+                                                            borderRadius: 12,
+                                                            background: '#fff',
+                                                            boxShadow:
+                                                                '0 4px 16px rgba(80,120,255,0.10)',
+                                                            border: '1px solid black',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        preview={false}
+                                                        onClick={() =>
+                                                            window.open(
+                                                                selectedRequest
+                                                                    .organization
+                                                                    .licenseUrl,
+                                                                '_blank',
+                                                            )
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <a
+                                                        href={
+                                                            selectedRequest
+                                                                .organization
+                                                                .licenseUrl
+                                                        }
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            color: '#1976d2',
+                                                            textDecoration:
+                                                                'underline',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    >
+                                                        <i className="fas fa-file-alt me-2"></i>
+                                                        Xem file
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Email:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.email || '-'}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Số điện thoại:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.phone || '-'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Bank Section */}
+                            <div
+                                className={orderStyles.orderDetailsBox}
+                                style={{ marginBottom: 24 }}
+                            >
+                                <div
+                                    className={orderStyles.orderDetailsBoxTitle}
+                                    style={{
+                                        color: '#1976d2',
+                                        fontSize: '1.15rem',
+                                    }}
+                                >
+                                    TÀI KHOẢN NGÂN HÀNG
+                                </div>
+                                <div
+                                    className={
+                                        orderStyles.orderDetailsBoxContent
+                                    }
+                                >
+                                    <div
+                                        className={
+                                            orderStyles.orderDetailsInfoGrid
+                                        }
+                                    >
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Tên chủ tài khoản:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.accountName || '-'}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Số tài khoản:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.accountNumber || '-'}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Ngân hàng:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.organization
+                                                    ?.bankName || '-'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Commitment Section */}
+                            {/* <div
+                                className={orderStyles.orderDetailsBox}
+                                style={{ marginBottom: 24 }}
+                            >
+                                <div
+                                    className={orderStyles.orderDetailsBoxTitle}
+                                    style={{
+                                        color: '#1976d2',
+                                        fontSize: '1.15rem',
+                                    }}
+                                >
+                                    CAM KẾT
+                                </div>
+                                <div
+                                    className={
+                                        orderStyles.orderDetailsBoxContent
+                                    }
+                                >
+                                    <div
+                                        className={
+                                            orderStyles.orderDetailsInfoGrid
+                                        }
+                                    >
+                                        <div
+                                            className={
+                                                orderStyles.orderDetailsInfoItem
+                                            }
+                                        >
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoLabel
+                                                }
+                                                style={{ fontSize: '1.05rem' }}
+                                            >
+                                                Đã xác nhận cam kết:
+                                            </span>{' '}
+                                            <span
+                                                className={
+                                                    orderStyles.orderDetailsInfoValue
+                                                }
+                                                style={{
+                                                    fontSize: '1.08rem',
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                {selectedRequest.agree
+                                                    ? '✔️ Đã xác nhận'
+                                                    : '❌ Chưa xác nhận'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> */}
+                            {/* Admin Note Section */}
+                            {selectedRequest.adminNote && (
+                                <div
+                                    className={orderStyles.orderDetailsBox}
+                                    style={{
+                                        background:
+                                            selectedRequest.status ===
+                                            'approved'
+                                                ? 'rgba(255, 243, 205, 0.7)'
+                                                : 'rgba(255, 205, 205, 0.7)',
+                                        border: `1.5px solid ${
+                                            selectedRequest.status ===
+                                            'approved'
+                                                ? '#ffe066'
+                                                : '#ff6f6f'
+                                        }`,
+                                    }}
+                                >
+                                    <div
+                                        className={
+                                            orderStyles.orderDetailsBoxTitle
+                                        }
+                                        style={{
+                                            color:
+                                                selectedRequest.status ===
+                                                'approved'
+                                                    ? '#b8860b'
+                                                    : '#c0392b',
+                                            fontSize: '1.15rem',
+                                        }}
+                                    >
+                                        {selectedRequest.status === 'approved'
+                                            ? 'Ghi chú của admin'
+                                            : 'Lý do từ chối'}
+                                    </div>
+                                    <div
+                                        className={
+                                            orderStyles.orderDetailsBoxContent
+                                        }
+                                    >
+                                        {selectedRequest.adminNote}
+                                    </div>
+                                </div>
+                            )}
+                        </Modal.Body>
+                    </>
+                )}
                 <Modal.Footer className={styles.modalFooter}>
                     {selectedRequest &&
-                        selectedRequest.status === 'pending' && (
+                        selectedRequest.status === 'pending' &&
+                        !showInlineConfirm && (
                             <>
                                 <Button
                                     variant="outline-success"
                                     onClick={() => {
-                                        setAction('approve');
-                                        setShowModal(false);
-                                        setTimeout(
-                                            () => setShowConfirmModal(true),
-                                            200,
-                                        );
+                                        setInlineAction('approve');
+                                        setShowInlineConfirm(true);
+                                        setAdminNote('');
                                     }}
                                     className={styles.modalButton}
                                 >
@@ -568,12 +1120,9 @@ const UpgradeRequestsList = () => {
                                 <Button
                                     variant="outline-danger"
                                     onClick={() => {
-                                        setAction('reject');
-                                        setShowModal(false);
-                                        setTimeout(
-                                            () => setShowConfirmModal(true),
-                                            200,
-                                        );
+                                        setInlineAction('reject');
+                                        setShowInlineConfirm(true);
+                                        setAdminNote('');
                                     }}
                                     className={styles.modalButton}
                                 >
@@ -581,83 +1130,76 @@ const UpgradeRequestsList = () => {
                                 </Button>
                             </>
                         )}
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal xác nhận duyệt/từ chối */}
-            <Modal
-                show={showConfirmModal}
-                onHide={() => {
-                    setShowConfirmModal(false);
-                    setAdminNote('');
-                }}
-                centered
-                className={styles.upgradeRequestModal}
-                contentClassName={styles.modalContent}
-            >
-                <Modal.Header closeButton className={styles.modalHeader}>
-                    <Modal.Title className={styles.modalTitle}>
-                        {action === 'approve'
-                            ? 'Xác nhận duyệt yêu cầu'
-                            : 'Xác nhận từ chối yêu cầu'}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body className={styles.modalBody}>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>
-                                {action === 'approve'
-                                    ? 'Ghi chú khi duyệt (tùy chọn):'
-                                    : 'Lý do từ chối:'}
-                            </Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={4}
-                                value={adminNote}
-                                onChange={(e) => setAdminNote(e.target.value)}
-                                placeholder={
-                                    action === 'approve'
-                                        ? 'Nhập ghi chú khi duyệt...'
-                                        : 'Nhập lý do từ chối...'
-                                }
-                                className={styles.adminNoteInput}
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer className={styles.modalFooter}>
-                    <Button
-                        variant="outline-light"
-                        onClick={() => {
-                            setShowConfirmModal(false);
-                            setAdminNote('');
-                        }}
-                        className={styles.modalButton}
-                        disabled={processing}
-                    >
-                        <FaTimes className="me-2" />
-                        Hủy
-                    </Button>
-                    <Button
-                        variant={action === 'approve' ? 'success' : 'danger'}
-                        onClick={handleConfirmAction}
-                        className={styles.modalButton}
-                        disabled={processing}
-                    >
-                        {processing ? (
-                            <LoadingSpinner />
-                        ) : action === 'approve' ? (
-                            <>
-                                <BsCheckCircle className="me-2" />
-                                Duyệt
-                            </>
-                        ) : (
-                            <>
-                                <BsXCircle className="me-2" />
-                                Từ chối
-                            </>
-                        )}
-                    </Button>
+                    {showInlineConfirm && (
+                        <div ref={inlineConfirmRef} style={{ width: '100%' }}>
+                            <Form>
+                                {inlineAction === 'reject' && (
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Lý do từ chối:</Form.Label>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={3}
+                                            value={adminNote}
+                                            onChange={(e) =>
+                                                setAdminNote(e.target.value)
+                                            }
+                                            placeholder="Nhập lý do từ chối..."
+                                            className={styles.adminNoteInput}
+                                            required
+                                        />
+                                    </Form.Group>
+                                )}
+                            </Form>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    gap: 12,
+                                }}
+                            >
+                                <Button
+                                    // variant="outline-light"
+                                    onClick={() => {
+                                        setShowInlineConfirm(false);
+                                        setInlineAction('');
+                                        setAdminNote('');
+                                    }}
+                                    className={styles.modalButton}
+                                    disabled={processing}
+                                >
+                                    <FaTimes className="me-2" /> Hủy
+                                </Button>
+                                <Button
+                                    variant={
+                                        inlineAction === 'approve'
+                                            ? 'success'
+                                            : 'danger'
+                                    }
+                                    onClick={handleInlineConfirm}
+                                    className={styles.modalButton}
+                                    disabled={processing}
+                                >
+                                    {processing ? (
+                                        <span
+                                            className="spinner-border spinner-border-sm"
+                                            role="status"
+                                            aria-hidden="true"
+                                        ></span>
+                                    ) : inlineAction === 'approve' ? (
+                                        <>
+                                            <BsCheckCircle className="me-2" />{' '}
+                                            Xác nhận duyệt
+                                        </>
+                                    ) : (
+                                        <>
+                                            <BsXCircle className="me-2" /> Xác
+                                            nhận từ chối
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </Modal.Footer>
             </Modal>
         </div>

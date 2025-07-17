@@ -288,11 +288,9 @@ const getEventById = async (req, res) => {
 
             if (organizerResponse.data.success) {
                 eventData.organizer = {
-                    email: organizerResponse.data.organizer.email,
-                    phone: organizerResponse.data.organizer.phone,
                     name: organizerResponse.data.organizer.name,
                     logo: organizerResponse.data.organizer.logo,
-                    info: organizerResponse.data.organizer.info,
+                    description: organizerResponse.data.organizer.description,
                 };
             }
         } catch (error) {
@@ -306,7 +304,7 @@ const getEventById = async (req, res) => {
                 phone: 'N/A',
                 name: 'N/A',
                 logo: 'N/A',
-                info: 'N/A',
+                description: 'N/A',
             };
         }
 

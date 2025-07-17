@@ -278,9 +278,9 @@ const getUpgradeRequests = async (params) => {
     return axios.get(URL_API, { params });
 };
 
-const approveUpgradeRequest = async (requestId, adminNote = '') => {
+const approveUpgradeRequest = async (requestId) => {
     const URL_API = `${API_URL}/auth/upgrade-requests/${requestId}/approve`;
-    return axios.patch(URL_API, { adminNote });
+    return axios.patch(URL_API);
 };
 
 const rejectUpgradeRequest = async (requestId, adminNote = '') => {

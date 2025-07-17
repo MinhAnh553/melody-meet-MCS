@@ -591,3 +591,82 @@
     color: #1976d2;
     font-weight: 600;
 }
+
+.requestModalHeaderModern {
+    text-align: center;
+    padding: 24px 0 12px 0;
+    background: linear-gradient(90deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    margin-bottom: 0;
+}
+.requestModalStatus {
+    display: inline-block;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+.requestModalCode {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 4px;
+}
+.requestModalDate {
+    color: #888;
+    font-size: 0.98rem;
+    margin-bottom: 0;
+}
+.requestModalBodyModern {
+    background: #f8fafd;
+    padding: 32px 18px 18px 18px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+.requestModalSectionBox {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(80, 120, 255, 0.07);
+    padding: 24px 20px 18px 20px;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.requestModalSectionTitle {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #1976d2;
+    margin-bottom: 12px;
+    letter-spacing: 0.2px;
+}
+.requestModalSectionContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.requestModalInfoGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+    width: 100%;
+    font-size: 1.01rem;
+    color: inherit;
+}
+@media (max-width: 700px) {
+    .requestModalBodyModern {
+        padding: 18px 4px 8px 4px;
+        gap: 18px;
+    }
+    .requestModalSectionBox {
+        padding: 14px 8px 10px 8px;
+        gap: 8px;
+    }
+    .requestModalInfoGrid {
+        grid-template-columns: 1fr;
+        gap: 8px 0;
+    }
+}

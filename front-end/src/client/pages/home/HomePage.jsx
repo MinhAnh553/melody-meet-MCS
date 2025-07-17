@@ -90,8 +90,12 @@ const HomePage = () => {
                                     permissions.VIEW_CREATE_EVENT,
                                 ) && (
                                     <Link
-                                        to="/event/create"
                                         className="btn btn-outline-light btn-lg px-4 py-3 fw-bold"
+                                        to={
+                                            user?.role === 'client'
+                                                ? '/user/upgrade'
+                                                : '/organizer/event/create'
+                                        }
                                     >
                                         <i className="bi bi-plus-circle me-2"></i>
                                         Tạo Sự Kiện

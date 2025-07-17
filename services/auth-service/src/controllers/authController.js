@@ -242,7 +242,7 @@ const getAccount = async (req, res) => {
     logger.info(`Get account request received`);
     try {
         const user = await userModel.findById(req.user.id).select('-password');
-        if (user.role === 'organizer') {
+        if (user.role === req.user?.role && user.role === 'organizer') {
             // Lấy tổng số sự kiện đã tạo
             const totalEvents = await axios.get(
                 `${process.env.EVENT_SERVICE_URL}/api/events/organizer/my?query=&page=1&limit=10&status=approved`,
@@ -416,7 +416,29 @@ const updateOrganizer = async (req, res) => {
     try {
         const { id } = req.user;
         const data = req.body;
-        const organizer = await userModel.findByIdAndUpdate(id, data, {
+        // Cập nhật trực tiếp các trường của organizer
+        const update = {};
+        for (const key of [
+            'name',
+            'tax',
+            'website',
+            'description',
+            'email',
+            'phone',
+            'logo',
+            'logoMediaId',
+            'licenseUrl',
+            'licenseMediaId',
+            'accountName',
+            'accountNumber',
+            'bankName',
+            'agree',
+        ]) {
+            if (typeof data[key] !== 'undefined') {
+                update[`organizer.${key}`] = data[key];
+            }
+        }
+        const organizer = await userModel.findByIdAndUpdate(id, update, {
             new: true,
         });
         res.status(200).json({
@@ -436,7 +458,7 @@ const updateOrganizer = async (req, res) => {
 const createUpgradeRequest = async (req, res) => {
     try {
         const { id } = req.user;
-        const { organizer } = req.body;
+        const { organization, agree } = req.body;
 
         // Check if user already has a pending request
         const existingRequest = await upgradeRequestModel.findOne({
@@ -463,7 +485,8 @@ const createUpgradeRequest = async (req, res) => {
         // Create upgrade request
         const upgradeRequest = new upgradeRequestModel({
             userId: id,
-            organizer,
+            organization,
+            agree,
         });
 
         await upgradeRequest.save();
@@ -472,7 +495,7 @@ const createUpgradeRequest = async (req, res) => {
         res.status(201).json({
             success: true,
             message:
-                'Yêu cầu nâng cấp đã được gửi thành công! Vui lòng chờ admin xem xét.',
+                'Yêu cầu nâng cấp đã được gửi thành công! Vui lòng chờ xem xét.',
         });
     } catch (error) {
         logger.error('Create upgrade request error:', error);
@@ -526,7 +549,6 @@ const getUpgradeRequests = async (req, res) => {
 const approveUpgradeRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
-        const { adminNote } = req.body;
         const adminId = req.user.id;
 
         const upgradeRequest = await upgradeRequestModel.findById(requestId);
@@ -547,13 +569,13 @@ const approveUpgradeRequest = async (req, res) => {
         // Update user role to organizer
         await userModel.findByIdAndUpdate(upgradeRequest.userId, {
             role: 'organizer',
-            organizer: upgradeRequest.organizer,
+            organizer: upgradeRequest.organization,
+            agree: upgradeRequest.agree,
         });
 
         // Update request status
         upgradeRequest.status = 'approved';
         upgradeRequest.adminId = adminId;
-        upgradeRequest.adminNote = adminNote;
         await upgradeRequest.save();
 
         // Send email notification to user
@@ -563,7 +585,7 @@ const approveUpgradeRequest = async (req, res) => {
                 user.email,
                 'Melody Meet: Yêu cầu nâng cấp được duyệt',
                 mailTemplate.upgradeApprovedTemplate(
-                    upgradeRequest.organizer.name,
+                    upgradeRequest.organization.name,
                 ),
             );
         }

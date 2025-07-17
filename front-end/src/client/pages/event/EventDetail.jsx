@@ -455,7 +455,9 @@ const EventDetail = () => {
                                 className="small"
                                 style={{ lineHeight: '1.6', color: '#e0e0e0' }}
                             >
-                                <p className="mb-2">{event.organizer?.info}</p>
+                                <p className="mb-2">
+                                    {event.organizer?.description}
+                                </p>
 
                                 {event.organizer?.email && (
                                     <p className="mb-1">
