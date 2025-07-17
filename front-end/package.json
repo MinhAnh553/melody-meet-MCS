@@ -26,6 +26,7 @@
         "dompurify": "^3.2.4",
         "dotenv": "^16.4.7",
         "framer-motion": "^12.4.7",
+        "html2canvas": "^1.4.1",
         "libphonenumber-js": "^1.12.8",
         "rc-slider": "^11.1.8",
         "react": "18.3.1",

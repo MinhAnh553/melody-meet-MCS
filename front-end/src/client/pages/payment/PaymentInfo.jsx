@@ -104,6 +104,8 @@ function OrderPage() {
     const [payosModal, setPayosModal] = useState(false);
     const [payosTab, setPayosTab] = useState('qr');
     const [payosData, setPayosData] = useState(null);
+    // Thêm state responsive
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         if (order && order.buyerInfo) {
@@ -294,6 +296,13 @@ function OrderPage() {
             });
         }
     };
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     if (!order) return null;
 
@@ -983,22 +992,31 @@ function OrderPage() {
                 footer={null}
                 closable={false}
                 centered
-                width={800}
-                bodyStyle={{ borderRadius: 16, padding: 0, overflow: 'hidden' }}
+                width={isMobile ? '98vw' : 800}
+                bodyStyle={{
+                    borderRadius: 16,
+                    padding: 0,
+                    overflow: 'hidden',
+                    minWidth: isMobile ? 0 : 420,
+                }}
             >
                 <div
                     style={{
                         background: '#fff',
                         borderRadius: 16,
-                        minHeight: 420,
+                        minHeight: isMobile ? 0 : 420,
+                        padding: isMobile ? 8 : 0,
                     }}
                 >
                     <div
                         style={{
                             display: 'flex',
-                            alignItems: 'center',
+                            alignItems: isMobile ? 'flex-start' : 'center',
+                            flexDirection: isMobile ? 'column' : 'row',
                             justifyContent: 'space-between',
-                            padding: '24px 32px 0 32px',
+                            padding: isMobile
+                                ? '16px 12px 0 12px'
+                                : '24px 32px 0 32px',
                         }}
                     >
                         <div
@@ -1016,7 +1034,7 @@ function OrderPage() {
                             <span
                                 style={{
                                     fontWeight: 700,
-                                    fontSize: 22,
+                                    fontSize: isMobile ? 18 : 22,
                                     marginLeft: 8,
                                 }}
                             >
@@ -1025,7 +1043,12 @@ function OrderPage() {
                         </div>
                         <Button
                             type="link"
-                            style={{ color: '#22c55e', fontWeight: 600 }}
+                            style={{
+                                color: '#22c55e',
+                                fontWeight: 600,
+                                margin: isMobile ? '0 auto' : 0,
+                                fontSize: isMobile ? 15 : 16,
+                            }}
                             onClick={() => setPayosModal(false)}
                         >
                             Đổi phương thức khác
@@ -1034,7 +1057,10 @@ function OrderPage() {
                     <Tabs
                         activeKey={payosTab}
                         onChange={setPayosTab}
-                        style={{ margin: '0 32px', marginTop: 16 }}
+                        style={{
+                            margin: isMobile ? '0 8px' : '0 32px',
+                            marginTop: 16,
+                        }}
                         items={[
                             {
                                 key: 'qr',
@@ -1042,7 +1068,7 @@ function OrderPage() {
                                     <span
                                         style={{
                                             fontWeight: 600,
-                                            fontSize: 17,
+                                            fontSize: isMobile ? 15 : 17,
                                             color:
                                                 payosTab === 'qr'
                                                     ? '#22c55e'
@@ -1056,8 +1082,13 @@ function OrderPage() {
                                     <div
                                         style={{
                                             display: 'flex',
-                                            flexDirection: 'row',
+                                            flexDirection: isMobile
+                                                ? 'column'
+                                                : 'row',
                                             marginTop: 8,
+                                            alignItems: isMobile
+                                                ? 'center'
+                                                : undefined,
                                         }}
                                     >
                                         <div
@@ -1067,14 +1098,13 @@ function OrderPage() {
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                // padding: 16,
+                                                marginBottom: isMobile ? 16 : 0,
                                             }}
                                         >
                                             <div
                                                 style={{
                                                     background: '#f8f9fa',
                                                     borderRadius: 16,
-                                                    // padding: 16,
                                                     marginBottom: 12,
                                                 }}
                                             >
@@ -1095,8 +1125,12 @@ function OrderPage() {
                                                     }
                                                     alt="QR VietQR"
                                                     style={{
-                                                        width: 268,
-                                                        height: 268,
+                                                        width: isMobile
+                                                            ? 180
+                                                            : 268,
+                                                        height: isMobile
+                                                            ? 180
+                                                            : 268,
                                                         background: '#fff',
                                                         borderRadius: 8,
                                                     }}
@@ -1106,7 +1140,9 @@ function OrderPage() {
                                                 style={{
                                                     color: '#888',
                                                     fontWeight: 500,
-                                                    fontSize: 15,
+                                                    fontSize: isMobile
+                                                        ? 13
+                                                        : 15,
                                                     marginTop: 8,
                                                 }}
                                             >
@@ -1115,7 +1151,9 @@ function OrderPage() {
                                             <div
                                                 style={{
                                                     fontWeight: 700,
-                                                    fontSize: 20,
+                                                    fontSize: isMobile
+                                                        ? 16
+                                                        : 20,
                                                     color: '#222',
                                                 }}
                                             >
@@ -1128,17 +1166,25 @@ function OrderPage() {
                                         <div
                                             style={{
                                                 flex: 1,
-                                                padding: 24,
+                                                padding: isMobile ? 0 : 24,
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 justifyContent: 'center',
+                                                alignItems: isMobile
+                                                    ? 'center'
+                                                    : 'flex-start',
                                             }}
                                         >
                                             <div
                                                 style={{
                                                     fontWeight: 700,
-                                                    fontSize: 20,
+                                                    fontSize: isMobile
+                                                        ? 16
+                                                        : 20,
                                                     marginBottom: 12,
+                                                    textAlign: isMobile
+                                                        ? 'center'
+                                                        : 'left',
                                                 }}
                                             >
                                                 Quét mã QR để thanh toán
@@ -1147,6 +1193,12 @@ function OrderPage() {
                                                 style={{
                                                     paddingLeft: 20,
                                                     marginBottom: 16,
+                                                    fontSize: isMobile
+                                                        ? 13
+                                                        : 15,
+                                                    textAlign: isMobile
+                                                        ? 'left'
+                                                        : 'left',
                                                 }}
                                             >
                                                 <li>
@@ -1171,6 +1223,9 @@ function OrderPage() {
                                                     padding: 12,
                                                     textAlign: 'center',
                                                     marginTop: 'auto',
+                                                    fontSize: isMobile
+                                                        ? 14
+                                                        : 16,
                                                 }}
                                             >
                                                 Giao dịch sẽ kết thúc sau
@@ -1178,7 +1233,9 @@ function OrderPage() {
                                                     style={{
                                                         color: '#22c55e',
                                                         fontWeight: 700,
-                                                        fontSize: 18,
+                                                        fontSize: isMobile
+                                                            ? 16
+                                                            : 18,
                                                         marginLeft: 8,
                                                     }}
                                                 >
@@ -1195,7 +1252,7 @@ function OrderPage() {
                                     <span
                                         style={{
                                             fontWeight: 600,
-                                            fontSize: 17,
+                                            fontSize: isMobile ? 15 : 17,
                                             color:
                                                 payosTab === 'bank'
                                                     ? '#22c55e'
@@ -1209,8 +1266,13 @@ function OrderPage() {
                                     <div
                                         style={{
                                             display: 'flex',
-                                            flexDirection: 'row',
+                                            flexDirection: isMobile
+                                                ? 'column'
+                                                : 'row',
                                             marginTop: 8,
+                                            alignItems: isMobile
+                                                ? 'center'
+                                                : undefined,
                                         }}
                                     >
                                         <div
@@ -1218,8 +1280,12 @@ function OrderPage() {
                                                 flex: 1,
                                                 background: '#f8f9fa',
                                                 borderRadius: 16,
-                                                padding: 20,
-                                                marginRight: 16,
+                                                padding: isMobile ? 10 : 20,
+                                                marginRight: isMobile ? 0 : 16,
+                                                marginBottom: isMobile ? 16 : 0,
+                                                width: isMobile
+                                                    ? '100%'
+                                                    : undefined,
                                             }}
                                         >
                                             <div style={{ marginBottom: 10 }}>
@@ -1421,10 +1487,18 @@ function OrderPage() {
                                         <div
                                             style={{
                                                 flex: 1,
-                                                padding: 24,
-                                                display: 'flex',
+                                                padding: isMobile ? 0 : 24,
+                                                display: isMobile
+                                                    ? 'none'
+                                                    : 'flex',
                                                 flexDirection: 'column',
                                                 justifyContent: 'center',
+                                                alignItems: isMobile
+                                                    ? 'center'
+                                                    : 'flex-start',
+                                                width: isMobile
+                                                    ? '100%'
+                                                    : undefined,
                                             }}
                                         >
                                             <div

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Container, Row, Col, Button, Nav, Pagination } from 'react-bootstrap';
 import { BsTicket, BsCalendar, BsChevronRight } from 'react-icons/bs';
 import QRCode from 'react-qr-code';
@@ -12,6 +12,7 @@ import { permissions } from '../../config/rbacConfig';
 import ReviewForm from '../components/ReviewForm';
 import styles from './PurchasedTickets.module.css';
 import LoadingSpinner from '../components/loading/LoadingSpinner';
+import html2canvas from 'html2canvas';
 
 function PurchasedTickets() {
     const navigate = useNavigate();
@@ -35,6 +36,31 @@ function PurchasedTickets() {
     const [eventReviews, setEventReviews] = useState({}); // Lưu mapping giữa eventId và review
 
     const itemsPerPage = 10;
+
+    // Ref cho từng ticket-item
+    const ticketRefs = useRef({});
+    // Ref cho từng order (block lớn)
+    const orderRefs = useRef({});
+    // Ref cho từng ticket card
+    const ticketCardRefs = useRef({});
+
+    // Hàm tải vé thành ảnh (chỉ chụp ticket card)
+    const handleDownloadTicketCard = (orderId, ticketIdx) => {
+        const ref = ticketCardRefs.current[`${orderId}_${ticketIdx}`];
+        if (ref) {
+            const btn = ref.querySelector('.hide-when-download');
+            if (btn) btn.classList.add('hide-for-capture');
+            setTimeout(() => {
+                html2canvas(ref, { backgroundColor: null }).then((canvas) => {
+                    const link = document.createElement('a');
+                    link.download = `ticket_${orderId}_${ticketIdx}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    if (btn) btn.classList.remove('hide-for-capture');
+                });
+            }, 100);
+        }
+    };
 
     const handleNavigation = (tab, path) => {
         setActiveTab(tab);
@@ -258,79 +284,42 @@ function PurchasedTickets() {
                         <div
                             key={order._id}
                             className="mb-4 p-3 bg-light text-dark rounded shadow-sm"
-                            style={{ transition: 'transform 0.2s' }}
+                            style={{
+                                transition: 'transform 0.2s',
+                                position: 'relative',
+                            }}
                         >
-                            {/* Header đơn hàng */}
+                            {/* Block sẽ được chụp */}
                             <div
-                                className="d-flex justify-content-between align-items-center"
-                                onClick={() => handleToggleOrder(order._id)}
-                                style={{ cursor: 'pointer' }}
+                                ref={(el) => {
+                                    orderRefs.current[order._id] = el;
+                                }}
                             >
+                                {/* Header đơn hàng */}
                                 <div
-                                    className="text-truncate"
-                                    style={{ maxWidth: '95%' }}
+                                    className="d-flex justify-content-between align-items-center"
+                                    onClick={() => handleToggleOrder(order._id)}
+                                    style={{ cursor: 'pointer' }}
                                 >
-                                    {/* Hiển thị trên máy tính: Đơn hàng #123 | Tên sự kiện */}
-                                    <div className="d-flex align-items-center gap-2">
-                                        <h5
-                                            className="fw-bold mb-1 text-truncate d-none d-md-block"
-                                            style={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                            }}
-                                        >
-                                            Đơn hàng #{order.orderCode} |{' '}
-                                            {order.eventName}
-                                        </h5>
-
-                                        {/* Event Status Badge */}
-                                        {(() => {
-                                            const now = new Date();
-                                            const eventStartTime = new Date(
-                                                order.startTime,
-                                            );
-                                            const eventEndTime = new Date(
-                                                order.endTime,
-                                            );
-
-                                            if (eventEndTime <= now) {
-                                                return (
-                                                    <span className="badge bg-secondary">
-                                                        <i className="bi bi-calendar-check me-1"></i>
-                                                        Đã kết thúc
-                                                    </span>
-                                                );
-                                            } else if (
-                                                eventStartTime <= now &&
-                                                eventEndTime > now
-                                            ) {
-                                                return (
-                                                    <span className="badge bg-warning text-dark">
-                                                        <i className="bi bi-play-circle me-1"></i>
-                                                        Đang diễn ra
-                                                    </span>
-                                                );
-                                            } else {
-                                                return (
-                                                    <span className="badge bg-success">
-                                                        <i className="bi bi-calendar-event me-1"></i>
-                                                        Sắp diễn ra
-                                                    </span>
-                                                );
-                                            }
-                                        })()}
-                                    </div>
-
-                                    {/* Hiển thị trên mobile/tablet: Đơn hàng #123: */}
-                                    <div className="d-block d-md-none">
-                                        <h5 className="fw-bold mb-1">
-                                            Đơn hàng #{order.orderCode}
-                                        </h5>
+                                    <div
+                                        className="text-truncate"
+                                        style={{ maxWidth: '95%' }}
+                                    >
+                                        {/* Hiển thị trên máy tính: Đơn hàng #123 | Tên sự kiện */}
                                         <div className="d-flex align-items-center gap-2">
-                                            <small className="text-muted">
+                                            <h5
+                                                className="fw-bold mb-1 text-truncate d-none d-md-block"
+                                                style={{
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}
+                                            >
+                                                Đơn hàng #{order.orderCode} |{' '}
                                                 {order.eventName}
-                                            </small>
+                                            </h5>
+
+                                            {/* Event Status Badge */}
                                             {(() => {
                                                 const now = new Date();
                                                 const eventStartTime = new Date(
@@ -342,13 +331,8 @@ function PurchasedTickets() {
 
                                                 if (eventEndTime <= now) {
                                                     return (
-                                                        <span
-                                                            className="badge bg-secondary"
-                                                            style={{
-                                                                fontSize:
-                                                                    '0.7rem',
-                                                            }}
-                                                        >
+                                                        <span className="badge bg-secondary">
+                                                            <i className="bi bi-calendar-check me-1"></i>
                                                             Đã kết thúc
                                                         </span>
                                                     );
@@ -357,278 +341,393 @@ function PurchasedTickets() {
                                                     eventEndTime > now
                                                 ) {
                                                     return (
-                                                        <span
-                                                            className="badge bg-warning text-dark"
-                                                            style={{
-                                                                fontSize:
-                                                                    '0.7rem',
-                                                            }}
-                                                        >
+                                                        <span className="badge bg-warning text-dark">
+                                                            <i className="bi bi-play-circle me-1"></i>
                                                             Đang diễn ra
                                                         </span>
                                                     );
                                                 } else {
                                                     return (
-                                                        <span
-                                                            className="badge bg-success"
-                                                            style={{
-                                                                fontSize:
-                                                                    '0.7rem',
-                                                            }}
-                                                        >
+                                                        <span className="badge bg-success">
+                                                            <i className="bi bi-calendar-event me-1"></i>
                                                             Sắp diễn ra
                                                         </span>
                                                     );
                                                 }
                                             })()}
                                         </div>
-                                    </div>
-                                </div>
-                                <i
-                                    className={`bi ${
-                                        isExpanded
-                                            ? 'bi-chevron-up'
-                                            : 'bi-chevron-down'
-                                    } fs-4 text-secondary`}
-                                />
-                            </div>
 
-                            {/* Nội dung chi tiết (items) */}
-                            <div
-                                className="transition-panel"
-                                style={{
-                                    maxHeight: isExpanded ? '10000px' : '0px',
-                                    overflow: 'hidden',
-                                    transition: 'max-height 0.3s ease',
-                                }}
-                            >
-                                <hr />
-                                {/* Thông tin sự kiện */}
-                                <div className={styles['event-info']}>
-                                    <div className="row align-items-center mb-4">
-                                        <div className="col-md-3 text-center mb-3 mb-md-0">
-                                            <img
-                                                src={order.background}
-                                                alt={order.eventName}
-                                                className="img-fluid rounded"
-                                                style={{
-                                                    maxHeight: '150px',
-                                                    objectFit: 'cover',
-                                                    width: '100%',
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="col-md-9">
-                                            <h4
-                                                className={
-                                                    styles['event-title']
-                                                }
-                                            >
-                                                {order.eventName}
-                                            </h4>
-                                            <div
-                                                className={
-                                                    styles['event-details']
-                                                }
-                                            >
-                                                <div className="mb-2">
-                                                    <i className="bi bi-geo-alt-fill"></i>
-                                                    {'   '}
-                                                    <span className="fw-bold text-success">
-                                                        {
-                                                            order.location
-                                                                .venueName
-                                                        }
-                                                    </span>
-                                                    <br />
-                                                    <span
-                                                        style={{
-                                                            marginLeft: '22px',
-                                                        }}
-                                                    >
-                                                        {order.location.address}
-                                                        , {order.location.ward},{' '}
-                                                        {
-                                                            order.location
-                                                                .district
-                                                        }
-                                                        ,{' '}
-                                                        {
-                                                            order.location
-                                                                .province
-                                                        }
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <i className="bi bi-clock"></i>
-                                                    {'   '}
-                                                    <span className="fw-bold text-success">
-                                                        <TimeText
-                                                            event={order}
-                                                        />
-                                                    </span>
-                                                </div>
+                                        {/* Hiển thị trên mobile/tablet: Đơn hàng #123: */}
+                                        <div className="d-block d-md-none">
+                                            <h5 className="fw-bold mb-1">
+                                                Đơn hàng #{order.orderCode}
+                                            </h5>
+                                            <div className="d-flex align-items-center gap-2">
+                                                <small className="text-muted">
+                                                    {order.eventName}
+                                                </small>
+                                                {(() => {
+                                                    const now = new Date();
+                                                    const eventStartTime =
+                                                        new Date(
+                                                            order.startTime,
+                                                        );
+                                                    const eventEndTime =
+                                                        new Date(order.endTime);
+
+                                                    if (eventEndTime <= now) {
+                                                        return (
+                                                            <span
+                                                                className="badge bg-secondary"
+                                                                style={{
+                                                                    fontSize:
+                                                                        '0.7rem',
+                                                                }}
+                                                            >
+                                                                Đã kết thúc
+                                                            </span>
+                                                        );
+                                                    } else if (
+                                                        eventStartTime <= now &&
+                                                        eventEndTime > now
+                                                    ) {
+                                                        return (
+                                                            <span
+                                                                className="badge bg-warning text-dark"
+                                                                style={{
+                                                                    fontSize:
+                                                                        '0.7rem',
+                                                                }}
+                                                            >
+                                                                Đang diễn ra
+                                                            </span>
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <span
+                                                                className="badge bg-success"
+                                                                style={{
+                                                                    fontSize:
+                                                                        '0.7rem',
+                                                                }}
+                                                            >
+                                                                Sắp diễn ra
+                                                            </span>
+                                                        );
+                                                    }
+                                                })()}
                                             </div>
                                         </div>
                                     </div>
+                                    <i
+                                        className={`bi ${
+                                            isExpanded
+                                                ? 'bi-chevron-up'
+                                                : 'bi-chevron-down'
+                                        } fs-4 text-secondary`}
+                                    />
                                 </div>
 
-                                {order.tickets?.map((ticket, idx) => {
-                                    const subTotal =
-                                        ticket.price * ticket.quantity;
-                                    return (
-                                        <div
-                                            key={ticket._id || idx}
-                                            className={styles['ticket-card']}
-                                        >
-                                            <div
-                                                className={
-                                                    styles['ticket-header']
-                                                }
-                                            >
-                                                <div
+                                {/* Nội dung chi tiết (items) */}
+                                <div
+                                    className="transition-panel"
+                                    style={{
+                                        maxHeight: isExpanded
+                                            ? '10000px'
+                                            : '0px',
+                                        overflow: 'hidden',
+                                        transition: 'max-height 0.3s ease',
+                                    }}
+                                >
+                                    <hr />
+                                    {/* Thông tin sự kiện */}
+                                    <div className={styles['event-info']}>
+                                        <div className="row align-items-center mb-4">
+                                            <div className="col-md-3 text-center mb-3 mb-md-0">
+                                                <img
+                                                    src={order.background}
+                                                    alt={order.eventName}
+                                                    className="img-fluid rounded"
+                                                    style={{
+                                                        maxHeight: '150px',
+                                                        objectFit: 'cover',
+                                                        width: '100%',
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="col-md-9">
+                                                <h4
                                                     className={
-                                                        styles['ticket-title']
+                                                        styles['event-title']
                                                     }
                                                 >
-                                                    <h5 className="mb-0">
-                                                        {ticket.name}
-                                                    </h5>
-                                                    <small className="text-muted">
-                                                        Số lượng:{' '}
-                                                        {ticket.quantity} vé
-                                                    </small>
+                                                    {order.eventName}
+                                                </h4>
+                                                <div
+                                                    className={
+                                                        styles['event-details']
+                                                    }
+                                                >
+                                                    <div className="mb-2">
+                                                        <i className="bi bi-geo-alt-fill"></i>
+                                                        {'   '}
+                                                        <span className="fw-bold text-success">
+                                                            {
+                                                                order.location
+                                                                    .venueName
+                                                            }
+                                                        </span>
+                                                        <br />
+                                                        <span
+                                                            style={{
+                                                                marginLeft:
+                                                                    '22px',
+                                                            }}
+                                                        >
+                                                            {
+                                                                order.location
+                                                                    .address
+                                                            }
+                                                            ,{' '}
+                                                            {
+                                                                order.location
+                                                                    .ward
+                                                            }
+                                                            ,{' '}
+                                                            {
+                                                                order.location
+                                                                    .district
+                                                            }
+                                                            ,{' '}
+                                                            {
+                                                                order.location
+                                                                    .province
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <i className="bi bi-clock"></i>
+                                                        {'   '}
+                                                        <span className="fw-bold text-success">
+                                                            <TimeText
+                                                                event={order}
+                                                            />
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                {/* Nút đánh giá cho sự kiện đã kết thúc */}
-                                                {canReviewEvent(order) &&
-                                                    idx === 0 && (
-                                                        <div className="d-flex mt-2 gap-2">
-                                                            {(() => {
-                                                                const reviewId =
-                                                                    generateReviewId(
-                                                                        order.eventId,
-                                                                        user?.id,
-                                                                    );
-                                                                const existingReview =
-                                                                    eventReviews[
-                                                                        reviewId
-                                                                    ];
-
-                                                                return (
-                                                                    <Button
-                                                                        variant={
-                                                                            existingReview
-                                                                                ? 'success'
-                                                                                : 'outline-success'
-                                                                        }
-                                                                        size="sm"
-                                                                        onClick={() =>
-                                                                            handleOpenReviewForm(
-                                                                                order.eventId,
-                                                                            )
-                                                                        }
-                                                                        className="d-flex align-items-center gap-1 text-light"
-                                                                    >
-                                                                        <i className="bi bi-star-fill"></i>
-                                                                        {existingReview
-                                                                            ? 'Đã đánh giá'
-                                                                            : 'Đánh giá'}
-                                                                    </Button>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                    )}
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    {order.tickets?.map((ticket, idx) => {
+                                        const subTotal =
+                                            ticket.price * ticket.quantity;
+                                        return (
                                             <div
-                                                className={
-                                                    styles['ticket-body']
-                                                }
+                                                key={ticket._id || idx}
+                                                style={{
+                                                    position: 'relative',
+                                                    marginBottom: 24,
+                                                }}
                                             >
-                                                {Array.from({
-                                                    length: ticket.quantity,
-                                                }).map((_, ticketIndex) => (
+                                                {/* Ticket card sẽ được chụp */}
+                                                <div
+                                                    ref={(el) => {
+                                                        ticketCardRefs.current[
+                                                            `${order._id}_${idx}`
+                                                        ] = el;
+                                                    }}
+                                                >
                                                     <div
-                                                        key={ticketIndex}
                                                         className={
                                                             styles[
-                                                                'ticket-item'
+                                                                'ticket-card'
                                                             ]
                                                         }
                                                     >
                                                         <div
                                                             className={
                                                                 styles[
-                                                                    'ticket-info'
+                                                                    'ticket-header'
                                                                 ]
                                                             }
                                                         >
                                                             <div
                                                                 className={
                                                                     styles[
-                                                                        'ticket-code'
+                                                                        'ticket-title'
                                                                     ]
                                                                 }
                                                             >
-                                                                Mã vé:{' '}
-                                                                {
-                                                                    order.orderCode
-                                                                }
-                                                                {idx + 1}
-                                                                {ticketIndex +
-                                                                    1}
-                                                            </div>
-                                                            <div
-                                                                className={
-                                                                    styles[
-                                                                        'ticket-price'
-                                                                    ]
-                                                                }
-                                                            >
-                                                                {ticket.price.toLocaleString(
-                                                                    'vi-VN',
-                                                                )}{' '}
-                                                                đ
+                                                                <h5 className="mb-0">
+                                                                    {
+                                                                        ticket.name
+                                                                    }
+                                                                </h5>
+                                                                <small className="text-white">
+                                                                    Số lượng:{' '}
+                                                                    {
+                                                                        ticket.quantity
+                                                                    }{' '}
+                                                                    vé
+                                                                </small>
                                                             </div>
                                                         </div>
                                                         <div
                                                             className={
                                                                 styles[
-                                                                    'ticket-qr'
+                                                                    'ticket-body'
                                                                 ]
                                                             }
                                                         >
-                                                            <QRCode
-                                                                value={`${
-                                                                    order.orderCode
-                                                                }${idx + 1}${
-                                                                    ticketIndex +
-                                                                    1
-                                                                }`}
-                                                                size={80}
-                                                                bgColor="#ffffff"
-                                                                fgColor="#000000"
-                                                                level="H"
-                                                            />
+                                                            {Array.from({
+                                                                length: ticket.quantity,
+                                                            }).map(
+                                                                (
+                                                                    _,
+                                                                    ticketIndex,
+                                                                ) => {
+                                                                    const ticketKey = `${
+                                                                        idx + 1
+                                                                    }_${
+                                                                        ticketIndex +
+                                                                        1
+                                                                    }`;
+                                                                    return (
+                                                                        <div
+                                                                            key={
+                                                                                ticketIndex
+                                                                            }
+                                                                            className={
+                                                                                styles[
+                                                                                    'ticket-item'
+                                                                                ]
+                                                                            }
+                                                                        >
+                                                                            <div
+                                                                                className={
+                                                                                    styles[
+                                                                                        'ticket-info'
+                                                                                    ]
+                                                                                }
+                                                                            >
+                                                                                <div
+                                                                                    className={
+                                                                                        styles[
+                                                                                            'ticket-code'
+                                                                                        ]
+                                                                                    }
+                                                                                >
+                                                                                    Mã
+                                                                                    vé:{' '}
+                                                                                    {
+                                                                                        order.orderCode
+                                                                                    }
+                                                                                    {idx +
+                                                                                        1}
+                                                                                    {ticketIndex +
+                                                                                        1}
+                                                                                </div>
+                                                                                <div
+                                                                                    className={
+                                                                                        styles[
+                                                                                            'ticket-price'
+                                                                                        ]
+                                                                                    }
+                                                                                >
+                                                                                    {ticket.price.toLocaleString(
+                                                                                        'vi-VN',
+                                                                                    )}{' '}
+                                                                                    đ
+                                                                                </div>
+                                                                            </div>
+                                                                            {/* QR + Nút tải vé */}
+                                                                            <div
+                                                                                style={{
+                                                                                    display:
+                                                                                        'flex',
+                                                                                    alignItems:
+                                                                                        'center',
+                                                                                    gap: 12,
+                                                                                }}
+                                                                            >
+                                                                                <div
+                                                                                    className={
+                                                                                        styles[
+                                                                                            'ticket-qr'
+                                                                                        ]
+                                                                                    }
+                                                                                >
+                                                                                    <QRCode
+                                                                                        value={`${
+                                                                                            order.orderCode
+                                                                                        }${
+                                                                                            idx +
+                                                                                            1
+                                                                                        }${
+                                                                                            ticketIndex +
+                                                                                            1
+                                                                                        }`}
+                                                                                        size={
+                                                                                            90
+                                                                                        }
+                                                                                        bgColor="#ffffff"
+                                                                                        fgColor="#000000"
+                                                                                        level="H"
+                                                                                    />
+                                                                                </div>
+                                                                                <div
+                                                                                    className={
+                                                                                        styles[
+                                                                                            'hide-when-download'
+                                                                                        ]
+                                                                                    }
+                                                                                >
+                                                                                    <Button
+                                                                                        variant="outline-primary"
+                                                                                        size="sm"
+                                                                                        onClick={() =>
+                                                                                            handleDownloadTicketCard(
+                                                                                                order._id,
+                                                                                                idx,
+                                                                                            )
+                                                                                        }
+                                                                                        className="text-dark"
+                                                                                    >
+                                                                                        <i className="bi bi-download me-1"></i>{' '}
+                                                                                        Tải
+                                                                                        vé
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                },
+                                                            )}
+                                                            <div
+                                                                className={
+                                                                    styles[
+                                                                        'ticket-total'
+                                                                    ]
+                                                                }
+                                                            >
+                                                                <span>
+                                                                    Tổng tiền:
+                                                                </span>
+                                                                <span>
+                                                                    {subTotal.toLocaleString(
+                                                                        'vi-VN',
+                                                                    )}{' '}
+                                                                    đ
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                ))}
-                                                <div
-                                                    className={
-                                                        styles['ticket-total']
-                                                    }
-                                                >
-                                                    <span>Tổng tiền:</span>
-                                                    <span>
-                                                        {subTotal.toLocaleString(
-                                                            'vi-VN',
-                                                        )}{' '}
-                                                        đ
-                                                    </span>
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     );

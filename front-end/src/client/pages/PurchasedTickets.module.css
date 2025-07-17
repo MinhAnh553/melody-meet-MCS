@@ -117,8 +117,8 @@
 }
 
 .ticket-qr {
-    margin-left: 1rem;
-    padding: 0.75rem;
+    /* margin-left: 1rem; */
+    padding: 5px;
     background-color: #fff;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
