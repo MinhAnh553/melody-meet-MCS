@@ -271,6 +271,31 @@ app.use(
     }),
 );
 
+app.use(
+    '/v1/chats',
+    authMiddleware.isAuthorized,
+    proxy(process.env.CHAT_SERVICE_URL, {
+        ...proxyOptions,
+        proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+            if (srcReq?.jwtDecoded) {
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
+            }
+
+            proxyReqOpts.headers['content-type'] = 'application/json';
+
+            return proxyReqOpts;
+        },
+        userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+            logger.info(
+                'Response received from chat service:',
+                proxyRes.statusCode,
+            );
+            return proxyResData;
+        },
+    }),
+);
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
@@ -282,5 +307,6 @@ app.listen(PORT, () => {
         `🚀 Ticket Service running on ${process.env.TICKET_SERVICE_URL}`,
     );
     logger.info(`🚀 Media Service running on ${process.env.MEDIA_SERVICE_URL}`);
+    logger.info(`🚀 Chat Service running on ${process.env.CHAT_SERVICE_URL}`);
     logger.info(`Redis URL: ${process.env.REDIS_URL}`);
 });

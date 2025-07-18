@@ -859,6 +859,7 @@ const searchEvents = async (req, res) => {
         events.forEach((e) => {
             e.ticketTypes = ticketTypesMap[e._id.toString()] || [];
         });
+        console.log("MinhAnh553: searchEvents -> events", events)
         return res.status(200).json({ success: true, events });
     } catch (error) {
         logger.error('Search events error:', error);
