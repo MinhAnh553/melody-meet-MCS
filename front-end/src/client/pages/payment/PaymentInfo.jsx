@@ -313,7 +313,7 @@ function OrderPage() {
             });
         }
         const buyerInfo = { name, phone };
-        const res = await api.updateUser(user._id, buyerInfo);
+        const res = await api.updateUser(user.id, buyerInfo);
         if (res && res.success) {
             swalCustomize.Toast.fire({
                 icon: 'success',

@@ -1017,3 +1017,12 @@ header .form-control {
         padding: 0.3rem 0.6rem;
     }
 }
+
+.react-tel-input .country-list .country {
+    padding: 4px 9px 13px 46px !important;
+}
+
+.react-tel-input .flag-dropdown {
+    background-color: transparent !important;
+    border: none !important;
+}

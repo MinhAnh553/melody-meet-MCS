@@ -212,7 +212,7 @@ const HomePage = () => {
                 <div className="container">
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <h2 className="section-title fw-bold">
-                            📅 Sự kiện sắp diễn ra
+                            📅 Sự kiện sắp tới
                         </h2>
                         <Link
                             to={'/search?type=upcoming'}
