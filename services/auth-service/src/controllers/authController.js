@@ -164,6 +164,7 @@ const login = async (req, res) => {
 
         const userInfo = {
             id: user._id,
+            name: user.name,
             email: user.email,
             role: user.role,
         };
@@ -212,6 +213,7 @@ const refreshToken = async (req, res) => {
 
         const userInfo = {
             id: refreshTokenDecoded.id,
+            name: refreshTokenDecoded.name,
             email: refreshTokenDecoded.email,
             role: refreshTokenDecoded.role,
         };

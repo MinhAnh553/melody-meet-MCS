@@ -216,12 +216,9 @@ const Header = () => {
                                             </div>
                                             <span
                                                 className={styles.email}
-                                                title={user.email}
+                                                title={user.name || user.email}
                                             >
-                                                {user.email.length > 27
-                                                    ? user.email.slice(0, 25) +
-                                                      '...'
-                                                    : user.email}
+                                                {user.name || 'Tài khoản'}
                                             </span>
                                         </div>
                                         <ul
