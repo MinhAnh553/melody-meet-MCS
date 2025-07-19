@@ -8,6 +8,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import styles from './HomePage.module.css';
+import HeroCarouselSkeleton from '../../components/loading/HeroCarouselSkeleton';
 
 const HomePage = () => {
     const [loading, setLoading] = useState(true);
@@ -63,122 +64,149 @@ const HomePage = () => {
                         loop
                         style={{ overflow: 'hidden' }}
                     >
-                        {trendingEvent.map((event) => (
-                            <SwiperSlide key={event._id}>
-                                <Link to={`/event/${event._id}`}>
-                                    <div className={styles.eventSlide}>
-                                        {/* Desktop Layout */}
-                                        <div className={styles.desktopLayout}>
-                                            {/* Bên trái: Thông tin sự kiện */}
-                                            <div className={styles.eventInfo}>
-                                                <h2
-                                                    className={`${styles.eventTitle} fw-bold mb-3`}
-                                                >
-                                                    {event.name}
-                                                </h2>
-                                                <div
-                                                    className={`${styles.eventDate} mb-2`}
-                                                >
-                                                    <i className="bi bi-calendar3" />{' '}
-                                                    {new Date(
-                                                        event.startTime,
-                                                    ).toLocaleDateString(
-                                                        'vi-VN',
-                                                        {
-                                                            day: '2-digit',
-                                                            month: 'long',
-                                                            year: 'numeric',
-                                                        },
-                                                    )}
-                                                </div>
-                                                <div
-                                                    className={`${styles.eventLocation} mb-4`}
-                                                >
-                                                    <i className="bi bi-geo-alt"></i>{' '}
-                                                    {event.location.venueName}
-                                                </div>
-                                            </div>
-                                            {/* Bên phải: Ảnh sự kiện */}
-                                            <div className={styles.eventImage}>
-                                                <img
-                                                    src={event.background}
-                                                    alt={event.name}
-                                                    className={
-                                                        styles.slideImage
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
+                        {loading
+                            ? Array.from({ length: 2 }).map((_, idx) => (
+                                  <SwiperSlide key={idx}>
+                                      <HeroCarouselSkeleton />
+                                  </SwiperSlide>
+                              ))
+                            : trendingEvent.map((event) => (
+                                  <SwiperSlide key={event._id}>
+                                      <Link to={`/event/${event._id}`}>
+                                          <div className={styles.eventSlide}>
+                                              {/* Desktop Layout */}
+                                              <div
+                                                  className={
+                                                      styles.desktopLayout
+                                                  }
+                                              >
+                                                  {/* Bên trái: Thông tin sự kiện */}
+                                                  <div
+                                                      className={
+                                                          styles.eventInfo
+                                                      }
+                                                  >
+                                                      <h2
+                                                          className={`${styles.eventTitle} fw-bold mb-3`}
+                                                      >
+                                                          {event.name}
+                                                      </h2>
+                                                      <div
+                                                          className={`${styles.eventDate} mb-2`}
+                                                      >
+                                                          <i className="bi bi-calendar3" />{' '}
+                                                          {new Date(
+                                                              event.startTime,
+                                                          ).toLocaleDateString(
+                                                              'vi-VN',
+                                                              {
+                                                                  day: '2-digit',
+                                                                  month: 'long',
+                                                                  year: 'numeric',
+                                                              },
+                                                          )}
+                                                      </div>
+                                                      <div
+                                                          className={`${styles.eventLocation} mb-4`}
+                                                      >
+                                                          <i className="bi bi-geo-alt"></i>{' '}
+                                                          {
+                                                              event.location
+                                                                  .venueName
+                                                          }
+                                                      </div>
+                                                  </div>
+                                                  {/* Bên phải: Ảnh sự kiện */}
+                                                  <div
+                                                      className={
+                                                          styles.eventImage
+                                                      }
+                                                  >
+                                                      <img
+                                                          src={event.background}
+                                                          alt={event.name}
+                                                          className={
+                                                              styles.slideImage
+                                                          }
+                                                      />
+                                                  </div>
+                                              </div>
 
-                                        {/* Mobile Layout */}
-                                        <div className={styles.mobileLayout}>
-                                            {/* Ảnh nền với overlay */}
-                                            <div
-                                                className={
-                                                    styles.mobileBgContainer
-                                                }
-                                            >
-                                                <img
-                                                    src={event.background}
-                                                    alt={event.name}
-                                                    className={
-                                                        styles.mobileBgImage
-                                                    }
-                                                />
-                                                <div
-                                                    className={
-                                                        styles.mobileOverlay
-                                                    }
-                                                ></div>
-                                            </div>
+                                              {/* Mobile Layout */}
+                                              <div
+                                                  className={
+                                                      styles.mobileLayout
+                                                  }
+                                              >
+                                                  {/* Ảnh nền với overlay */}
+                                                  <div
+                                                      className={
+                                                          styles.mobileBgContainer
+                                                      }
+                                                  >
+                                                      <img
+                                                          src={event.background}
+                                                          alt={event.name}
+                                                          className={
+                                                              styles.mobileBgImage
+                                                          }
+                                                      />
+                                                      <div
+                                                          className={
+                                                              styles.mobileOverlay
+                                                          }
+                                                      ></div>
+                                                  </div>
 
-                                            {/* Nội dung overlay */}
-                                            <div
-                                                className={styles.mobileContent}
-                                            >
-                                                <h2
-                                                    className={`${styles.mobileEventTitle} fw-bold mb-3`}
-                                                >
-                                                    {event.name}
-                                                </h2>
-                                                <div
-                                                    className={
-                                                        styles.mobileEventDetails
-                                                    }
-                                                >
-                                                    <div
-                                                        className={`${styles.mobileEventDate} mb-2`}
-                                                    >
-                                                        <i className="bi bi-calendar3" />{' '}
-                                                        {new Date(
-                                                            event.startTime,
-                                                        ).toLocaleDateString(
-                                                            'vi-VN',
-                                                            {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                            },
-                                                        )}
-                                                    </div>
-                                                    <div
-                                                        className={
-                                                            styles.mobileEventLocation
-                                                        }
-                                                    >
-                                                        <i className="bi bi-geo-alt"></i>{' '}
-                                                        {
-                                                            event.location
-                                                                .venueName
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </SwiperSlide>
-                        ))}
+                                                  {/* Nội dung overlay */}
+                                                  <div
+                                                      className={
+                                                          styles.mobileContent
+                                                      }
+                                                  >
+                                                      <h2
+                                                          className={`${styles.mobileEventTitle} fw-bold mb-3`}
+                                                      >
+                                                          {event.name}
+                                                      </h2>
+                                                      <div
+                                                          className={
+                                                              styles.mobileEventDetails
+                                                          }
+                                                      >
+                                                          <div
+                                                              className={`${styles.mobileEventDate} mb-2`}
+                                                          >
+                                                              <i className="bi bi-calendar3" />{' '}
+                                                              {new Date(
+                                                                  event.startTime,
+                                                              ).toLocaleDateString(
+                                                                  'vi-VN',
+                                                                  {
+                                                                      day: '2-digit',
+                                                                      month: 'short',
+                                                                      year: 'numeric',
+                                                                  },
+                                                              )}
+                                                          </div>
+                                                          <div
+                                                              className={
+                                                                  styles.mobileEventLocation
+                                                              }
+                                                          >
+                                                              <i className="bi bi-geo-alt"></i>{' '}
+                                                              {
+                                                                  event.location
+                                                                      .venueName
+                                                              }
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </Link>
+                                  </SwiperSlide>
+                              ))}
                     </Swiper>
                 </div>
             </section>
