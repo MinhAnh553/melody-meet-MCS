@@ -209,7 +209,8 @@ const EventDetail = () => {
             <div
                 className="container-fluid py-4"
                 style={{
-                    backgroundColor: '#121212',
+                    background:
+                        'linear-gradient(rgb(39, 39, 42) 48.04%, rgb(0, 0, 0) 100%)',
                     margin: '80px 0 0',
                     borderRadius: '20px',
                 }}
@@ -220,15 +221,12 @@ const EventDetail = () => {
                         <div className="col-md-5 text-white">
                             <h1
                                 className="fw-bold mb-3"
-                                style={{ color: '#bdbdbd', fontSize: '1.5rem' }}
+                                style={{ fontSize: '1.5rem' }}
                             >
                                 {event.name}
                             </h1>
 
-                            <p
-                                className="mb-2"
-                                style={{ color: '#bdbdbd', fontSize: '1rem' }}
-                            >
+                            <p className="mb-2" style={{ fontSize: '1rem' }}>
                                 <i className="bi bi-clock"></i>
                                 {'  '}
                                 <span style={{ color: 'rgb(45, 194, 117)' }}>
@@ -236,10 +234,7 @@ const EventDetail = () => {
                                 </span>
                             </p>
 
-                            <p
-                                className="mb-5"
-                                style={{ color: '#bdbdbd', fontSize: '1rem' }}
-                            >
+                            <p className="mb-5" style={{ fontSize: '1rem' }}>
                                 <i className="bi bi-geo-alt-fill"></i>
                                 {'   '}
                                 <span style={{ color: 'rgb(45, 194, 117)' }}>
@@ -384,10 +379,10 @@ const EventDetail = () => {
 
             {/* Phần giới thiệu (nằm dưới banner) */}
             <div className="container my-5">
-                <h2 className="text-white mb-3">Giới thiệu</h2>
+                <h4 className="mb-3">Giới thiệu</h4>
                 <div
                     className="card p-4 border-0 shadow rounded-4"
-                    style={{ backgroundColor: '#1e1e1e' }}
+                    style={{ backgroundColor: '#fff' }}
                 >
                     {/* Nếu có ảnh mô tả giới thiệu riêng, hiển thị: */}
                     {event.descriptionImage && (
@@ -405,7 +400,7 @@ const EventDetail = () => {
                             __html: sanitizedDescription,
                         }}
                         style={{
-                            color: '#fff',
+                            // color: '#fff',
                             whiteSpace: 'pre-line',
                             maxHeight: descExpanded ? 'none' : '6em', // 3 dòng x 1.5em
                             overflow: descExpanded ? 'visible' : 'hidden',
@@ -420,8 +415,7 @@ const EventDetail = () => {
                             <button
                                 className="btn btn-link p-0"
                                 style={{
-                                    color: '#fff',
-                                    fontWeight: 500,
+                                    color: 'black',
                                     fontSize: '1.05rem',
                                     textDecoration: 'none', // Bỏ gạch chân
                                 }}
@@ -429,11 +423,11 @@ const EventDetail = () => {
                             >
                                 {descExpanded ? (
                                     <>
-                                        <BsChevronUp /> Thu gọn
+                                        <BsChevronUp />
                                     </>
                                 ) : (
                                     <>
-                                        <BsChevronDown /> Xem thêm
+                                        <BsChevronDown />
                                     </>
                                 )}
                             </button>
@@ -443,10 +437,10 @@ const EventDetail = () => {
             </div>
             {/* Thông tin ban tổ chức */}
             <div className="container my-5">
-                <h2 className="text-white mb-4">Ban Tổ Chức</h2>
+                <h4 className="mb-4">Ban Tổ Chức</h4>
                 <div
                     className="card p-4 border-0 shadow rounded-4"
-                    style={{ backgroundColor: '#1e1e1e' }}
+                    style={{ backgroundColor: '#fff' }}
                 >
                     <div className="d-flex align-items-center">
                         <img
@@ -462,7 +456,7 @@ const EventDetail = () => {
                         />
                         <div className="flex-grow-1">
                             <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h5 className="text-white fw-semibold mb-0">
+                                <h5 className="fw-semibold mb-0">
                                     {event.organizer?.name}
                                 </h5>
                                 <Link
@@ -472,14 +466,14 @@ const EventDetail = () => {
                                         color: '#a6a6b0',
                                         transition: 'color 0.3s',
                                     }}
-                                    onMouseEnter={(e) =>
-                                        (e.currentTarget.style.color =
-                                            '#ffffff')
-                                    }
-                                    onMouseLeave={(e) =>
-                                        (e.currentTarget.style.color =
-                                            '#a6a6b0')
-                                    }
+                                    // onMouseEnter={(e) =>
+                                    //     (e.currentTarget.style.color =
+                                    //         '#ffffff')
+                                    // }
+                                    // onMouseLeave={(e) =>
+                                    //     (e.currentTarget.style.color =
+                                    //         '#a6a6b0')
+                                    // }
                                 >
                                     Thông tin chi tiết
                                     <i className="bi bi-chevron-right ms-1"></i>
@@ -488,7 +482,7 @@ const EventDetail = () => {
 
                             <div
                                 className="small"
-                                style={{ lineHeight: '1.6', color: '#e0e0e0' }}
+                                style={{ lineHeight: '1.6' }}
                             >
                                 <p className="mb-2">
                                     {event.organizer?.description}
@@ -499,12 +493,8 @@ const EventDetail = () => {
                                         <a
                                             href={`mailto:${event.organizer.email}`}
                                             className="text-decoration-none"
-                                            style={{ color: '#dddddd' }}
                                         >
-                                            <i
-                                                className="bi bi-envelope me-2"
-                                                style={{ color: '#999' }}
-                                            ></i>
+                                            <i className="bi bi-envelope me-2"></i>
                                             {event.organizer.email}
                                         </a>
                                     </p>
@@ -515,12 +505,8 @@ const EventDetail = () => {
                                         <a
                                             href={`tel:${event.organizer.phone}`}
                                             className="text-decoration-none"
-                                            style={{ color: '#dddddd' }}
                                         >
-                                            <i
-                                                className="bi bi-telephone me-2"
-                                                style={{ color: '#999' }}
-                                            ></i>
+                                            <i className="bi bi-telephone me-2"></i>
                                             {event.organizer.phone}
                                         </a>
                                     </p>

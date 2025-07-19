@@ -4,9 +4,9 @@ import {
     Row,
     Col,
     Card,
-    Button,
-    Modal,
-    Form,
+    // Button,
+    // Modal,
+    // Form,
     InputGroup,
 } from 'react-bootstrap';
 import {
@@ -16,11 +16,12 @@ import {
     FaFilter,
     FaMoneyBillWave,
 } from 'react-icons/fa';
+import { Button, Modal, Input, Form, Slider } from 'antd';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from '../../util/api';
 import styles from './Search.module.css';
-import Slider from 'rc-slider';
+// import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import {
     addDays,
@@ -32,6 +33,9 @@ import {
 import EventList from '../components/EventList';
 import { useSearchParams } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
+import { DatePicker as AntdDatePicker } from 'antd';
+import dayjs from 'dayjs';
+import LoadingSpinner from '../components/loading/LoadingSpinner';
 
 const MIN_PRICE = 0;
 const MAX_PRICE = 5000000;
@@ -58,7 +62,7 @@ const Search = () => {
     const initialQuery = searchParams.get('query') || '';
     const [searchTerm, setSearchTerm] = useState(initialQuery);
     const [selectedDate, setSelectedDate] = useState(null);
-    const [dateRange, setDateRange] = useState([null, null]);
+    const [dateRange, setDateRange] = useState([null, null]); // [dayjs|null, dayjs|null]
     const [location, setLocation] = useState('');
     const [priceRange, setPriceRange] = useState([MIN_PRICE, MAX_PRICE]);
     const [events, setEvents] = useState([]);
@@ -72,11 +76,20 @@ const Search = () => {
         try {
             const filters = {
                 searchTerm,
-                date: selectedDate,
                 location,
-                minPrice: priceRange[0] !== 0 ? priceRange[0] : undefined,
-                maxPrice: priceRange[1] !== 5000000 ? priceRange[1] : undefined,
+                minPrice: priceRange[0],
+                maxPrice: priceRange[1],
             };
+            if (
+                Array.isArray(selectedDate) &&
+                selectedDate[0] &&
+                selectedDate[1]
+            ) {
+                filters.startDate = selectedDate[0].format('YYYY-MM-DD');
+                filters.endDate = selectedDate[1].format('YYYY-MM-DD');
+            } else if (selectedDate && selectedDate.format) {
+                filters.date = selectedDate.format('YYYY-MM-DD');
+            }
             const response = await api.searchEvents(filters);
             if (response && response.success) {
                 setEvents(response.events);
@@ -103,11 +116,13 @@ const Search = () => {
     let dateButtonText = 'Tất cả các ngày';
     if (selectedDate) {
         if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
-            dateButtonText = `${selectedDate[0].toLocaleDateString(
-                'vi-VN',
-            )} - ${selectedDate[1].toLocaleDateString('vi-VN')}`;
-        } else if (selectedDate instanceof Date) {
-            dateButtonText = selectedDate.toLocaleDateString('vi-VN');
+            dateButtonText = `${selectedDate[0]
+                .toDate()
+                .toLocaleDateString('vi-VN')} - ${selectedDate[1]
+                .toDate()
+                .toLocaleDateString('vi-VN')}`;
+        } else if (selectedDate && selectedDate.toDate) {
+            dateButtonText = selectedDate.toDate().toLocaleDateString('vi-VN');
         }
     }
 
@@ -117,11 +132,11 @@ const Search = () => {
             setSelectedDate(null);
             setDateRange([null, null]);
         } else if (range instanceof Date) {
-            setSelectedDate(range);
-            setDateRange([range, range]);
+            setSelectedDate(dayjs(range));
+            setDateRange([dayjs(range), dayjs(range)]);
         } else if (range.start && range.end) {
-            setSelectedDate([range.start, range.end]);
-            setDateRange([range.start, range.end]);
+            setSelectedDate([dayjs(range.start), dayjs(range.end)]);
+            setDateRange([dayjs(range.start), dayjs(range.end)]);
         }
     };
 
@@ -160,6 +175,14 @@ const Search = () => {
         setShowDatePicker(false);
     };
 
+    if (loading) {
+        return (
+            <div style={{ marginTop: '85px' }}>
+                <LoadingSpinner content="Đang tìm" />;
+            </div>
+        );
+    }
+
     return (
         <Container className={styles.searchContainer}>
             {/* Thanh tìm kiếm cho mobile */}
@@ -197,7 +220,7 @@ const Search = () => {
                         </span>
                     </Button>
                     <Button
-                        variant="dark"
+                        // variant="dark"
                         className={styles.filterBtn}
                         onClick={() => setShowFilter(true)}
                         style={{
@@ -207,9 +230,7 @@ const Search = () => {
                         }}
                     >
                         <FaFilter style={{ fontSize: 18 }} />
-                        <span style={{ color: '#22c55e', fontWeight: 500 }}>
-                            Bộ lọc
-                        </span>
+                        <span style={{ fontWeight: 500 }}>Bộ lọc</span>
                         <span style={{ fontSize: 12 }}>▼</span>
                     </Button>
                 </Col>
@@ -217,180 +238,246 @@ const Search = () => {
 
             {/* Popup chọn ngày */}
             <Modal
-                show={showDatePicker}
-                onHide={() => setShowDatePicker(false)}
+                open={showDatePicker}
+                onCancel={() => setShowDatePicker(false)}
+                footer={null}
                 centered
-                size="lg"
+                width={window.innerWidth < 768 ? 350 : 500}
                 className={styles.datePickerModal}
             >
-                <Modal.Body className={styles.datePickerModalBody}>
-                    <div className={styles.datePickerPopup}>
-                        <div className={styles.quickRangeBar}>
-                            {quickRanges.map((item, idx) => {
-                                let isActive = false;
-                                if (
-                                    item.value === null &&
-                                    selectedDate === null
-                                ) {
-                                    isActive = true;
-                                } else if (
-                                    item.value instanceof Date &&
-                                    selectedDate instanceof Date
-                                ) {
-                                    isActive =
-                                        item.value.getTime() ===
-                                        selectedDate.getTime();
-                                } else if (
-                                    item.value &&
-                                    item.value.start &&
-                                    item.value.end &&
-                                    Array.isArray(selectedDate)
-                                ) {
-                                    isActive =
-                                        selectedDate[0] &&
-                                        selectedDate[1] &&
-                                        item.value.start.getTime() ===
-                                            selectedDate[0].getTime() &&
-                                        item.value.end.getTime() ===
-                                            selectedDate[1].getTime();
-                                }
-                                return (
-                                    <Button
-                                        key={item.label}
-                                        variant={
-                                            isActive
-                                                ? 'success'
-                                                : 'outline-secondary'
-                                        }
-                                        className={`${styles.quickRangeBtn} ${
-                                            isActive
-                                                ? styles.activeQuickRange
-                                                : ''
-                                        }`}
-                                        onClick={() =>
-                                            handleQuickRange(item.value)
-                                        }
-                                    >
-                                        {item.label}
-                                    </Button>
-                                );
-                            })}
-                        </div>
-                        <div className={styles.datePickerCalendarWrap}>
-                            <DatePicker
-                                ref={datePickerRef}
-                                selected={dateRange[0]}
-                                onChange={handleDateChange}
-                                startDate={dateRange[0]}
-                                endDate={dateRange[1]}
-                                selectsRange
-                                inline
-                                monthsShown={window.innerWidth < 768 ? 1 : 2}
-                                calendarStartDay={1}
-                                locale="vi"
-                                className={styles.customDatePicker}
-                            />
-                        </div>
-                        <div className={styles.datePickerFooter}>
-                            {/* <Button
-                                variant="outline-success"
-                                onClick={handleResetDate}
-                                className={styles.footerButton}
-                            >
-                                Thiết lập lại
-                            </Button> */}
-                            <Button
-                                variant="secondary"
-                                onClick={() => setShowDatePicker(false)}
-                                className={styles.footerButton}
-                            >
-                                Đóng
-                            </Button>
-                            <Button
-                                variant="success"
-                                onClick={handleApplyDate}
-                                className={styles.footerButton}
-                            >
-                                Áp dụng
-                            </Button>
+                <div
+                    style={{
+                        padding: 24,
+                        background: '#f9fafb',
+                        borderRadius: 12,
+                    }}
+                >
+                    <div style={{ textAlign: 'center', marginBottom: 12 }}>
+                        <h3
+                            style={{
+                                margin: 0,
+                                fontWeight: 700,
+                                color: '#2c44a7',
+                            }}
+                        >
+                            Chọn ngày sự kiện
+                        </h3>
+                        <div
+                            style={{
+                                color: '#888',
+                                fontSize: 14,
+                                marginTop: 4,
+                            }}
+                        >
+                            Bạn có thể chọn nhanh hoặc chọn khoảng ngày cụ thể
                         </div>
                     </div>
-                </Modal.Body>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            flexWrap: 'wrap',
+                            gap: 8,
+                            marginBottom: 16,
+                        }}
+                    >
+                        {quickRanges.map((item, idx) => {
+                            let isActive = false;
+                            if (item.value === null && selectedDate === null) {
+                                isActive = true;
+                            } else if (
+                                item.value instanceof Date &&
+                                selectedDate instanceof Date
+                            ) {
+                                isActive =
+                                    item.value.getTime() ===
+                                    selectedDate.toDate().getTime();
+                            } else if (
+                                item.value &&
+                                item.value.start &&
+                                item.value.end &&
+                                Array.isArray(selectedDate)
+                            ) {
+                                isActive =
+                                    selectedDate[0] &&
+                                    selectedDate[1] &&
+                                    item.value.start.getTime() ===
+                                        selectedDate[0].valueOf() &&
+                                    item.value.end.getTime() ===
+                                        selectedDate[1].valueOf();
+                            }
+                            return (
+                                <Button
+                                    key={item.label}
+                                    type={isActive ? 'primary' : 'default'}
+                                    style={{
+                                        borderRadius: 20,
+                                        boxShadow: isActive
+                                            ? '0 2px 8px #2c44a733'
+                                            : 'none',
+                                        fontWeight: 500,
+                                        minWidth: 120,
+                                        marginBottom: 8,
+                                        borderColor: isActive
+                                            ? '#2c44a7'
+                                            : undefined,
+                                        color: isActive ? '#fff' : '#2c44a7',
+                                        background: isActive
+                                            ? '#2c44a7'
+                                            : '#fff',
+                                        transition: 'all 0.2s',
+                                    }}
+                                    onClick={() => handleQuickRange(item.value)}
+                                >
+                                    {item.label}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                    <div
+                        style={{
+                            borderTop: '1px solid #eee',
+                            margin: '16px 0 16px 0',
+                        }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <AntdDatePicker.RangePicker
+                            value={dateRange}
+                            onChange={(dates) => {
+                                handleDateChange(
+                                    dates ? [dates[0], dates[1]] : [null, null],
+                                );
+                            }}
+                            format="DD/MM/YYYY"
+                            style={{
+                                width: '100%',
+                                background: '#fff',
+                                borderRadius: 8,
+                                boxShadow: '0 2px 8px #2c44a722',
+                                padding: 8,
+                                border: '1px solid #e5e7eb',
+                            }}
+                            allowEmpty={[true, true]}
+                            placeholder={['Ngày bắt đầu', 'Ngày kết thúc']}
+                            suffixIcon={
+                                <span
+                                    style={{
+                                        color: '#2c44a7',
+                                        fontSize: 18,
+                                        marginRight: 4,
+                                    }}
+                                >
+                                    <i className="anticon anticon-calendar" />
+                                </span>
+                            }
+                        />
+                    </div>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 12,
+                            marginTop: 24,
+                        }}
+                    >
+                        <Button
+                            onClick={() => setShowDatePicker(false)}
+                            style={{ borderRadius: 20, fontWeight: 500 }}
+                        >
+                            Đóng
+                        </Button>
+                        <Button
+                            type="primary"
+                            onClick={handleApplyDate}
+                            style={{
+                                borderRadius: 20,
+                                fontWeight: 500,
+                                minWidth: 100,
+                            }}
+                        >
+                            Áp dụng
+                        </Button>
+                    </div>
+                </div>
             </Modal>
 
             {/* Modal bộ lọc nâng cao */}
             <Modal
-                show={showFilter}
-                onHide={() => setShowFilter(false)}
+                open={showFilter}
+                onCancel={() => setShowFilter(false)}
                 centered
+                title="Bộ lọc nâng cao"
+                footer={null}
             >
-                <Modal.Header closeButton>
-                    <Modal.Title>Bộ lọc nâng cao</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form.Group className="mb-4">
-                        <Form.Label>
-                            <FaMapMarkerAlt className="me-2" />
-                            Vị trí
-                        </Form.Label>
-                        <Form.Control
-                            type="text"
+                <Form layout="vertical">
+                    <Form.Item
+                        label={
+                            <span>
+                                <FaMapMarkerAlt className="me-2" />
+                                Vị trí
+                            </span>
+                        }
+                    >
+                        <Input
                             placeholder="Nhập vị trí..."
-                            className="text-dark"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                         />
-                    </Form.Group>
-                    <Form.Group>
-                        <Form.Label>
-                            <FaMoneyBillWave className="me-2" />
-                            Khoảng giá (VNĐ)
-                        </Form.Label>
-                        <div style={{ padding: '0 10px' }}>
-                            <Slider
-                                range
-                                min={MIN_PRICE}
-                                max={MAX_PRICE}
-                                step={10000}
-                                value={priceRange}
-                                onChange={setPriceRange}
-                                trackStyle={[{ backgroundColor: '#2c44a7' }]}
-                                handleStyle={[
-                                    {
-                                        borderColor: '#2c44a7',
-                                        backgroundColor: '#fff',
-                                    },
-                                    {
-                                        borderColor: '#2c44a7',
-                                        backgroundColor: '#fff',
-                                    },
-                                ]}
-                                railStyle={{ backgroundColor: '#eee' }}
-                            />
-                            <div className="d-flex justify-content-between mt-2">
-                                <span>{priceRange[0].toLocaleString()} đ</span>
-                                <span>{priceRange[1].toLocaleString()} đ</span>
-                            </div>
-                        </div>
-                    </Form.Group>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button
-                        variant="secondary"
-                        onClick={() => setShowFilter(false)}
+                    </Form.Item>
+                    <Form.Item
+                        label={
+                            <span>
+                                <FaMoneyBillWave className="me-2" />
+                                Khoảng giá (VNĐ)
+                            </span>
+                        }
                     >
-                        Đóng
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={() => {
-                            setShowFilter(false);
-                            handleSearch();
+                        <Slider
+                            range
+                            min={MIN_PRICE}
+                            max={MAX_PRICE}
+                            step={10000}
+                            value={priceRange}
+                            onChange={setPriceRange}
+                            trackStyle={[{ backgroundColor: '#2c44a7' }]}
+                            handleStyle={[
+                                {
+                                    borderColor: '#2c44a7',
+                                    backgroundColor: '#fff',
+                                },
+                                {
+                                    borderColor: '#2c44a7',
+                                    backgroundColor: '#fff',
+                                },
+                            ]}
+                            railStyle={{ backgroundColor: '#eee' }}
+                        />
+                        <div className="d-flex justify-content-between mt-2">
+                            <span>{priceRange[0].toLocaleString()} đ</span>
+                            <span>{priceRange[1].toLocaleString()} đ</span>
+                        </div>
+                    </Form.Item>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 8,
                         }}
                     >
-                        Áp dụng
-                    </Button>
-                </Modal.Footer>
+                        <Button onClick={() => setShowFilter(false)}>
+                            Đóng
+                        </Button>
+                        <Button
+                            type="primary"
+                            onClick={() => {
+                                setShowFilter(false);
+                                handleSearch();
+                            }}
+                        >
+                            Áp dụng
+                        </Button>
+                    </div>
+                </Form>
             </Modal>
 
             {/* <Row className="mt-4">

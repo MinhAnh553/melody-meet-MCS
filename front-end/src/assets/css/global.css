@@ -22,8 +22,8 @@
 }
 
 body {
-    color: #fff;
-    background-color: #27272a;
+    /* color: #fff; */
+    /* background-color: #27272a; */
     overflow-y: scroll;
     font-family: 'Roboto', sans-serif;
 }
@@ -174,7 +174,7 @@ header .form-control {
 
 .event-card:hover {
     transform: translateY(-5px);
-    /* box-shadow: var(--shadow, 0 4px 12px rgba(0, 0, 0, 0.1)); */
+    box-shadow: var(--shadow, 0 4px 12px rgba(0, 0, 0, 0.2));
 }
 
 .event-card img {
@@ -1016,13 +1016,4 @@ header .form-control {
         font-size: 0.75rem;
         padding: 0.3rem 0.6rem;
     }
-}
-
-.react-tel-input .country-list .country {
-    padding: 4px 9px 13px 46px !important;
-}
-
-.react-tel-input .flag-dropdown {
-    background-color: transparent !important;
-    border: none !important;
 }

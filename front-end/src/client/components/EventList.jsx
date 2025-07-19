@@ -15,7 +15,7 @@ const EventListSkeleton = ({ count = 8 }) => {
                         />
                     </div>
                     <div
-                        className="bg-dark text-white p-3"
+                        className="p-3"
                         style={{ borderRadius: '0 0 12px 12px' }}
                     >
                         <Skeleton height={20} width="80%" className="mb-2" />
@@ -79,7 +79,7 @@ const EventList = ({
 
                                 {type === 'trending' && (
                                     <div
-                                        className="position-absolute top-0 start-0 bg-warning text-white fw-bold rounded-end px-2 py-1 small"
+                                        className="position-absolute top-0 start-0 bg-warning fw-bold rounded-end px-2 py-1 small"
                                         style={{
                                             fontSize: '35px',
                                             lineHeight: '1',
@@ -93,7 +93,7 @@ const EventList = ({
 
                                 {event.status === 'event_over' && (
                                     <div
-                                        className="position-absolute top-0 end-0 bg-warning text-white fw-bold rounded-end px-2 py-1 small"
+                                        className="position-absolute top-0 end-0 bg-warning fw-bold rounded-end px-2 py-1 small"
                                         style={{
                                             borderRadius: '0px 12px',
                                             width: 'max-content',
@@ -106,9 +106,9 @@ const EventList = ({
                                     </div>
                                 )}
                             </div>
-                            <div className="event-content bg-dark text-white">
+                            <div className="event-content">
                                 <h3>{event.name}</h3>
-                                <p className="date text-white">
+                                <p className="date">
                                     <i className="bi bi-calendar3" />{' '}
                                     {new Date(
                                         event.startTime,
@@ -119,7 +119,7 @@ const EventList = ({
                                     })}
                                 </p>
                                 <p
-                                    className="location text-white text-truncate"
+                                    className="location"
                                     style={{
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
@@ -131,7 +131,7 @@ const EventList = ({
                                 </p>
 
                                 <p
-                                    className="price"
+                                    className="price fw-bold"
                                     style={{ color: 'rgb(45, 194, 117)' }}
                                 >
                                     <i className="bi bi-tag" /> {lowestPrice}

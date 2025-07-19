@@ -859,8 +859,20 @@ const searchEvents = async (req, res) => {
         events.forEach((e) => {
             e.ticketTypes = ticketTypesMap[e._id.toString()] || [];
         });
-        console.log("MinhAnh553: searchEvents -> events", events)
-        return res.status(200).json({ success: true, events });
+        // Filter: all ticketTypes of event must be in price range
+        let filteredEvents = events;
+        if (minPrice || maxPrice) {
+            filteredEvents = events.filter((e) => {
+                if (!e.ticketTypes.length) return false;
+                return e.ticketTypes.every((tt) => {
+                    const price = tt.price;
+                    if (minPrice && price < Number(minPrice)) return false;
+                    if (maxPrice && price > Number(maxPrice)) return false;
+                    return true;
+                });
+            });
+        }
+        return res.status(200).json({ success: true, events: filteredEvents });
     } catch (error) {
         logger.error('Search events error:', error);
         return res.status(500).json({

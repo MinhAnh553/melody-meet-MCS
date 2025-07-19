@@ -187,12 +187,31 @@ const updateUser = (userId, data) => {
 const searchEvents = (filters) => {
     const params = {};
     if (filters.searchTerm) params.query = filters.searchTerm;
+    // Handle date (single day)
     if (filters.date) {
-        if (Array.isArray(filters.date) && filters.date[0] && filters.date[1]) {
-            params.startDate = filters.date[0].toISOString().slice(0, 10);
-            params.endDate = filters.date[1].toISOString().slice(0, 10);
+        if (typeof filters.date === 'string') {
+            params.date = filters.date;
+        } else if (filters.date.format) {
+            params.date = filters.date.format('YYYY-MM-DD');
         } else if (filters.date instanceof Date) {
             params.date = filters.date.toISOString().slice(0, 10);
+        }
+    }
+    // Handle date range
+    if (filters.startDate && filters.endDate) {
+        if (filters.startDate.format) {
+            params.startDate = filters.startDate.format('YYYY-MM-DD');
+        } else if (filters.startDate instanceof Date) {
+            params.startDate = filters.startDate.toISOString().slice(0, 10);
+        } else if (typeof filters.startDate === 'string') {
+            params.startDate = filters.startDate;
+        }
+        if (filters.endDate.format) {
+            params.endDate = filters.endDate.format('YYYY-MM-DD');
+        } else if (filters.endDate instanceof Date) {
+            params.endDate = filters.endDate.toISOString().slice(0, 10);
+        } else if (typeof filters.endDate === 'string') {
+            params.endDate = filters.endDate;
         }
     }
     if (filters.location) params.location = filters.location;

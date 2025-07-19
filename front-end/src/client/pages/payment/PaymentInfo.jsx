@@ -59,6 +59,37 @@ const paymentMethods = [
     },
 ];
 
+function getPaymentDescription(value) {
+    const descriptions = {
+        payos: 'Thanh toán bằng VietQR - Quét mã QR để thanh toán nhanh chóng',
+        vnpay: 'Cổng thanh toán hàng đầu Việt Nam - An toàn và tiện lợi',
+        zalopay: 'Ví điện tử ZaloPay - Thanh toán nhanh, nhiều ưu đãi',
+    };
+    return descriptions[value] || 'Phương thức thanh toán tiện lợi';
+}
+
+function getPaymentFeatures(value) {
+    const features = {
+        payos: ['VietQR', 'Tức thì', 'Miễn phí'],
+        vnpay: ['ATM/Visa', 'Bảo mật cao', 'Phổ biến'],
+        zalopay: ['Ví điện tử', 'Cashback', 'Ưu đãi'],
+    };
+    return features[value] || ['Tiện lợi', 'An toàn'];
+}
+
+function getPaymentInstructions(value) {
+    const instructions = {
+        payos: 'Quét mã VietQR bằng ứng dụng ngân hàng để thanh toán tức thì và miễn phí.',
+        vnpay: 'Thanh toán qua thẻ ATM, Visa/MasterCard hoặc ví điện tử với bảo mật cao.',
+        zalopay:
+            'Sử dụng ứng dụng ZaloPay để thanh toán và nhận nhiều ưu đãi hấp dẫn.',
+    };
+    return (
+        instructions[value] ||
+        'Hướng dẫn thanh toán sẽ hiển thị ở bước tiếp theo.'
+    );
+}
+
 // Mapping BIN sang tên ngân hàng phổ biến
 const bankMap = {
     970422: 'Vietcombank',
@@ -310,52 +341,50 @@ function OrderPage() {
         <div
             style={{
                 minHeight: '100vh',
-                // background: '#18181b',
-                color: '#d4d4d8',
-                marginTop: '85px',
+                background: '#ffffff',
+                color: '#262626',
+                marginTop: isMobile ? '70px' : '85px',
+                padding: isMobile ? '0 0 20px 0' : '0',
             }}
         >
-            <style>
-                {`
-                .ant-tabs-nav-wrap {
-                    justify-content: center !important;
-                }
-                .ant-radio-group-solid .ant-radio-button-wrapper:not(:first-child)::before,
-                .ant-radio-button-wrapper:not(:first-child)::before {
-                    display: none !important;
-                }
-                .ant-radio-button-wrapper {
-                    border-left: none !important;
-                }
-                `}
-            </style>
             <Row
                 justify="center"
-                style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 0' }}
-                gutter={[32, 32]}
+                style={{
+                    maxWidth: 1400,
+                    margin: '0 auto',
+                    padding: isMobile ? '16px 16px 0 16px' : '32px 0',
+                }}
+                gutter={isMobile ? [0, 16] : [32, 32]}
             >
                 {/* LEFT COLUMN */}
                 <Col xs={24} md={15} lg={15}>
-                    <div style={{ maxWidth: 700, margin: '0 auto' }}>
-                        {/* Event Info (optional, can be removed if not needed) */}
+                    <div
+                        style={{
+                            maxWidth: 700,
+                            margin: '0 auto',
+                            padding: isMobile ? '0' : '0',
+                        }}
+                    >
+                        {/* Event Info */}
                         {event && (
                             <div
                                 style={{
-                                    marginBottom: 32,
+                                    marginBottom: isMobile ? 20 : 32,
                                     display: 'flex',
                                     alignItems: 'flex-start',
                                     justifyContent: 'space-between',
-                                    gap: 24,
+                                    gap: isMobile ? 12 : 24,
+                                    flexDirection: isMobile ? 'column' : 'row',
                                 }}
                             >
-                                <div>
+                                <div style={{ flex: 1 }}>
                                     <Title
-                                        level={3}
+                                        level={isMobile ? 4 : 3}
                                         style={{
-                                            color: '#4ade80',
+                                            color: '#1890ff',
                                             fontWeight: 700,
                                             marginBottom: 0,
-                                            fontSize: 26,
+                                            fontSize: isMobile ? 20 : 26,
                                             lineHeight: 1.3,
                                         }}
                                     >
@@ -363,19 +392,20 @@ function OrderPage() {
                                     </Title>
                                     <div
                                         style={{
-                                            color: '#fff',
+                                            color: '#434343',
                                             fontWeight: 500,
-                                            fontSize: 16,
+                                            fontSize: isMobile ? 14 : 16,
                                             margin: '8px 0 0 0',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 16,
+                                            gap: isMobile ? 8 : 16,
                                         }}
                                     >
                                         <EnvironmentOutlined
                                             style={{
-                                                color: '#4ade80',
+                                                color: '#fa541c',
                                                 marginRight: 8,
+                                                fontSize: isMobile ? 14 : 16,
                                             }}
                                         />
                                         {event.venueName ||
@@ -384,19 +414,20 @@ function OrderPage() {
                                     </div>
                                     <div
                                         style={{
-                                            color: '#fff',
+                                            color: '#434343',
                                             fontWeight: 500,
-                                            fontSize: 16,
+                                            fontSize: isMobile ? 14 : 16,
                                             margin: '2px 0 0 0',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 16,
+                                            gap: isMobile ? 8 : 16,
                                         }}
                                     >
                                         <CalendarOutlined
                                             style={{
-                                                color: '#4ade80',
+                                                color: '#722ed1',
                                                 marginRight: 8,
+                                                fontSize: isMobile ? 14 : 16,
                                             }}
                                         />
                                         {new Date(
@@ -413,39 +444,48 @@ function OrderPage() {
                                 </div>
                                 <div
                                     style={{
-                                        minWidth: 170,
-                                        minHeight: 80,
+                                        minWidth: isMobile ? '100%' : 170,
+                                        minHeight: isMobile ? 60 : 80,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
+                                        justifyContent: isMobile
+                                            ? 'center'
+                                            : 'center',
                                     }}
                                 >
                                     <div
                                         style={{
-                                            background: '#fff',
-                                            borderRadius: 20,
+                                            background: '#ffffff',
+                                            borderRadius: isMobile ? 16 : 20,
                                             boxShadow:
-                                                '0 2px 16px rgba(0,0,0,0.10)',
-                                            padding: '14px',
+                                                '0 4px 20px rgba(0,0,0,0.08)',
+                                            border: '1px solid #f0f0f0',
+                                            padding: isMobile
+                                                ? '12px 20px'
+                                                : '14px',
                                             display: 'flex',
-                                            flexDirection: 'column',
+                                            flexDirection: isMobile
+                                                ? 'row'
+                                                : 'column',
                                             alignItems: 'center',
+                                            gap: isMobile ? 12 : 0,
                                             fontWeight: 600,
                                         }}
                                     >
                                         <div
                                             style={{
-                                                color: '#888',
-                                                fontSize: 14,
-                                                marginBottom: 4,
+                                                color: '#8c8c8c',
+                                                fontSize: isMobile ? 12 : 14,
+                                                marginBottom: isMobile ? 0 : 4,
+                                                whiteSpace: 'nowrap',
                                             }}
                                         >
-                                            Hoàn tất đặt vé trong
+                                            Hoàn tất trong
                                         </div>
                                         <div
                                             style={{
-                                                color: '#22c55e',
-                                                fontSize: 32,
+                                                color: '#52c41a',
+                                                fontSize: isMobile ? 24 : 32,
                                                 letterSpacing: 2,
                                                 fontVariantNumeric:
                                                     'tabular-nums',
@@ -457,34 +497,37 @@ function OrderPage() {
                                 </div>
                             </div>
                         )}
-                        {/* Thông tin nhận vé */}
+
+                        {/* Thông tin khách hàng */}
                         <Card
                             style={{
-                                background: '#232323',
-                                borderRadius: 16,
-                                marginBottom: 18,
-                                border: 'none',
+                                background: '#ffffff',
+                                borderRadius: isMobile ? 12 : 16,
+                                marginBottom: isMobile ? 16 : 18,
+                                border: '1px solid #f0f0f0',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                             }}
-                            bodyStyle={{ padding: 24 }}
+                            bodyStyle={{ padding: isMobile ? 16 : 24 }}
                         >
                             <div
                                 style={{
-                                    color: '#4ade80',
+                                    color: '#1890ff',
                                     fontWeight: 700,
-                                    fontSize: 18,
+                                    fontSize: isMobile ? 16 : 18,
                                     marginBottom: 8,
                                 }}
                             >
-                                Thông tin người mua
+                                Thông tin khách hàng
                             </div>
                             <div style={{ marginTop: 16 }}>
                                 <div style={{ marginBottom: 12 }}>
                                     <label
                                         style={{
                                             fontWeight: 600,
-                                            color: '#d4d4d8',
+                                            color: '#595959',
                                             marginBottom: 4,
                                             display: 'block',
+                                            fontSize: isMobile ? 14 : 16,
                                         }}
                                     >
                                         Họ và tên
@@ -498,16 +541,17 @@ function OrderPage() {
                                         }
                                         style={{
                                             width: '100%',
-                                            padding: 10,
+                                            padding: isMobile ? 12 : 10,
                                             borderRadius: 8,
-                                            border: '1px solid #333',
+                                            border: '1px solid #d9d9d9',
                                             background: editingInfo
-                                                ? '#fff'
-                                                : '#232323',
+                                                ? '#ffffff'
+                                                : '#fafafa',
                                             color: editingInfo
-                                                ? '#232323'
-                                                : '#d4d4d8',
+                                                ? '#262626'
+                                                : '#8c8c8c',
                                             fontWeight: 500,
+                                            fontSize: isMobile ? 16 : 14,
                                         }}
                                     />
                                 </div>
@@ -515,9 +559,10 @@ function OrderPage() {
                                     <label
                                         style={{
                                             fontWeight: 600,
-                                            color: '#d4d4d8',
+                                            color: '#595959',
                                             marginBottom: 4,
                                             display: 'block',
+                                            fontSize: isMobile ? 14 : 16,
                                         }}
                                     >
                                         Số điện thoại
@@ -527,21 +572,19 @@ function OrderPage() {
                                         value={phone}
                                         disabled={!editingInfo}
                                         onChange={(val) => setPhone(val)}
-                                        inputClass={
-                                            editingInfo ? 'text-dark' : ''
-                                        }
                                         inputStyle={{
                                             width: '100%',
-                                            height: 48,
+                                            height: isMobile ? 52 : 48,
                                             borderRadius: 8,
                                             background: editingInfo
-                                                ? '#fff'
-                                                : '#232323',
+                                                ? '#ffffff'
+                                                : '#fafafa',
                                             color: editingInfo
-                                                ? '#232323'
-                                                : '#d4d4d8',
-                                            border: '1px solid #333',
+                                                ? '#262626'
+                                                : '#8c8c8c',
+                                            border: '1px solid #d9d9d9',
                                             fontWeight: 500,
+                                            fontSize: isMobile ? 16 : 14,
                                         }}
                                         containerStyle={{ width: '100%' }}
                                         enableSearch={true}
@@ -551,9 +594,10 @@ function OrderPage() {
                                     <label
                                         style={{
                                             fontWeight: 600,
-                                            color: '#d4d4d8',
+                                            color: '#595959',
                                             marginBottom: 4,
                                             display: 'block',
+                                            fontSize: isMobile ? 14 : 16,
                                         }}
                                     >
                                         Email
@@ -564,22 +608,37 @@ function OrderPage() {
                                         disabled
                                         style={{
                                             width: '100%',
-                                            padding: 10,
+                                            padding: isMobile ? 12 : 10,
                                             borderRadius: 8,
-                                            border: '1px solid #333',
-                                            // background: '#f3f3f3',
-                                            color: '#888',
+                                            border: '1px solid #d9d9d9',
+                                            background: '#f5f5f5',
+                                            color: '#8c8c8c',
                                             fontWeight: 500,
                                             cursor: 'not-allowed',
+                                            fontSize: isMobile ? 16 : 14,
                                         }}
                                     />
                                 </div>
                                 {editingInfo ? (
-                                    <div style={{ display: 'flex', gap: 12 }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: 12,
+                                            flexDirection: isMobile
+                                                ? 'column'
+                                                : 'row',
+                                        }}
+                                    >
                                         <Button
                                             type="primary"
                                             onClick={handleSaveBuyerInfo}
-                                            style={{ fontWeight: 600 }}
+                                            style={{
+                                                fontWeight: 600,
+                                                background: '#1890ff',
+                                                borderColor: '#1890ff',
+                                                height: isMobile ? 44 : 32,
+                                                fontSize: isMobile ? 16 : 14,
+                                            }}
                                         >
                                             Lưu
                                         </Button>
@@ -593,6 +652,12 @@ function OrderPage() {
                                                     order.buyerInfo.phone || '',
                                                 );
                                             }}
+                                            style={{
+                                                borderColor: '#d9d9d9',
+                                                color: '#595959',
+                                                height: isMobile ? 44 : 32,
+                                                fontSize: isMobile ? 16 : 14,
+                                            }}
                                         >
                                             Hủy
                                         </Button>
@@ -600,178 +665,459 @@ function OrderPage() {
                                 ) : (
                                     <Button
                                         onClick={() => setEditingInfo(true)}
-                                        style={{ fontWeight: 600 }}
+                                        style={{
+                                            fontWeight: 600,
+                                            borderColor: '#1890ff',
+                                            color: '#1890ff',
+                                            height: isMobile ? 44 : 32,
+                                            fontSize: isMobile ? 16 : 14,
+                                        }}
                                     >
                                         Chỉnh sửa
                                     </Button>
                                 )}
                             </div>
                         </Card>
-                        {/* Mã khuyến mãi */}
-                        {/* <Card
-                            style={{
-                                background: '#232323',
-                                borderRadius: 16,
-                                marginBottom: 18,
-                                border: 'none',
-                            }}
-                            bodyStyle={{ padding: 24 }}
-                        >
-                            <div
-                                style={{
-                                    color: '#4ade80',
-                                    fontWeight: 700,
-                                    fontSize: 18,
-                                    marginBottom: 8,
-                                }}
-                            >
-                                Mã khuyến mãi
-                        </div>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                }}
-                            >
-                                <Button
-                                    disabled
-                                    style={{
-                                        background: '#18181b',
-                                        color: '#d4d4d8',
-                                        border: 'none',
-                                        borderRadius: 8,
-                                        fontWeight: 600,
-                                        fontSize: 16,
-                                        padding: '8px 20px',
-                                    }}
-                                >
-                                    + Thêm khuyến mãi
-                                </Button>
-                                <span
-                                    style={{
-                                        color: '#4ade80',
-                                        fontWeight: 500,
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    Chọn voucher
-                            </span>
-                        </div>
-                        </Card> */}
+
                         {/* Phương thức thanh toán */}
                         <Card
                             style={{
-                                background: '#232323',
-                                borderRadius: 16,
-                                marginBottom: 18,
+                                background: '#ffffff',
+                                borderRadius: isMobile ? 12 : 20,
+                                marginBottom: isMobile ? 16 : 24,
                                 border: 'none',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
                             }}
-                            bodyStyle={{ padding: 24 }}
+                            bodyStyle={{ padding: isMobile ? 16 : 32 }}
                         >
                             <div
                                 style={{
-                                    color: '#4ade80',
+                                    color: '#1890ff',
                                     fontWeight: 700,
-                                    fontSize: 18,
+                                    fontSize: isMobile ? 16 : 18,
                                     marginBottom: 8,
                                 }}
                             >
                                 Phương thức thanh toán
                             </div>
-                            <Radio.Group
-                                value={selectedPayment}
-                                onChange={(e) =>
-                                    setSelectedPayment(e.target.value)
-                                }
-                                style={{
-                                    width: '100%',
-                                    display: 'flex',
-                                    gap: 32,
-                                    justifyContent: 'center',
-                                    margin: '32px 0',
-                                    flexWrap: 'wrap',
-                                }}
-                            >
-                                {paymentMethods.map((m) => (
-                                    <Radio.Button
-                                        key={m.value}
-                                        value={m.value}
+
+                            {isMobile ? (
+                                // Mobile: Simple radio buttons
+                                <Radio.Group
+                                    value={selectedPayment}
+                                    onChange={(e) =>
+                                        setSelectedPayment(e.target.value)
+                                    }
+                                    style={{ width: '100%' }}
+                                >
+                                    {paymentMethods.map((method) => (
+                                        <div
+                                            key={method.value}
+                                            style={{
+                                                marginBottom: 12,
+                                            }}
+                                        >
+                                            <Radio
+                                                value={method.value}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '12px 16px',
+                                                    borderRadius: 8,
+                                                    border:
+                                                        selectedPayment ===
+                                                        method.value
+                                                            ? '2px solid #1890ff'
+                                                            : '1px solid #e8e8e8',
+                                                    background:
+                                                        selectedPayment ===
+                                                        method.value
+                                                            ? '#f0f9ff'
+                                                            : '#ffffff',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    fontSize: 16,
+                                                    fontWeight: 600,
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 12,
+                                                        marginLeft: 8,
+                                                    }}
+                                                >
+                                                    {React.cloneElement(
+                                                        method.icon,
+                                                        {
+                                                            style: {
+                                                                height: 24,
+                                                                width: 'auto',
+                                                            },
+                                                        },
+                                                    )}
+                                                    <span
+                                                        style={{
+                                                            color:
+                                                                selectedPayment ===
+                                                                method.value
+                                                                    ? '#1890ff'
+                                                                    : '#262626',
+                                                        }}
+                                                    >
+                                                        {method.label}
+                                                    </span>
+                                                </div>
+                                            </Radio>
+                                        </div>
+                                    ))}
+                                </Radio.Group>
+                            ) : (
+                                // Desktop: Rich cards
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 16,
+                                        marginBottom: 16,
+                                    }}
+                                >
+                                    {paymentMethods.map((method) => (
+                                        <div
+                                            key={method.value}
+                                            onClick={() =>
+                                                setSelectedPayment(method.value)
+                                            }
+                                            style={{
+                                                padding: '20px 24px',
+                                                borderRadius: 16,
+                                                border:
+                                                    selectedPayment ===
+                                                    method.value
+                                                        ? '2px solid #1890ff'
+                                                        : '2px solid #e8e8e8',
+                                                background:
+                                                    selectedPayment ===
+                                                    method.value
+                                                        ? 'linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%)'
+                                                        : '#ffffff',
+                                                cursor: 'pointer',
+                                                transition:
+                                                    'all 0.25s ease-out',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                boxShadow:
+                                                    selectedPayment ===
+                                                    method.value
+                                                        ? '0 6px 20px rgba(24, 144, 255, 0.12)'
+                                                        : '0 2px 8px rgba(0,0,0,0.04)',
+                                                willChange:
+                                                    'transform, box-shadow, border-color, background',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (
+                                                    selectedPayment !==
+                                                    method.value
+                                                ) {
+                                                    e.currentTarget.style.boxShadow =
+                                                        '0 4px 16px rgba(0,0,0,0.08)';
+                                                    e.currentTarget.style.borderColor =
+                                                        '#d1d5db';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (
+                                                    selectedPayment !==
+                                                    method.value
+                                                ) {
+                                                    e.currentTarget.style.boxShadow =
+                                                        '0 2px 8px rgba(0,0,0,0.04)';
+                                                    e.currentTarget.style.borderColor =
+                                                        '#e8e8e8';
+                                                }
+                                            }}
+                                        >
+                                            {/* Background pattern for selected */}
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    right: 0,
+                                                    width: 80,
+                                                    height: 80,
+                                                    background:
+                                                        'linear-gradient(135deg, #1890ff15, transparent)',
+                                                    borderRadius:
+                                                        '0 16px 0 100%',
+                                                    opacity:
+                                                        selectedPayment ===
+                                                        method.value
+                                                            ? 1
+                                                            : 0,
+                                                    transition:
+                                                        'opacity 0.25s ease-out',
+                                                }}
+                                            />
+
+                                            {/* Check icon */}
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 16,
+                                                    right: 16,
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '50%',
+                                                    background: '#1890ff',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: 'white',
+                                                    fontSize: 16,
+                                                    fontWeight: 'bold',
+                                                    boxShadow:
+                                                        '0 2px 8px rgba(24, 144, 255, 0.3)',
+                                                    transform:
+                                                        selectedPayment ===
+                                                        method.value
+                                                            ? 'scale(1)'
+                                                            : 'scale(0)',
+                                                    opacity:
+                                                        selectedPayment ===
+                                                        method.value
+                                                            ? 1
+                                                            : 0,
+                                                    transition:
+                                                        'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                                }}
+                                            >
+                                                ✓
+                                            </div>
+
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 20,
+                                                }}
+                                            >
+                                                {/* Payment logo */}
+                                                <div
+                                                    style={{
+                                                        width: 80,
+                                                        height: 80,
+                                                        borderRadius: 16,
+                                                        background:
+                                                            selectedPayment ===
+                                                            method.value
+                                                                ? '#ffffff'
+                                                                : '#f8f9fa',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent:
+                                                            'center',
+                                                        border:
+                                                            selectedPayment ===
+                                                            method.value
+                                                                ? '2px solid #1890ff20'
+                                                                : '1px solid #e8e8e8',
+                                                        transition:
+                                                            'all 0.25s ease-out',
+                                                        flexShrink: 0,
+                                                    }}
+                                                >
+                                                    {React.cloneElement(
+                                                        method.icon,
+                                                        {
+                                                            style: {
+                                                                height: 40,
+                                                                maxWidth: 60,
+                                                                objectFit:
+                                                                    'contain',
+                                                                transition:
+                                                                    'all 0.25s ease-out',
+                                                            },
+                                                        },
+                                                    )}
+                                                </div>
+
+                                                {/* Payment info */}
+                                                <div style={{ flex: 1 }}>
+                                                    <div
+                                                        style={{
+                                                            fontSize: 18,
+                                                            fontWeight: 700,
+                                                            color:
+                                                                selectedPayment ===
+                                                                method.value
+                                                                    ? '#1890ff'
+                                                                    : '#1a1a1a',
+                                                            marginBottom: 6,
+                                                            transition:
+                                                                'color 0.25s ease-out',
+                                                        }}
+                                                    >
+                                                        {method.label}
+                                                    </div>
+                                                    <div
+                                                        style={{
+                                                            fontSize: 14,
+                                                            color: '#666666',
+                                                            lineHeight: 1.4,
+                                                            marginBottom: 12,
+                                                        }}
+                                                    >
+                                                        {getPaymentDescription(
+                                                            method.value,
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Arrow indicator */}
+                                                <div
+                                                    style={{
+                                                        fontSize: 20,
+                                                        color:
+                                                            selectedPayment ===
+                                                            method.value
+                                                                ? '#1890ff'
+                                                                : '#d9d9d9',
+                                                        transition:
+                                                            'all 0.25s ease-out',
+                                                        transform:
+                                                            selectedPayment ===
+                                                            method.value
+                                                                ? 'translateX(4px)'
+                                                                : 'translateX(0)',
+                                                    }}
+                                                >
+                                                    →
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Selected payment info */}
+                            {selectedPayment && (
+                                <div
+                                    style={{
+                                        marginTop: isMobile ? 16 : 24,
+                                        padding: isMobile ? 16 : 20,
+                                        borderRadius: 12,
+                                        background: '#f8fafe',
+                                        border: '1px solid #e6f7ff',
+                                    }}
+                                >
+                                    <div
                                         style={{
-                                            padding: '28px 40px',
-                                            borderRadius: 18,
-                                            fontSize: 22,
-                                            fontWeight: 700,
-                                            background:
-                                                selectedPayment === m.value
-                                                    ? '#e0ffe0'
-                                                    : '#fff',
-                                            boxShadow:
-                                                selectedPayment === m.value
-                                                    ? '0 4px 24px #a3e63544'
-                                                    : 'none',
-                                            border:
-                                                '2px solid ' +
-                                                (selectedPayment === m.value
-                                                    ? '#22c55e'
-                                                    : 'transparent'),
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 18,
-                                            transition:
-                                                'border-color 0.2s, box-shadow 0.2s, background 0.2s',
-                                            minWidth: 240,
-                                            justifyContent: 'center',
-                                            color:
-                                                selectedPayment === m.value
-                                                    ? '#16a34a'
-                                                    : '#232323',
-                                            marginBottom: 16,
+                                            gap: 12,
+                                            marginBottom: 8,
                                         }}
                                     >
-                                        {React.cloneElement(m.icon, {
-                                            style: {
-                                                height: 40,
-                                                marginRight: 16,
-                                            },
-                                        })}
-                                        {m.label}
-                                    </Radio.Button>
-                                ))}
-                            </Radio.Group>
+                                        <div
+                                            style={{
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: '50%',
+                                                background: '#52c41a',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white',
+                                                fontSize: 12,
+                                                fontWeight: 'bold',
+                                            }}
+                                        >
+                                            ✓
+                                        </div>
+                                        <span
+                                            style={{
+                                                fontSize: isMobile ? 14 : 16,
+                                                fontWeight: 600,
+                                                color: '#1a1a1a',
+                                            }}
+                                        >
+                                            Đã chọn:{' '}
+                                            {
+                                                paymentMethods.find(
+                                                    (m) =>
+                                                        m.value ===
+                                                        selectedPayment,
+                                                )?.label
+                                            }
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: isMobile ? 13 : 14,
+                                            color: '#666666',
+                                            marginLeft: 32,
+                                            lineHeight: 1.4,
+                                        }}
+                                    >
+                                        {getPaymentInstructions(
+                                            selectedPayment,
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </Card>
                     </div>
                 </Col>
+
                 {/* RIGHT COLUMN */}
-                <Col xs={24} md={9} lg={7} style={{ minWidth: 320 }}>
-                    <div style={{ position: 'sticky', top: 80, zIndex: 2 }}>
+                <Col
+                    xs={24}
+                    md={9}
+                    lg={7}
+                    style={{ minWidth: isMobile ? 'auto' : 320 }}
+                >
+                    <div
+                        style={{
+                            position: isMobile ? 'static' : 'sticky',
+                            top: isMobile ? 'auto' : 80,
+                            zIndex: 2,
+                        }}
+                    >
                         {/* Thông tin đặt vé */}
                         <Card
                             style={{
-                                background: '#fff',
-                                borderRadius: 16,
-                                marginBottom: 18,
-                                border: 'none',
+                                background: '#ffffff',
+                                borderRadius: isMobile ? 12 : 16,
+                                marginBottom: isMobile ? 16 : 18,
+                                border: '1px solid #f0f0f0',
+                                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                             }}
-                            bodyStyle={{ padding: 24 }}
+                            bodyStyle={{ padding: isMobile ? 16 : 24 }}
                         >
                             <div
                                 style={{
                                     fontWeight: 700,
-                                    fontSize: 18,
-                                    color: '#232323',
+                                    fontSize: isMobile ? 16 : 18,
+                                    color: '#262626',
                                     marginBottom: 8,
                                     display: 'flex',
                                     justifyContent: 'space-between',
+                                    alignItems: isMobile
+                                        ? 'flex-start'
+                                        : 'center',
+                                    flexDirection: isMobile ? 'column' : 'row',
+                                    gap: isMobile ? 8 : 0,
                                 }}
                             >
-                                Thông tin đặt vé
+                                <span>Thông tin đặt vé</span>
                                 <Button
                                     type="link"
                                     style={{
-                                        color: '#1677ff',
+                                        color: '#1890ff',
                                         fontWeight: 600,
                                         padding: 0,
+                                        fontSize: isMobile ? 14 : 16,
+                                        height: 'auto',
                                     }}
                                     onClick={() =>
                                         navigate(
@@ -786,7 +1132,7 @@ function OrderPage() {
                                 .length === 0 ? (
                                 <div
                                     style={{
-                                        color: '#71717a',
+                                        color: '#8c8c8c',
                                         fontSize: 15,
                                         fontWeight: 400,
                                         marginBottom: 4,
@@ -804,19 +1150,22 @@ function OrderPage() {
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
                                                 alignItems: 'center',
-                                                fontSize: 16,
+                                                fontSize: isMobile ? 14 : 16,
                                                 fontWeight: 700,
-                                                color: 'rgb(45, 194, 117)',
+                                                color: '#1890ff',
                                                 marginBottom: 8,
+                                                gap: 8,
                                             }}
                                         >
-                                            <span>
+                                            <span style={{ flex: 1 }}>
                                                 {ticket.name}{' '}
                                                 <span
                                                     style={{
-                                                        color: '#888',
+                                                        color: '#8c8c8c',
                                                         fontWeight: 500,
-                                                        fontSize: 15,
+                                                        fontSize: isMobile
+                                                            ? 13
+                                                            : 15,
                                                     }}
                                                 >
                                                     x{ticket.quantity}
@@ -824,9 +1173,12 @@ function OrderPage() {
                                             </span>
                                             <span
                                                 style={{
-                                                    color: '#232323',
+                                                    color: '#52c41a',
                                                     fontWeight: 700,
-                                                    fontSize: 16,
+                                                    fontSize: isMobile
+                                                        ? 14
+                                                        : 16,
+                                                    whiteSpace: 'nowrap',
                                                 }}
                                             >
                                                 {(
@@ -839,20 +1191,22 @@ function OrderPage() {
                                     ))
                             )}
                         </Card>
+
                         {/* Thông tin đơn hàng */}
                         <Card
                             style={{
-                                background: '#fff',
-                                borderRadius: 16,
-                                border: 'none',
+                                background: '#ffffff',
+                                borderRadius: isMobile ? 12 : 16,
+                                border: '1px solid #f0f0f0',
+                                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                             }}
-                            bodyStyle={{ padding: 24 }}
+                            bodyStyle={{ padding: isMobile ? 16 : 24 }}
                         >
                             <div
                                 style={{
                                     fontWeight: 700,
-                                    fontSize: 18,
-                                    color: '#232323',
+                                    fontSize: isMobile ? 16 : 18,
+                                    color: '#262626',
                                     marginBottom: 8,
                                 }}
                             >
@@ -863,18 +1217,19 @@ function OrderPage() {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     marginBottom: 8,
+                                    fontSize: isMobile ? 14 : 16,
                                 }}
                             >
-                                <span style={{ color: '#232323' }}>
+                                <span style={{ color: '#595959' }}>
                                     Tạm tính
                                 </span>
-                                <span style={{ color: '#232323' }}>
+                                <span style={{ color: '#262626' }}>
                                     {order.totalPrice.toLocaleString('vi-VN')} đ
                                 </span>
                             </div>
                             <div
                                 style={{
-                                    borderTop: '1px dashed #bbb',
+                                    borderTop: '1px dashed #d9d9d9',
                                     margin: '12px 0',
                                 }}
                             />
@@ -889,50 +1244,37 @@ function OrderPage() {
                                 <span
                                     style={{
                                         fontWeight: 700,
-                                        fontSize: 20,
-                                        color: '#232323',
+                                        fontSize: isMobile ? 18 : 20,
+                                        color: '#262626',
                                     }}
                                 >
                                     Tổng tiền
                                 </span>
                                 <span
                                     style={{
-                                        color: 'rgb(45, 194, 117)',
+                                        color: '#52c41a',
                                         fontWeight: 700,
-                                        fontSize: 24,
+                                        fontSize: isMobile ? 20 : 24,
                                     }}
                                 >
                                     {order.totalPrice.toLocaleString('vi-VN')} đ
                                 </span>
                             </div>
-                            {/* <div
-                                style={{
-                                    fontSize: 13,
-                                    color: '#888',
-                                    marginBottom: 12,
-                                }}
-                            >
-                                Bằng việc tiến hành đặt mua, bạn đã đồng ý với{' '}
-                                <a
-                                    href="#"
-                                    style={{ color: 'rgb(45, 194, 117)' }}
-                                >
-                                    Điều Kiện Giao Dịch Chung
-                                </a>
-                            </div> */}
                             <Button
                                 type="primary"
                                 size="large"
                                 style={{
                                     width: '100%',
-                                    background: 'rgb(45, 194, 117)',
-                                    color: '#fff',
+                                    background: '#1890ff',
+                                    color: '#ffffff',
                                     fontWeight: 700,
-                                    fontSize: 18,
+                                    fontSize: isMobile ? 16 : 18,
                                     border: 'none',
                                     borderRadius: 8,
-                                    boxShadow: 'none',
+                                    boxShadow:
+                                        '0 2px 8px rgba(24, 144, 255, 0.3)',
                                     marginTop: 8,
+                                    height: isMobile ? 48 : 40,
                                 }}
                                 onClick={handlePayment}
                             >
@@ -942,39 +1284,58 @@ function OrderPage() {
                     </div>
                 </Col>
             </Row>
+
             {/* Modal hết thời gian giữ vé */}
             <Modal
                 open={expiredModal}
                 footer={null}
                 closable={false}
                 centered
-                bodyStyle={{ textAlign: 'center', padding: 32 }}
+                bodyStyle={{ textAlign: 'center', padding: isMobile ? 24 : 32 }}
+                width={isMobile ? '90%' : 'auto'}
             >
                 <div
-                    style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}
+                    style={{
+                        fontWeight: 700,
+                        fontSize: isMobile ? 18 : 20,
+                        marginBottom: 12,
+                        color: '#262626',
+                    }}
                 >
                     Hết thời gian giữ vé!
                 </div>
                 <div
-                    style={{ fontSize: 38, margin: '12px 0', color: '#22c55e' }}
+                    style={{
+                        fontSize: isMobile ? 32 : 38,
+                        margin: '12px 0',
+                        color: '#1890ff',
+                    }}
                 >
                     <span role="img" aria-label="bell">
                         🔔
                     </span>
                 </div>
-                <div style={{ color: '#444', fontSize: 16, marginBottom: 24 }}>
+                <div
+                    style={{
+                        color: '#595959',
+                        fontSize: isMobile ? 14 : 16,
+                        marginBottom: 24,
+                        lineHeight: 1.4,
+                    }}
+                >
                     Đã hết thời gian giữ vé. Vui lòng đặt lại vé mới.
                 </div>
                 <Button
                     type="primary"
                     size="large"
                     style={{
-                        background: '#22c55e',
+                        background: '#1890ff',
                         border: 'none',
                         fontWeight: 700,
-                        fontSize: 18,
+                        fontSize: isMobile ? 16 : 18,
                         width: '100%',
                         borderRadius: 8,
+                        height: isMobile ? 48 : 40,
                     }}
                     onClick={() =>
                         navigate(
@@ -985,6 +1346,7 @@ function OrderPage() {
                     Đặt vé mới
                 </Button>
             </Modal>
+
             {/* Popup PayOS custom */}
             <Modal
                 open={payosModal}
@@ -992,7 +1354,7 @@ function OrderPage() {
                 footer={null}
                 closable={false}
                 centered
-                width={isMobile ? '98vw' : 800}
+                width={isMobile ? '95vw' : 800}
                 bodyStyle={{
                     borderRadius: 16,
                     padding: 0,
@@ -1002,7 +1364,7 @@ function OrderPage() {
             >
                 <div
                     style={{
-                        background: '#fff',
+                        background: '#ffffff',
                         borderRadius: 16,
                         minHeight: isMobile ? 0 : 420,
                         padding: isMobile ? 8 : 0,
@@ -1029,13 +1391,14 @@ function OrderPage() {
                             <img
                                 src="https://salt.tkbcdn.com/ts/ds/0c/ae/fb/6bdb675e0df2f9f13a47726f432934e6.png"
                                 alt="VietQR"
-                                style={{ height: 28 }}
+                                style={{ height: isMobile ? 24 : 28 }}
                             />
                             <span
                                 style={{
                                     fontWeight: 700,
-                                    fontSize: isMobile ? 18 : 22,
+                                    fontSize: isMobile ? 16 : 22,
                                     marginLeft: 8,
+                                    color: '#262626',
                                 }}
                             >
                                 Thanh toán bằng VietQR
@@ -1044,10 +1407,11 @@ function OrderPage() {
                         <Button
                             type="link"
                             style={{
-                                color: '#22c55e',
+                                color: '#1890ff',
                                 fontWeight: 600,
-                                margin: isMobile ? '0 auto' : 0,
-                                fontSize: isMobile ? 15 : 16,
+                                margin: isMobile ? '8px auto 0' : 0,
+                                fontSize: isMobile ? 14 : 16,
+                                padding: 0,
                             }}
                             onClick={() => setPayosModal(false)}
                         >
@@ -1068,44 +1432,41 @@ function OrderPage() {
                                     <span
                                         style={{
                                             fontWeight: 600,
-                                            fontSize: isMobile ? 15 : 17,
+                                            fontSize: isMobile ? 14 : 17,
                                             color:
                                                 payosTab === 'qr'
-                                                    ? '#22c55e'
-                                                    : '#222',
+                                                    ? '#1890ff'
+                                                    : '#595959',
                                         }}
                                     >
-                                        Thanh toán bằng VietQR
+                                        Thanh toán VietQR
                                     </span>
                                 ),
                                 children: (
                                     <div
                                         style={{
                                             display: 'flex',
-                                            flexDirection: isMobile
-                                                ? 'column'
-                                                : 'row',
+                                            flexDirection: 'column',
                                             marginTop: 8,
-                                            alignItems: isMobile
-                                                ? 'center'
-                                                : undefined,
+                                            alignItems: 'center',
                                         }}
                                     >
                                         <div
                                             style={{
-                                                flex: 1,
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                marginBottom: isMobile ? 16 : 0,
+                                                marginBottom: 16,
                                             }}
                                         >
                                             <div
                                                 style={{
-                                                    background: '#f8f9fa',
+                                                    background: '#fafafa',
                                                     borderRadius: 16,
                                                     marginBottom: 12,
+                                                    border: '1px solid #f0f0f0',
+                                                    padding: 8,
                                                 }}
                                             >
                                                 <img
@@ -1126,19 +1487,19 @@ function OrderPage() {
                                                     alt="QR VietQR"
                                                     style={{
                                                         width: isMobile
-                                                            ? 180
+                                                            ? 200
                                                             : 268,
                                                         height: isMobile
-                                                            ? 180
+                                                            ? 200
                                                             : 268,
-                                                        background: '#fff',
+                                                        background: '#ffffff',
                                                         borderRadius: 8,
                                                     }}
                                                 />
                                             </div>
                                             <div
                                                 style={{
-                                                    color: '#888',
+                                                    color: '#8c8c8c',
                                                     fontWeight: 500,
                                                     fontSize: isMobile
                                                         ? 13
@@ -1152,9 +1513,9 @@ function OrderPage() {
                                                 style={{
                                                     fontWeight: 700,
                                                     fontSize: isMobile
-                                                        ? 16
+                                                        ? 18
                                                         : 20,
-                                                    color: '#222',
+                                                    color: '#52c41a',
                                                 }}
                                             >
                                                 {payosData?.amount?.toLocaleString(
@@ -1163,16 +1524,16 @@ function OrderPage() {
                                                 đ
                                             </div>
                                         </div>
+
                                         <div
                                             style={{
-                                                flex: 1,
-                                                padding: isMobile ? 0 : 24,
+                                                width: '100%',
+                                                padding: isMobile
+                                                    ? '0 8px'
+                                                    : 24,
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                justifyContent: 'center',
-                                                alignItems: isMobile
-                                                    ? 'center'
-                                                    : 'flex-start',
+                                                alignItems: 'center',
                                             }}
                                         >
                                             <div
@@ -1182,9 +1543,8 @@ function OrderPage() {
                                                         ? 16
                                                         : 20,
                                                     marginBottom: 12,
-                                                    textAlign: isMobile
-                                                        ? 'center'
-                                                        : 'left',
+                                                    textAlign: 'center',
+                                                    color: '#262626',
                                                 }}
                                             >
                                                 Quét mã QR để thanh toán
@@ -1196,9 +1556,8 @@ function OrderPage() {
                                                     fontSize: isMobile
                                                         ? 13
                                                         : 15,
-                                                    textAlign: isMobile
-                                                        ? 'left'
-                                                        : 'left',
+                                                    color: '#595959',
+                                                    textAlign: 'left',
                                                 }}
                                             >
                                                 <li>
@@ -1218,20 +1577,21 @@ function OrderPage() {
                                             </ol>
                                             <div
                                                 style={{
-                                                    background: '#f3f4f6',
+                                                    background: '#f0f2f5',
                                                     borderRadius: 8,
                                                     padding: 12,
                                                     textAlign: 'center',
-                                                    marginTop: 'auto',
+                                                    width: '100%',
                                                     fontSize: isMobile
                                                         ? 14
                                                         : 16,
+                                                    color: '#595959',
                                                 }}
                                             >
                                                 Giao dịch sẽ kết thúc sau
                                                 <span
                                                     style={{
-                                                        color: '#22c55e',
+                                                        color: '#52c41a',
                                                         fontWeight: 700,
                                                         fontSize: isMobile
                                                             ? 16
@@ -1252,322 +1612,226 @@ function OrderPage() {
                                     <span
                                         style={{
                                             fontWeight: 600,
-                                            fontSize: isMobile ? 15 : 17,
+                                            fontSize: isMobile ? 14 : 17,
                                             color:
                                                 payosTab === 'bank'
-                                                    ? '#22c55e'
-                                                    : '#222',
+                                                    ? '#1890ff'
+                                                    : '#595959',
                                         }}
                                     >
-                                        Chuyển khoản ngân hàng
+                                        Chuyển khoản
                                     </span>
                                 ),
                                 children: (
                                     <div
                                         style={{
                                             display: 'flex',
-                                            flexDirection: isMobile
-                                                ? 'column'
-                                                : 'row',
+                                            flexDirection: 'column',
                                             marginTop: 8,
-                                            alignItems: isMobile
-                                                ? 'center'
-                                                : undefined,
                                         }}
                                     >
                                         <div
                                             style={{
-                                                flex: 1,
-                                                background: '#f8f9fa',
+                                                background: '#fafafa',
                                                 borderRadius: 16,
-                                                padding: isMobile ? 10 : 20,
-                                                marginRight: isMobile ? 0 : 16,
-                                                marginBottom: isMobile ? 16 : 0,
-                                                width: isMobile
-                                                    ? '100%'
-                                                    : undefined,
+                                                border: '1px solid #f0f0f0',
+                                                padding: isMobile ? 16 : 20,
+                                                marginBottom: 16,
                                             }}
                                         >
-                                            <div style={{ marginBottom: 10 }}>
-                                                <div
-                                                    style={{
-                                                        fontWeight: 500,
-                                                        color: '#888',
-                                                        marginBottom: 2,
-                                                    }}
-                                                >
-                                                    Tên ngân hàng
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            fontWeight: 700,
-                                                        }}
-                                                    >
-                                                        {bankMap[
+                                            {/* Bank info fields với responsive design */}
+                                            {[
+                                                {
+                                                    label: 'Tên ngân hàng',
+                                                    value:
+                                                        bankMap[
                                                             payosData?.bin
                                                         ] ||
-                                                            payosData?.bin ||
-                                                            '---'}
-                                                    </span>
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() =>
-                                                            handleCopy(
-                                                                bankMap[
-                                                                    payosData
-                                                                        ?.bin
-                                                                ] ||
-                                                                    payosData?.bin ||
-                                                                    '---',
-                                                            )
-                                                        }
-                                                    >
-                                                        Copy
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                            <div style={{ marginBottom: 10 }}>
-                                                <div
-                                                    style={{
-                                                        fontWeight: 500,
-                                                        color: '#888',
-                                                        marginBottom: 2,
-                                                    }}
-                                                >
-                                                    Tên tài khoản
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            fontWeight: 700,
-                                                        }}
-                                                    >
-                                                        {payosData?.accountName ||
-                                                            '---'}
-                                                    </span>
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() =>
-                                                            handleCopy(
-                                                                payosData?.accountName,
-                                                            )
-                                                        }
-                                                    >
-                                                        Copy
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                            <div style={{ marginBottom: 10 }}>
-                                                <div
-                                                    style={{
-                                                        fontWeight: 500,
-                                                        color: '#888',
-                                                        marginBottom: 2,
-                                                    }}
-                                                >
-                                                    Số tài khoản
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            fontWeight: 700,
-                                                        }}
-                                                    >
-                                                        {payosData?.accountNumber ||
-                                                            '---'}
-                                                    </span>
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() =>
-                                                            handleCopy(
-                                                                payosData?.accountNumber,
-                                                            )
-                                                        }
-                                                    >
-                                                        Copy
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                            <div style={{ marginBottom: 10 }}>
-                                                <div
-                                                    style={{
-                                                        fontWeight: 500,
-                                                        color: '#888',
-                                                        marginBottom: 2,
-                                                    }}
-                                                >
-                                                    Số tiền
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            fontWeight: 700,
-                                                        }}
-                                                    >
-                                                        {payosData?.amount?.toLocaleString(
+                                                        payosData?.bin ||
+                                                        '---',
+                                                },
+                                                {
+                                                    label: 'Tên tài khoản',
+                                                    value:
+                                                        payosData?.accountName ||
+                                                        '---',
+                                                },
+                                                {
+                                                    label: 'Số tài khoản',
+                                                    value:
+                                                        payosData?.accountNumber ||
+                                                        '---',
+                                                },
+                                                {
+                                                    label: 'Số tiền',
+                                                    value: `${
+                                                        payosData?.amount?.toLocaleString(
                                                             'vi-VN',
-                                                        ) || '---'}{' '}
-                                                        đ
-                                                    </span>
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() =>
-                                                            handleCopy(
-                                                                payosData?.amount?.toString(),
-                                                            )
-                                                        }
-                                                    >
-                                                        Copy
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                            <div style={{ marginBottom: 10 }}>
+                                                        ) || '---'
+                                                    } đ`,
+                                                    isAmount: true,
+                                                },
+                                                {
+                                                    label: 'Nội dung',
+                                                    value:
+                                                        payosData?.description ||
+                                                        '---',
+                                                },
+                                            ].map((item, index) => (
                                                 <div
-                                                    style={{
-                                                        fontWeight: 500,
-                                                        color: '#888',
-                                                        marginBottom: 2,
-                                                    }}
+                                                    key={index}
+                                                    style={{ marginBottom: 12 }}
                                                 >
-                                                    Nội dung
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                    }}
-                                                >
-                                                    <span
+                                                    <div
                                                         style={{
-                                                            fontWeight: 700,
+                                                            fontWeight: 500,
+                                                            color: '#8c8c8c',
+                                                            marginBottom: 4,
+                                                            fontSize: isMobile
+                                                                ? 12
+                                                                : 14,
                                                         }}
                                                     >
-                                                        {payosData?.description ||
-                                                            '---'}
-                                                    </span>
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() =>
-                                                            handleCopy(
-                                                                payosData?.description,
-                                                            )
-                                                        }
+                                                        {item.label}
+                                                    </div>
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems:
+                                                                'center',
+                                                            gap: 8,
+                                                            flexWrap: 'wrap',
+                                                        }}
                                                     >
-                                                        Copy
-                                                    </Button>
+                                                        <span
+                                                            style={{
+                                                                fontWeight: 700,
+                                                                color: item.isAmount
+                                                                    ? '#52c41a'
+                                                                    : '#262626',
+                                                                fontSize:
+                                                                    isMobile
+                                                                        ? 14
+                                                                        : 16,
+                                                                flex: 1,
+                                                                wordBreak:
+                                                                    'break-all',
+                                                            }}
+                                                        >
+                                                            {item.value}
+                                                        </span>
+                                                        <Button
+                                                            size="small"
+                                                            style={{
+                                                                borderColor:
+                                                                    '#1890ff',
+                                                                color: '#1890ff',
+                                                                fontSize:
+                                                                    isMobile
+                                                                        ? 12
+                                                                        : 14,
+                                                                height: isMobile
+                                                                    ? 28
+                                                                    : 24,
+                                                                padding:
+                                                                    isMobile
+                                                                        ? '0 8px'
+                                                                        : '0 6px',
+                                                            }}
+                                                            onClick={() =>
+                                                                handleCopy(
+                                                                    item.value.replace(
+                                                                        ' đ',
+                                                                        '',
+                                                                    ),
+                                                                )
+                                                            }
+                                                        >
+                                                            Copy
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {!isMobile && (
+                                            <div style={{ padding: '0 24px' }}>
+                                                <div
+                                                    style={{
+                                                        fontWeight: 700,
+                                                        fontSize: 20,
+                                                        marginBottom: 12,
+                                                        color: '#262626',
+                                                    }}
+                                                >
+                                                    Chuyển khoản ngân hàng
+                                                </div>
+                                                <ol
+                                                    style={{
+                                                        paddingLeft: 20,
+                                                        marginBottom: 16,
+                                                        color: '#595959',
+                                                    }}
+                                                >
+                                                    <li>
+                                                        Mở ứng dụng Ngân hàng
+                                                        trên điện thoại
+                                                    </li>
+                                                    <li>
+                                                        Chọn tính năng chuyển
+                                                        tiền, chọn ngân hàng và
+                                                        sao chép "Số tài khoản"
+                                                    </li>
+                                                    <li>
+                                                        Nhập chính xác "Số tiền"
+                                                        và sao chép "Nội dung
+                                                        chuyển khoản"
+                                                    </li>
+                                                    <li>
+                                                        Thực hiện thanh toán và
+                                                        xem kết quả giao dịch
+                                                        tại trang này (không tắt
+                                                        popup)
+                                                    </li>
+                                                </ol>
+                                                <div
+                                                    style={{
+                                                        color: '#ff4d4f',
+                                                        fontWeight: 600,
+                                                        marginBottom: 8,
+                                                    }}
+                                                >
+                                                    Lưu ý: Nhập chính xác "Số
+                                                    tiền" thanh toán
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
                                         <div
                                             style={{
-                                                flex: 1,
-                                                padding: isMobile ? 0 : 24,
-                                                display: isMobile
-                                                    ? 'none'
-                                                    : 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'center',
-                                                alignItems: isMobile
-                                                    ? 'center'
-                                                    : 'flex-start',
-                                                width: isMobile
-                                                    ? '100%'
-                                                    : undefined,
+                                                background: '#f0f2f5',
+                                                borderRadius: 8,
+                                                padding: 12,
+                                                textAlign: 'center',
+                                                color: '#595959',
+                                                fontSize: isMobile ? 14 : 16,
+                                                margin: isMobile
+                                                    ? '16px 8px 0'
+                                                    : '0',
                                             }}
                                         >
-                                            <div
+                                            Giao dịch sẽ kết thúc sau
+                                            <span
                                                 style={{
+                                                    color: '#52c41a',
                                                     fontWeight: 700,
-                                                    fontSize: 20,
-                                                    marginBottom: 12,
+                                                    fontSize: isMobile
+                                                        ? 16
+                                                        : 18,
+                                                    marginLeft: 8,
                                                 }}
                                             >
-                                                Chuyển khoản ngân hàng
-                                            </div>
-                                            <ol
-                                                style={{
-                                                    paddingLeft: 20,
-                                                    marginBottom: 16,
-                                                }}
-                                            >
-                                                <li>
-                                                    Mở ứng dụng Ngân hàng trên
-                                                    điện thoại
-                                                </li>
-                                                <li>
-                                                    Chọn tính năng chuyển tiền,
-                                                    chọn ngân hàng và sao chép
-                                                    &quot;Số tài khoản&quot;
-                                                </li>
-                                                <li>
-                                                    Nhập chính xác &quot;Số
-                                                    tiền&quot; và sao chép
-                                                    &quot;Nội dung chuyển
-                                                    khoản&quot;
-                                                </li>
-                                                <li>
-                                                    Thực hiện thanh toán và xem
-                                                    kết quả giao dịch tại trang
-                                                    này (không tắt popup)
-                                                </li>
-                                            </ol>
-                                            <div
-                                                style={{
-                                                    color: 'red',
-                                                    fontWeight: 600,
-                                                    marginBottom: 8,
-                                                }}
-                                            >
-                                                Lưu ý: Nhập chính xác &quot;Số
-                                                tiền&quot; thanh toán
-                                            </div>
-                                            <div
-                                                style={{
-                                                    background: '#f3f4f6',
-                                                    borderRadius: 8,
-                                                    padding: 12,
-                                                    textAlign: 'center',
-                                                    marginTop: 'auto',
-                                                }}
-                                            >
-                                                Giao dịch sẽ kết thúc sau
-                                                <span
-                                                    style={{
-                                                        color: '#22c55e',
-                                                        fontWeight: 700,
-                                                        fontSize: 18,
-                                                        marginLeft: 8,
-                                                    }}
-                                                >
-                                                    {formatCountdown(timeLeft)}
-                                                </span>
-                                            </div>
+                                                {formatCountdown(timeLeft)}
+                                            </span>
                                         </div>
                                     </div>
                                 ),
@@ -1576,6 +1840,74 @@ function OrderPage() {
                     />
                 </div>
             </Modal>
+
+            {/* Fixed bottom payment button for mobile */}
+            {isMobile && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: '#ffffff',
+                        borderTop: '1px solid #f0f0f0',
+                        padding: '12px 16px',
+                        boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+                        zIndex: 1000,
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: 8,
+                        }}
+                    >
+                        <span
+                            style={{
+                                fontSize: 14,
+                                color: '#595959',
+                            }}
+                        >
+                            Tổng tiền
+                        </span>
+                        <span
+                            style={{
+                                fontSize: 18,
+                                fontWeight: 700,
+                                color: '#52c41a',
+                            }}
+                        >
+                            {order.totalPrice.toLocaleString('vi-VN')} đ
+                        </span>
+                    </div>
+                    <Button
+                        type="primary"
+                        size="large"
+                        block
+                        style={{
+                            background: '#1890ff',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: 16,
+                            border: 'none',
+                            borderRadius: 8,
+                            height: 48,
+                            boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
+                        }}
+                        onClick={handlePayment}
+                        disabled={!name.trim() || !phone.trim()}
+                    >
+                        {!name.trim() || !phone.trim()
+                            ? 'Vui lòng nhập thông tin khách hàng'
+                            : 'Thanh toán ngay'}
+                    </Button>
+                </div>
+            )}
+
+            {/* Add padding to prevent content being hidden behind fixed button */}
+            {isMobile && <div style={{ height: 100 }} />}
         </div>
     );
 }

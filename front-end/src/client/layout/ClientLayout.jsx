@@ -26,6 +26,8 @@ function ClientLayout() {
     const shouldHideFooter =
         location.pathname.includes('/bookings/') ||
         location.pathname.includes('/user/upgrade');
+    // Ẩn scroll to top khi đường dẫn chứa /bookings
+    const shouldHideScrollTop = location.pathname.includes('/bookings');
     return (
         <>
             <Header />
@@ -35,7 +37,7 @@ function ClientLayout() {
             <Register />
             <Login />
             {!shouldHideFooter && <Footer />}
-            {showScrollTop && (
+            {showScrollTop && !shouldHideScrollTop && (
                 <button
                     onClick={handleScrollToTop}
                     style={{

@@ -1,4 +1,5 @@
 .layoutContainer {
+    background-color: #27272a;
     display: flex;
     min-height: 100vh;
     position: relative;

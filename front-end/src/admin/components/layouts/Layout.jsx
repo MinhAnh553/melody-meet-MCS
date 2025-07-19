@@ -152,7 +152,7 @@ const Layout = () => {
                     >
                         <FaBars />
                     </button>
-                    <h3 className="mb-0">
+                    <h3 className="mb-0 text-white">
                         {navItems.find(
                             (item) => item.path === location.pathname,
                         )?.text || ''}

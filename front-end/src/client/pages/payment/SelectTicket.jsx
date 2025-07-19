@@ -27,12 +27,10 @@ const { Text, Title } = Typography;
 // Add custom CSS to override Ant Design styles
 const customStyles = `
     .ant-input-number-input {
-        color: #ffffff !important;
         text-align: center !important;
     }
     .ant-input-number {
-        background: #27272a !important;
-        border: 1px solid rgb(45, 194, 117) !important;
+        border: none !important;
         border-radius: 8px !important;
     }
 `;
@@ -176,9 +174,8 @@ const SelectTicket = () => {
             <div
                 style={{
                     minHeight: '100vh',
-                    background: '#27272a',
-                    color: '#d4d4d8',
                     marginTop: '85px',
+                    background: '#ffffff',
                 }}
             >
                 <Row
@@ -206,12 +203,12 @@ const SelectTicket = () => {
                                         <ArrowLeftOutlined
                                             style={{
                                                 fontSize: 22,
-                                                color: 'rgb(45, 194, 117)',
+                                                color: '#1890ff',
                                             }}
                                         />
                                     }
                                     style={{
-                                        color: 'rgb(45, 194, 117)',
+                                        color: '#1890ff',
                                         fontWeight: 600,
                                         fontSize: 18,
                                         paddingLeft: 0,
@@ -232,7 +229,7 @@ const SelectTicket = () => {
                                     <Title
                                         level={2}
                                         style={{
-                                            color: 'rgb(45, 194, 117)',
+                                            color: '#1890ff',
                                             margin: 0,
                                             fontWeight: 700,
                                             fontSize: 28,
@@ -246,7 +243,7 @@ const SelectTicket = () => {
                                 style={{
                                     fontWeight: 600,
                                     fontSize: 20,
-                                    color: '#d4d4d8',
+                                    color: '#595959',
                                     marginBottom: 16,
                                 }}
                             >
@@ -258,7 +255,8 @@ const SelectTicket = () => {
                             <div
                                 style={{
                                     borderRadius: 12,
-                                    // background: '#18181b',
+                                    background: '#ffffff',
+                                    border: '1px solid #f0f0f0',
                                     padding: 0,
                                 }}
                             >
@@ -279,17 +277,21 @@ const SelectTicket = () => {
                                             align="middle"
                                             style={{
                                                 borderBottom:
-                                                    '1px dashed #3f3f46',
-                                                padding: '24px 0',
+                                                    '1px dashed #e8e8e8',
+                                                padding: '24px 20px',
                                                 minHeight: 80,
+                                                background:
+                                                    idx % 2 === 0
+                                                        ? '#fafafa'
+                                                        : '#ffffff',
                                             }}
                                         >
                                             <Col
                                                 xs={16}
                                                 style={{
                                                     color: soldOut
-                                                        ? '#71717a'
-                                                        : 'rgb(45, 194, 117)',
+                                                        ? '#bfbfbf'
+                                                        : '#1890ff',
                                                     fontWeight: 700,
                                                     fontSize: 20,
                                                 }}
@@ -298,7 +300,7 @@ const SelectTicket = () => {
                                                 {ticket.description && (
                                                     <div
                                                         style={{
-                                                            color: '#d4d4d8',
+                                                            color: '#595959',
                                                             fontSize: 14,
                                                             fontWeight: 400,
                                                             marginTop: 2,
@@ -310,8 +312,8 @@ const SelectTicket = () => {
                                                 )}
                                                 <div
                                                     style={{
-                                                        color: '#d4d4d8',
-                                                        fontWeight: 400,
+                                                        color: '#52c41a',
+                                                        fontWeight: 600,
                                                         fontSize: 16,
                                                         marginTop: 2,
                                                     }}
@@ -328,15 +330,16 @@ const SelectTicket = () => {
                                             >
                                                 {soldOut ? (
                                                     <Tag
-                                                        color="#f4cccc"
+                                                        color="#ffebee"
                                                         style={{
-                                                            color: '#d32f2f',
+                                                            color: '#f5222d',
                                                             background:
-                                                                '#f4cccc',
+                                                                '#ffebee',
                                                             fontWeight: 600,
                                                             fontSize: 18,
                                                             borderRadius: 8,
                                                             padding: '4px 16px',
+                                                            border: '1px solid #ffcdd2',
                                                         }}
                                                     >
                                                         Hết vé
@@ -358,10 +361,10 @@ const SelectTicket = () => {
                                                             }
                                                             size="small"
                                                             style={{
-                                                                border: '1px solid rgb(45, 194, 117)',
-                                                                color: 'rgb(45, 194, 117)',
+                                                                border: '1px solid #1890ff',
+                                                                color: '#1890ff',
                                                                 background:
-                                                                    'transparent',
+                                                                    '#ffffff',
                                                             }}
                                                             onClick={() =>
                                                                 handleQuantityChange(
@@ -387,9 +390,9 @@ const SelectTicket = () => {
                                                             style={{
                                                                 width: 56,
                                                                 background:
-                                                                    '#27272a',
-                                                                color: '#ffffff',
-                                                                border: '1px solid rgb(45, 194, 117)',
+                                                                    '#ffffff',
+                                                                color: '#262626',
+                                                                border: '1px solid #1890ff',
                                                                 borderRadius: 8,
                                                             }}
                                                             controls={false}
@@ -400,10 +403,10 @@ const SelectTicket = () => {
                                                             }
                                                             size="small"
                                                             style={{
-                                                                border: '1px solid rgb(45, 194, 117)',
-                                                                color: 'rgb(45, 194, 117)',
+                                                                border: '1px solid #1890ff',
+                                                                color: '#1890ff',
                                                                 background:
-                                                                    'transparent',
+                                                                    '#ffffff',
                                                             }}
                                                             onClick={() =>
                                                                 handleQuantityChange(
@@ -432,17 +435,18 @@ const SelectTicket = () => {
                                 position: 'sticky',
                                 top: 80,
                                 zIndex: 2,
-                                background: '#18181b',
+                                background: '#ffffff',
                                 borderRadius: 16,
-                                boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
+                                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                                border: '1px solid #f0f0f0',
                                 padding: 28,
-                                color: '#d4d4d8',
+                                color: '#262626',
                             }}
                         >
                             <Title
                                 level={4}
                                 style={{
-                                    color: '#d4d4d8',
+                                    color: '#1890ff',
                                     fontWeight: 700,
                                     marginBottom: 8,
                                     fontSize: 22,
@@ -461,11 +465,17 @@ const SelectTicket = () => {
                             >
                                 <CalendarOutlined
                                     style={{
-                                        color: 'rgb(45, 194, 117)',
+                                        color: '#722ed1',
                                         fontSize: 18,
                                     }}
                                 />
-                                <span style={{ fontWeight: 500, fontSize: 16 }}>
+                                <span
+                                    style={{
+                                        fontWeight: 500,
+                                        fontSize: 16,
+                                        color: '#434343',
+                                    }}
+                                >
                                     {formatDateTime(event.startTime)}
                                 </span>
                             </div>
@@ -479,24 +489,30 @@ const SelectTicket = () => {
                             >
                                 <EnvironmentOutlined
                                     style={{
-                                        color: 'rgb(45, 194, 117)',
+                                        color: '#fa541c',
                                         fontSize: 18,
                                     }}
                                 />
-                                <span style={{ fontWeight: 500, fontSize: 16 }}>
+                                <span
+                                    style={{
+                                        fontWeight: 500,
+                                        fontSize: 16,
+                                        color: '#434343',
+                                    }}
+                                >
                                     {event.location.venueName}
                                 </span>
                             </div>
                             <div
                                 style={{
-                                    borderTop: '1px solid #3f3f46',
+                                    borderTop: '1px solid #e8e8e8',
                                     margin: '16px 0 12px',
                                 }}
                             />
                             <div
                                 style={{
                                     fontWeight: 600,
-                                    color: '#d4d4d8',
+                                    color: '#262626',
                                     marginBottom: 8,
                                     fontSize: 17,
                                 }}
@@ -509,7 +525,7 @@ const SelectTicket = () => {
                                 ).length === 0 ? (
                                     <div
                                         style={{
-                                            color: '#71717a',
+                                            color: '#8c8c8c',
                                             fontSize: 15,
                                             fontWeight: 400,
                                             marginBottom: 4,
@@ -530,7 +546,7 @@ const SelectTicket = () => {
                                                         'space-between',
                                                     fontSize: 16,
                                                     fontWeight: 700,
-                                                    color: 'rgb(45, 194, 117)',
+                                                    color: '#1890ff',
                                                     marginBottom: 8,
                                                 }}
                                             >
@@ -538,7 +554,7 @@ const SelectTicket = () => {
                                                     {ticket.name}{' '}
                                                     <span
                                                         style={{
-                                                            color: '#d4d4d8',
+                                                            color: '#595959',
                                                             fontWeight: 500,
                                                             fontSize: 15,
                                                         }}
@@ -546,7 +562,9 @@ const SelectTicket = () => {
                                                         x{quantity}
                                                     </span>
                                                 </span>
-                                                <span>
+                                                <span
+                                                    style={{ color: '#52c41a' }}
+                                                >
                                                     {(
                                                         ticket.price * quantity
                                                     ).toLocaleString(
@@ -561,7 +579,7 @@ const SelectTicket = () => {
                             </div>
                             <div
                                 style={{
-                                    borderTop: '1px solid #3f3f46',
+                                    borderTop: '1px solid #e8e8e8',
                                     margin: '16px 0 12px',
                                 }}
                             />
@@ -573,12 +591,18 @@ const SelectTicket = () => {
                                     marginBottom: 18,
                                 }}
                             >
-                                <span style={{ fontWeight: 600, fontSize: 18 }}>
+                                <span
+                                    style={{
+                                        fontWeight: 600,
+                                        fontSize: 18,
+                                        color: '#262626',
+                                    }}
+                                >
                                     Tổng tiền
                                 </span>
                                 <span
                                     style={{
-                                        color: 'rgb(45, 194, 117)',
+                                        color: '#52c41a',
                                         fontWeight: 700,
                                         fontSize: 22,
                                     }}
@@ -590,26 +614,28 @@ const SelectTicket = () => {
                                 type="primary"
                                 size="large"
                                 icon={
-                                    <CheckCircleTwoTone twoToneColor="rgb(45, 194, 117),#27272a" />
+                                    <CheckCircleTwoTone twoToneColor="#52c41a,#ffffff" />
                                 }
                                 disabled={isCheckoutDisabled}
                                 onClick={handleCheckout}
                                 style={{
                                     width: '100%',
                                     background: isCheckoutDisabled
-                                        ? '#3f3f46'
-                                        : 'rgb(45, 194, 117)',
+                                        ? '#d9d9d9'
+                                        : '#1890ff',
                                     color: isCheckoutDisabled
-                                        ? '#d4d4d8'
-                                        : '#18181b',
+                                        ? '#8c8c8c'
+                                        : '#ffffff',
                                     fontWeight: 700,
                                     fontSize: 18,
                                     border: 'none',
                                     borderRadius: 8,
-                                    boxShadow: 'none',
+                                    boxShadow: isCheckoutDisabled
+                                        ? 'none'
+                                        : '0 2px 8px rgba(24, 144, 255, 0.3)',
                                     marginTop: 8,
                                     opacity: isCheckoutDisabled ? 0.7 : 1,
-                                    transition: 'background 0.2s',
+                                    transition: 'all 0.3s',
                                 }}
                             >
                                 {isCheckoutDisabled
