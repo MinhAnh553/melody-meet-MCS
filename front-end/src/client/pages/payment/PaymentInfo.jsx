@@ -313,7 +313,7 @@ function OrderPage() {
             });
         }
         const buyerInfo = { name, phone };
-        const res = await api.updateUser(user.id, buyerInfo);
+        const res = await api.updateUser(user._id, buyerInfo);
         if (res && res.success) {
             swalCustomize.Toast.fire({
                 icon: 'success',
@@ -1354,12 +1354,14 @@ function OrderPage() {
                 footer={null}
                 closable={false}
                 centered
-                width={isMobile ? '95vw' : 800}
                 bodyStyle={{
                     borderRadius: 16,
                     padding: 0,
                     overflow: 'hidden',
                     minWidth: isMobile ? 0 : 420,
+                }}
+                style={{
+                    paddingTop: '5px',
                 }}
             >
                 <div
