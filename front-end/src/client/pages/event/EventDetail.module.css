@@ -630,3 +630,48 @@
     font-size: 1rem;
     box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
 }
+
+/* ========== BREADCRUMB ========== */
+.breadcrumbSection {
+    margin: 10px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: transparent;
+}
+
+.breadcrumbItem {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumbLink {
+    color: #666;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.breadcrumbLink:hover {
+    color: #1890ff;
+}
+
+.breadcrumbSeparator {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.breadcrumbActive {
+    color: #1890ff;
+    font-weight: 500;
+    font-size: 0.9rem;
+}

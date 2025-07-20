@@ -958,6 +958,24 @@ function PurchasedTickets() {
 
     return (
         <Container fluid className={styles.ordersContainer}>
+            {/* Breadcrumb */}
+            <div className={styles.breadcrumbSection}>
+                <nav aria-label="breadcrumb">
+                    <ol className={styles.breadcrumb}>
+                        <li className={styles.breadcrumbItem}>
+                            <Link to="/" className={styles.breadcrumbLink}>
+                                <i className="bi bi-house-door"></i>
+                                Trang chủ
+                            </Link>
+                        </li>
+                        <li className={styles.breadcrumbSeparator}>
+                            <BsChevronRight />
+                        </li>
+                        <li className={styles.breadcrumbActive}>Vé đã mua</li>
+                    </ol>
+                </nav>
+            </div>
+
             {/* Enhanced Header Card with Stats */}
             <AntCard className={styles.headerCard}>
                 <AntRow

@@ -7,7 +7,7 @@ import ReviewForm from '../../components/ReviewForm';
 import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/loading/LoadingSpinner';
-import { BsChevronDown, BsChevronUp } from 'react-icons/bs';
+import { BsChevronDown, BsChevronRight, BsChevronUp } from 'react-icons/bs';
 import styles from './EventDetail.module.css';
 
 const EventDetail = () => {
@@ -253,6 +253,25 @@ const EventDetail = () => {
         <div className={styles.eventDetailContainer}>
             {/* Hero Section */}
             <div className="container">
+                {/* Breadcrumb */}
+                <div className={styles.breadcrumbSection}>
+                    <nav aria-label="breadcrumb">
+                        <ol className={styles.breadcrumb}>
+                            <li className={styles.breadcrumbItem}>
+                                <Link to="/" className={styles.breadcrumbLink}>
+                                    <i className="bi bi-house-door"></i>
+                                    Trang chủ
+                                </Link>
+                            </li>
+                            <li className={styles.breadcrumbSeparator}>
+                                <BsChevronRight />
+                            </li>
+                            <li className={styles.breadcrumbActive}>
+                                Thông tin sự kiện
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
                 <div className={styles.heroSection}>
                     <div className="row g-5 align-items-center">
                         {/* Event Info - Giữ nguyên thiết kế gốc */}
