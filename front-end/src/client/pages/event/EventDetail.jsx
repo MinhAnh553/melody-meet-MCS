@@ -8,6 +8,7 @@ import swalCustomize from '../../../util/swalCustomize';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/loading/LoadingSpinner';
 import { BsChevronDown, BsChevronUp } from 'react-icons/bs';
+import styles from './EventDetail.module.css';
 
 const EventDetail = () => {
     const { user } = useAuth();
@@ -26,6 +27,7 @@ const EventDetail = () => {
         averageRating: 0,
         totalReviews: 0,
     });
+    const [reviews, setReviews] = useState([]);
 
     const navigate = useNavigate();
     const [descExpanded, setDescExpanded] = useState(false);
@@ -74,6 +76,24 @@ const EventDetail = () => {
         fetchReviewStats();
     }, [event, eventId]);
 
+    // Fetch danh sách đánh giá
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (!event) return;
+
+            try {
+                const res = await api.getEventReviews(eventId);
+                if (res.success) {
+                    setReviews(res.reviews || []);
+                }
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            }
+        };
+
+        fetchReviews();
+    }, [event, eventId]);
+
     // Kiểm tra xem user có thể đánh giá sự kiện này không
     useEffect(() => {
         const checkReviewStatus = async () => {
@@ -111,14 +131,7 @@ const EventDetail = () => {
 
     if (!event)
         return (
-            <div
-                className="container-fluid py-4"
-                style={{
-                    // backgroundColor: '#121212',
-                    margin: '80px 0 0',
-                    borderRadius: '20px',
-                }}
-            >
+            <div className={styles.loadingContainer}>
                 <LoadingSpinner />
             </div>
         );
@@ -132,8 +145,7 @@ const EventDetail = () => {
         return price.toLocaleString('vi-VN') + 'đ';
     };
 
-    const lowestPrice = `Giá từ ${formatCurrency(sortedTickets[0].price)}`;
-
+    const lowestPrice = formatCurrency(sortedTickets[0].price);
     const sanitizedDescription = DOMPurify.sanitize(event.description);
 
     // Hàm chuyển đến trang chọn vé
@@ -165,6 +177,12 @@ const EventDetail = () => {
                         totalReviews: statsRes.stats.totalReviews || 0,
                     });
                 }
+
+                // Refresh lại danh sách đánh giá
+                const reviewsRes = await api.getEventReviews(eventId);
+                if (reviewsRes.success) {
+                    setReviews(reviewsRes.reviews || []);
+                }
             } catch (error) {
                 console.error('Error refreshing review:', error);
             }
@@ -181,14 +199,22 @@ const EventDetail = () => {
         // Thêm sao đầy
         for (let i = 0; i < fullStars; i++) {
             stars.push(
-                <i key={i} className="bi bi-star-fill text-warning"></i>,
+                <i
+                    key={i}
+                    className="bi bi-star-fill"
+                    style={{ color: '#FFD700' }}
+                ></i>,
             );
         }
 
         // Thêm sao nửa (nếu có)
         if (hasHalfStar) {
             stars.push(
-                <i key="half" className="bi bi-star-half text-warning"></i>,
+                <i
+                    key="half"
+                    className="bi bi-star-half"
+                    style={{ color: '#FFD700' }}
+                ></i>,
             );
         }
 
@@ -196,28 +222,40 @@ const EventDetail = () => {
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
         for (let i = 0; i < emptyStars; i++) {
             stars.push(
-                <i key={`empty-${i}`} className="bi bi-star text-warning"></i>,
+                <i
+                    key={`empty-${i}`}
+                    className="bi bi-star"
+                    style={{ color: '#FFD700' }}
+                ></i>,
             );
         }
 
         return stars;
     };
 
+    // Format thời gian đánh giá
+    const formatReviewDate = (date) => {
+        return new Intl.DateTimeFormat('vi-VN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(new Date(date));
+    };
+
+    const isEventOver = event.status === 'event_over';
+    const hasAvailableTickets = sortedTickets.some(
+        (ticket) => ticket.totalQuantity - ticket.quantitySold > 0,
+    );
+
     return (
-        <>
-            {/* Phần banner (đã có sẵn) */}
-            <div
-                className="container-fluid py-4"
-                style={{
-                    background:
-                        'linear-gradient(rgb(39, 39, 42) 48.04%, rgb(0, 0, 0) 100%)',
-                    margin: '80px 0 0',
-                    borderRadius: '20px',
-                }}
-            >
-                <div className="container">
-                    <div className="row g-4 align-items-center">
-                        {/* Cột trái */}
+        <div className={styles.eventDetailContainer}>
+            {/* Hero Section */}
+            <div className="container">
+                <div className={styles.heroSection}>
+                    <div className="row g-5 align-items-center">
+                        {/* Event Info - Giữ nguyên thiết kế gốc */}
                         <div className="col-md-5 text-white">
                             <h1
                                 className="fw-bold mb-3"
@@ -248,18 +286,40 @@ const EventDetail = () => {
                                     {event.location.province}
                                 </span>
                             </p>
+
                             <hr
                                 style={{ background: 'white', height: '1.5px' }}
                             />
-                            <p
-                                className="fw-bold"
-                                style={{
-                                    color: 'rgb(45, 194, 117)',
-                                    fontSize: '1.3rem',
-                                }}
-                            >
-                                {lowestPrice}
-                            </p>
+
+                            <div className="d-flex align-items-center gap-4 mb-4">
+                                <p
+                                    className="fw-bold mb-0"
+                                    style={{
+                                        color: 'rgb(45, 194, 117)',
+                                        fontSize: '1.3rem',
+                                    }}
+                                >
+                                    Giá từ {lowestPrice}
+                                </p>
+
+                                {reviewStats.totalReviews > 0 && (
+                                    <div className={styles.ratingBadge}>
+                                        <div className={styles.ratingStars}>
+                                            {renderStars(
+                                                reviewStats.averageRating,
+                                            )}
+                                        </div>
+                                        <span className={styles.ratingText}>
+                                            {reviewStats.averageRating.toFixed(
+                                                1,
+                                            )}
+                                        </span>
+                                        <span className={styles.ratingCount}>
+                                            ({reviewStats.totalReviews})
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Nếu tất cả hết vé thì hiển thị hết vé */}
                             {sortedTickets.every(
@@ -277,9 +337,7 @@ const EventDetail = () => {
                                     <button
                                         className="btn btn-success btn-lg mt-2"
                                         disabled={true}
-                                        style={{
-                                            backgroundColor: '#ccc',
-                                        }}
+                                        style={{ backgroundColor: '#ccc' }}
                                     >
                                         Đã hết vé
                                     </button>
@@ -327,6 +385,7 @@ const EventDetail = () => {
                                         </button>
                                     </div>
                                 )}
+
                                 {/* Nút đánh giá sự kiện */}
                                 {canReview && (
                                     <div className="mt-2">
@@ -348,7 +407,7 @@ const EventDetail = () => {
                             </div>
                         </div>
 
-                        {/* Cột phải */}
+                        {/* Event Image */}
                         <div className="col-md-7 text-center">
                             <img
                                 src={event.background}
@@ -360,216 +419,224 @@ const EventDetail = () => {
                 </div>
             </div>
 
-            {/* Hiển thị đánh giá trung bình */}
-            {reviewStats.totalReviews > 0 && (
-                <div className="container mt-3">
-                    <div className="d-flex justify-content-center align-items-center gap-3">
-                        <div className="d-flex align-items-center gap-2">
-                            {renderStars(reviewStats.averageRating)}
-                            <span className="text-white fw-bold fs-5">
-                                {reviewStats.averageRating.toFixed(1)}
-                            </span>
-                        </div>
-                        <span className="text-white">
-                            ({reviewStats.totalReviews} đánh giá)
-                        </span>
-                    </div>
-                </div>
-            )}
-
-            {/* Phần giới thiệu (nằm dưới banner) */}
-            <div className="container my-5">
-                <h4 className="mb-3">Giới thiệu</h4>
-                <div
-                    className="card p-4 border-0 shadow rounded-4"
-                    style={{ backgroundColor: '#fff' }}
-                >
-                    {/* Nếu có ảnh mô tả giới thiệu riêng, hiển thị: */}
-                    {event.descriptionImage && (
-                        <img
-                            src={event.descriptionImage}
-                            alt="Giới thiệu"
-                            className="img-fluid rounded mb-3"
-                        />
-                    )}
-
-                    {/* Nội dung mô tả sự kiện */}
-                    <p
-                        className="event-description"
-                        dangerouslySetInnerHTML={{
-                            __html: sanitizedDescription,
-                        }}
-                        style={{
-                            // color: '#fff',
-                            whiteSpace: 'pre-line',
-                            maxHeight: descExpanded ? 'none' : '6em', // 3 dòng x 1.5em
-                            overflow: descExpanded ? 'visible' : 'hidden',
-                            display: '-webkit-box',
-                            WebkitLineClamp: descExpanded ? 'unset' : 3,
-                            WebkitBoxOrient: 'vertical',
-                            transition: 'max-height 0.3s',
-                        }}
-                    ></p>
-                    {event.description && event.description.length > 120 && (
-                        <div className="d-flex justify-content-center mt-2">
-                            <button
-                                className="btn btn-link p-0"
-                                style={{
-                                    color: 'black',
-                                    fontSize: '1.05rem',
-                                    textDecoration: 'none', // Bỏ gạch chân
-                                }}
-                                onClick={() => setDescExpanded((prev) => !prev)}
-                            >
-                                {descExpanded ? (
-                                    <>
-                                        <BsChevronUp />
-                                    </>
-                                ) : (
-                                    <>
-                                        <BsChevronDown />
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-            {/* Thông tin ban tổ chức */}
-            <div className="container my-5">
-                <h4 className="mb-4">Ban Tổ Chức</h4>
-                <div
-                    className="card p-4 border-0 shadow rounded-4"
-                    style={{ backgroundColor: '#fff' }}
-                >
-                    <div className="d-flex align-items-center">
-                        <img
-                            src={event.organizer?.logo}
-                            alt="Organizer Logo"
-                            style={{
-                                width: '100px',
-                                height: '100px',
-                                objectFit: 'cover',
-                                border: '2px solid #fff',
-                            }}
-                            className="rounded-circle me-4"
-                        />
-                        <div className="flex-grow-1">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h5 className="fw-semibold mb-0">
-                                    {event.organizer?.name}
-                                </h5>
-                                <Link
-                                    to={`/organizer/${event.createdBy}/reviews`}
-                                    className="text-decoration-none d-flex align-items-center small"
-                                    style={{
-                                        color: '#a6a6b0',
-                                        transition: 'color 0.3s',
-                                    }}
-                                    // onMouseEnter={(e) =>
-                                    //     (e.currentTarget.style.color =
-                                    //         '#ffffff')
-                                    // }
-                                    // onMouseLeave={(e) =>
-                                    //     (e.currentTarget.style.color =
-                                    //         '#a6a6b0')
-                                    // }
-                                >
-                                    Thông tin chi tiết
-                                    <i className="bi bi-chevron-right ms-1"></i>
-                                </Link>
-                            </div>
+            <div className="container py-5">
+                <div className="row g-5">
+                    {/* Main Content */}
+                    <div className="col-lg-8">
+                        {/* Event Description */}
+                        <div className={styles.contentCard}>
+                            <h3 className={styles.sectionTitle}>
+                                <i className="bi bi-info-circle-fill"></i>
+                                Giới thiệu sự kiện
+                            </h3>
 
                             <div
-                                className="small"
-                                style={{ lineHeight: '1.6' }}
-                            >
-                                <p className="mb-2">
-                                    {event.organizer?.description}
-                                </p>
+                                className={`${styles.eventDescription} ${
+                                    descExpanded ? styles.expanded : ''
+                                }`}
+                                dangerouslySetInnerHTML={{
+                                    __html: sanitizedDescription,
+                                }}
+                            />
 
-                                {event.organizer?.email && (
-                                    <p className="mb-1">
-                                        <a
-                                            href={`mailto:${event.organizer.email}`}
-                                            className="text-decoration-none"
+                            {event.description &&
+                                event.description.length > 120 && (
+                                    <div
+                                        className={styles.expandButtonContainer}
+                                    >
+                                        <button
+                                            className={styles.expandButton}
+                                            onClick={() =>
+                                                setDescExpanded(!descExpanded)
+                                            }
                                         >
-                                            <i className="bi bi-envelope me-2"></i>
-                                            {event.organizer.email}
-                                        </a>
-                                    </p>
+                                            {descExpanded ? (
+                                                <>
+                                                    <BsChevronUp />
+                                                    Thu gọn
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <BsChevronDown />
+                                                    Xem thêm
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 )}
-
-                                {event.organizer?.phone && (
-                                    <p className="mb-0">
-                                        <a
-                                            href={`tel:${event.organizer.phone}`}
-                                            className="text-decoration-none"
-                                        >
-                                            <i className="bi bi-telephone me-2"></i>
-                                            {event.organizer.phone}
-                                        </a>
-                                    </p>
-                                )}
-                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* Phần đánh giá */}
-            {canReview && (
-                <div className="container my-5">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h2 className="text-white mb-0">Đánh giá</h2>
-                        {reviewStats.totalReviews > 0 && (
-                            <div className="d-flex align-items-center gap-2">
-                                {renderStars(reviewStats.averageRating)}
-                                <span className="text-white fw-bold">
-                                    {reviewStats.averageRating.toFixed(1)}
-                                </span>
-                                <span className="text-muted">
-                                    ({reviewStats.totalReviews} đánh giá)
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    {reviewStats.totalReviews === 0 ? (
-                        <div
-                            className="card p-4 border-0 shadow rounded-4"
-                            style={{ backgroundColor: '#1e1e1e' }}
-                        >
-                            <p className="text-white mb-0">
-                                Chưa có đánh giá nào cho sự kiện này
-                            </p>
-                        </div>
-                    ) : (
-                        <div
-                            className="card p-4 border-0 shadow rounded-4"
-                            style={{ backgroundColor: '#1e1e1e' }}
-                        >
-                            <div className="text-center">
-                                <div className="d-flex justify-content-center align-items-center gap-3 mb-3">
-                                    <div className="d-flex align-items-center gap-2">
-                                        {renderStars(reviewStats.averageRating)}
-                                        <span className="text-white fw-bold fs-4">
+                        {/* Reviews Section */}
+                        <div className={styles.contentCard}>
+                            <div className={styles.reviewHeader}>
+                                <h3 className={styles.sectionTitle}>
+                                    <i className="bi bi-star-fill"></i>
+                                    Đánh giá sự kiện
+                                </h3>
+                                {reviewStats.totalReviews > 0 && (
+                                    <div className={styles.reviewSummary}>
+                                        <div className={styles.ratingStars}>
+                                            {renderStars(
+                                                reviewStats.averageRating,
+                                            )}
+                                        </div>
+                                        <span className={styles.ratingNumber}>
                                             {reviewStats.averageRating.toFixed(
                                                 1,
                                             )}
                                         </span>
+                                        <span className={styles.reviewCount}>
+                                            ({reviewStats.totalReviews} đánh
+                                            giá)
+                                        </span>
                                     </div>
-                                    <span className="text-white">/ 5 sao</span>
+                                )}
+                            </div>
+
+                            {reviewStats.totalReviews === 0 ? (
+                                <div className={styles.noReviews}>
+                                    <i className="bi bi-star"></i>
+                                    <p>Chưa có đánh giá nào cho sự kiện này</p>
                                 </div>
-                                <p className="text-white mb-0">
-                                    Dựa trên {reviewStats.totalReviews} đánh giá
-                                    từ người tham gia
-                                </p>
+                            ) : (
+                                <div className={styles.reviewsList}>
+                                    {reviews.map((review) => (
+                                        <div
+                                            key={review._id}
+                                            className={styles.reviewItem}
+                                        >
+                                            <div
+                                                className={
+                                                    styles.reviewItemHeader
+                                                }
+                                            >
+                                                <div
+                                                    className={
+                                                        styles.reviewerInfo
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles.reviewerAvatar
+                                                        }
+                                                    >
+                                                        <i className="bi bi-person-fill"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div
+                                                            className={
+                                                                styles.reviewerName
+                                                            }
+                                                        >
+                                                            {review.userInfo[0]
+                                                                ?.name ||
+                                                                'Người dùng ẩn danh'}
+                                                        </div>
+                                                        <div
+                                                            className={
+                                                                styles.reviewDate
+                                                            }
+                                                        >
+                                                            {formatReviewDate(
+                                                                review.createdAt,
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    className={
+                                                        styles.reviewRating
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles.ratingStars
+                                                        }
+                                                    >
+                                                        {renderStars(
+                                                            review.rating,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {review.comment && (
+                                                <div
+                                                    className={
+                                                        styles.reviewComment
+                                                    }
+                                                >
+                                                    {review.comment}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="col-lg-4">
+                        {/* Organizer Info */}
+                        <div
+                            className={`${styles.contentCard} ${styles.stickyCard}`}
+                        >
+                            <h4 className={styles.sectionTitle}>
+                                <i className="bi bi-people-fill"></i>
+                                Ban Tổ Chức
+                            </h4>
+
+                            <div className={styles.organizerInfo}>
+                                <img
+                                    src={event.organizer?.logo}
+                                    alt="Logo ban tổ chức"
+                                    className={styles.organizerLogo}
+                                />
+                                <div className={styles.organizerDetails}>
+                                    <h5 className={styles.organizerName}>
+                                        {event.organizer?.name}
+                                    </h5>
+                                    <p className={styles.organizerDescription}>
+                                        {event.organizer?.description}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className={styles.organizerContact}>
+                                {event.organizer?.email && (
+                                    <div className={styles.contactItem}>
+                                        <i className="bi bi-envelope"></i>
+                                        <a
+                                            href={`mailto:${event.organizer.email}`}
+                                        >
+                                            {event.organizer.email}
+                                        </a>
+                                    </div>
+                                )}
+
+                                {event.organizer?.phone && (
+                                    <div className={styles.contactItem}>
+                                        <i className="bi bi-telephone"></i>
+                                        <a
+                                            href={`tel:${event.organizer.phone}`}
+                                        >
+                                            {event.organizer.phone}
+                                        </a>
+                                    </div>
+                                )}
+
+                                <Link
+                                    to={`/organizer/${event.createdBy}/reviews`}
+                                    className={styles.detailsButton}
+                                >
+                                    <i className="bi bi-info-circle"></i>
+                                    Xem thông tin chi tiết
+                                </Link>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
-            )}
+            </div>
 
             {/* Review Form Modal */}
             <ReviewForm
@@ -583,6 +650,7 @@ const EventDetail = () => {
                 onSuccess={handleReviewSuccess}
             />
 
+            {/* Mobile Fixed Bottom Bar */}
             <div className="fixed-ticket-bar d-block d-md-none">
                 <div className="container d-flex justify-content-between align-items-center h-100">
                     <span className="text-white fw-bold">
@@ -609,7 +677,7 @@ const EventDetail = () => {
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
