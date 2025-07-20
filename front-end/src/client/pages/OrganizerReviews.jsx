@@ -72,18 +72,20 @@ const OrganizerReviews = () => {
 
         // Thêm sao đầy
         for (let i = 0; i < fullStars; i++) {
-            stars.push(<BsStarFill key={i} className="text-warning" />);
+            stars.push(<BsStarFill key={i} className={styles.starFilled} />);
         }
 
         // Thêm sao nửa (nếu có)
         if (hasHalfStar) {
-            stars.push(<BsStarHalf key="half" className="text-warning" />);
+            stars.push(<BsStarHalf key="half" className={styles.starFilled} />);
         }
 
         // Thêm sao rỗng
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
         for (let i = 0; i < emptyStars; i++) {
-            stars.push(<BsStar key={`empty-${i}`} className="text-warning" />);
+            stars.push(
+                <BsStar key={`empty-${i}`} className={styles.starEmpty} />,
+            );
         }
 
         return stars;
@@ -105,315 +107,247 @@ const OrganizerReviews = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    if (loading) {
+    if (loading && organizerLoading) {
         return (
-            <Container fluid className={`${styles.container} min-vh-100 p-4`}>
-                <LoadingSpinner />
-            </Container>
+            <div className={styles.container}>
+                <Container>
+                    <div className={styles.loadingContainer}>
+                        <LoadingSpinner />
+                    </div>
+                </Container>
+            </div>
         );
     }
 
     return (
-        <Container
-            fluid
-            className={`${styles.container} min-vh-100 p-4 rounded-4`}
-        >
-            {/* Breadcrumb */}
-            <Row className="pt-4">
-                <Col md={9} className="px-4">
-                    <div>
-                        <Link
-                            to="/"
-                            className="text-decoration-none"
-                            style={{ color: 'rgb(166, 166, 176)' }}
-                        >
-                            Trang chủ
-                        </Link>
-                        <BsChevronRight className="mx-2" />
-                        <span className="text-white">
-                            Thông tin ban tổ chức
-                        </span>
-                    </div>
-                </Col>
-            </Row>
+        <div className={styles.container}>
+            <Container>
+                {/* Breadcrumb */}
+                <div className={styles.breadcrumbSection}>
+                    <nav aria-label="breadcrumb">
+                        <ol className={styles.breadcrumb}>
+                            <li className={styles.breadcrumbItem}>
+                                <Link to="/" className={styles.breadcrumbLink}>
+                                    <i className="bi bi-house-door"></i>
+                                    Trang chủ
+                                </Link>
+                            </li>
+                            <li className={styles.breadcrumbSeparator}>
+                                <BsChevronRight />
+                            </li>
+                            <li className={styles.breadcrumbActive}>
+                                Thông tin ban tổ chức
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
 
-            {/* Organizer Info Section */}
-            <Row className="pt-4">
-                <Col md={12} className="px-4">
-                    {/* Mạng xã hội */}
-                    <div className="mb-3">
-                        {organizerInfo?.website ? (
-                            <a
-                                href={organizerInfo.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-info fw-bold"
-                                style={{ fontSize: '1.08rem' }}
-                            >
-                                <i className="bi bi-globe me-2" />{' '}
-                                Website/Fanpage
-                            </a>
-                        ) : (
-                            <span className="text-muted">
-                                Chưa có thông tin mạng xã hội
-                            </span>
-                        )}
-                    </div>
-                    <div className="d-flex justify-content-between align-items-start mb-5">
-                        {/* Organizer Info Card */}
-                        <div className="flex-grow-1 me-4">
+                {/* Hero Section - Organizer Info */}
+                <div className={styles.heroSection}>
+                    <Row className="g-4">
+                        <Col lg={8}>
                             {organizerLoading ? (
-                                <div
-                                    className={`card p-4 border-0 shadow rounded-4 ${styles.organizerCard}`}
-                                >
-                                    <div className="d-flex align-items-center">
+                                <div className={styles.organizerCardSkeleton}>
+                                    <div
+                                        className={styles.skeletonAvatar}
+                                    ></div>
+                                    <div className={styles.skeletonContent}>
                                         <div
-                                            className="rounded-circle me-4"
-                                            style={{
-                                                width: '100px',
-                                                height: '100px',
-                                                backgroundColor: '#4a5568',
-                                            }}
-                                        />
-                                        <div className="flex-grow-1">
-                                            <div
-                                                className="mb-2"
-                                                style={{
-                                                    width: '250px',
-                                                    height: '28px',
-                                                    backgroundColor: '#4a5568',
-                                                    borderRadius: '4px',
-                                                }}
-                                            />
-                                            <div
-                                                className="mb-3"
-                                                style={{
-                                                    width: '400px',
-                                                    height: '18px',
-                                                    backgroundColor: '#4a5568',
-                                                    borderRadius: '4px',
-                                                }}
-                                            />
-                                            <div
-                                                className="mb-1"
-                                                style={{
-                                                    width: '200px',
-                                                    height: '16px',
-                                                    backgroundColor: '#4a5568',
-                                                    borderRadius: '4px',
-                                                }}
-                                            />
-                                            <div
-                                                style={{
-                                                    width: '180px',
-                                                    height: '16px',
-                                                    backgroundColor: '#4a5568',
-                                                    borderRadius: '4px',
-                                                }}
-                                            />
-                                        </div>
+                                            className={styles.skeletonTitle}
+                                        ></div>
+                                        <div
+                                            className={styles.skeletonText}
+                                        ></div>
+                                        <div
+                                            className={styles.skeletonText}
+                                        ></div>
                                     </div>
                                 </div>
                             ) : (
-                                <div
-                                    className={`card p-4 border-0 shadow rounded-4 ${styles.organizerCard}`}
-                                >
-                                    <div className="d-flex align-items-start">
-                                        <div className="me-4">
-                                            <img
-                                                src={
-                                                    organizerInfo?.logo ||
-                                                    '/src/assets/images/avatar.png'
+                                <Card className={styles.organizerCard}>
+                                    <Card.Body className="p-4">
+                                        <div className={styles.organizerHeader}>
+                                            <div
+                                                className={
+                                                    styles.organizerAvatarContainer
                                                 }
-                                                alt="Organizer Logo"
-                                                className={`rounded-circle ${styles.organizerAvatar}`}
-                                                style={{
-                                                    width: '100px',
-                                                    height: '100px',
-                                                    objectFit: 'cover',
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="flex-grow-1">
-                                            <div className="d-flex justify-content-between align-items-start mb-3">
-                                                <div>
-                                                    <h4
-                                                        className="text-white fw-bold mb-2"
-                                                        style={{
-                                                            textShadow:
-                                                                '0 1px 2px rgba(0,0,0,0.3)',
-                                                        }}
-                                                    >
-                                                        {organizerInfo?.name ||
-                                                            'Ban Tổ Chức'}
-                                                    </h4>
-                                                    <div className="d-flex align-items-center gap-3 mb-3">
-                                                        {organizerInfo?.email && (
-                                                            <a
-                                                                href={`mailto:${organizerInfo.email}`}
-                                                                className={`text-decoration-none d-flex align-items-center ${styles.contactLink}`}
-                                                            >
-                                                                <i
-                                                                    className="bi bi-envelope me-2"
-                                                                    style={{
-                                                                        fontSize:
-                                                                            '1.1rem',
-                                                                        color: '#90cdf4',
-                                                                    }}
-                                                                ></i>
-                                                                <span className="small">
-                                                                    {
-                                                                        organizerInfo.email
-                                                                    }
-                                                                </span>
-                                                            </a>
-                                                        )}
-                                                        {organizerInfo?.phone && (
-                                                            <a
-                                                                href={`tel:${organizerInfo.phone}`}
-                                                                className={`text-decoration-none d-flex align-items-center ${styles.contactLink}`}
-                                                            >
-                                                                <i
-                                                                    className="bi bi-telephone me-2"
-                                                                    style={{
-                                                                        fontSize:
-                                                                            '1.1rem',
-                                                                        color: '#90cdf4',
-                                                                    }}
-                                                                ></i>
-                                                                <span className="small">
-                                                                    {
-                                                                        organizerInfo.phone
-                                                                    }
-                                                                </span>
-                                                            </a>
-                                                        )}
-                                                    </div>
+                                            >
+                                                <img
+                                                    src={
+                                                        organizerInfo?.logo ||
+                                                        '/src/assets/images/avatar.png'
+                                                    }
+                                                    alt="Organizer Logo"
+                                                    className={
+                                                        styles.organizerAvatar
+                                                    }
+                                                />
+                                            </div>
+                                            <div
+                                                className={styles.organizerInfo}
+                                            >
+                                                <h1
+                                                    className={
+                                                        styles.organizerName
+                                                    }
+                                                >
+                                                    {organizerInfo?.name ||
+                                                        'Ban Tổ Chức'}
+                                                </h1>
+                                                <div
+                                                    className={
+                                                        styles.organizerContacts
+                                                    }
+                                                >
+                                                    {organizerInfo?.email && (
+                                                        <a
+                                                            href={`mailto:${organizerInfo.email}`}
+                                                            className={
+                                                                styles.contactLink
+                                                            }
+                                                        >
+                                                            <i className="bi bi-envelope"></i>
+                                                            {
+                                                                organizerInfo.email
+                                                            }
+                                                        </a>
+                                                    )}
+                                                    {organizerInfo?.phone && (
+                                                        <a
+                                                            href={`tel:${organizerInfo.phone}`}
+                                                            className={
+                                                                styles.contactLink
+                                                            }
+                                                        >
+                                                            <i className="bi bi-telephone"></i>
+                                                            {
+                                                                organizerInfo.phone
+                                                            }
+                                                        </a>
+                                                    )}
+                                                    {organizerInfo?.website && (
+                                                        <a
+                                                            href={
+                                                                organizerInfo.website
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={
+                                                                styles.contactLink
+                                                            }
+                                                        >
+                                                            <i className="bi bi-globe"></i>
+                                                            Website
+                                                        </a>
+                                                    )}
                                                 </div>
                                             </div>
-                                            {organizerInfo?.info && (
-                                                <div
-                                                    className={`rounded p-3 ${styles.infoBox}`}
-                                                >
-                                                    <p
-                                                        className="mb-0 text-white small"
-                                                        style={{
-                                                            lineHeight: '1.6',
-                                                            color: '#e2e8f0',
-                                                        }}
-                                                    >
-                                                        {organizerInfo.info}
-                                                    </p>
-                                                </div>
-                                            )}
                                         </div>
-                                    </div>
-                                </div>
+                                        {organizerInfo?.info && (
+                                            <div
+                                                className={
+                                                    styles.organizerDescription
+                                                }
+                                            >
+                                                <p>{organizerInfo.info}</p>
+                                            </div>
+                                        )}
+                                    </Card.Body>
+                                </Card>
                             )}
-                        </div>
+                        </Col>
 
-                        {/* Rating Summary */}
+                        {/* Rating Summary Card */}
                         {totalReviews > 0 && (
-                            <div className="text-center">
-                                <div
-                                    className={`card p-4 border-0 shadow rounded-4 ${styles.ratingCard}`}
-                                >
-                                    <div className="d-flex flex-column align-items-center">
-                                        <div className="d-flex align-items-center gap-2 mb-2">
-                                            {renderStars(averageRating)}
+                            <Col lg={4}>
+                                <Card className={styles.ratingCard}>
+                                    <Card.Body className="text-center p-4">
+                                        <div className={styles.ratingDisplay}>
+                                            <div
+                                                className={styles.ratingNumber}
+                                            >
+                                                {averageRating.toFixed(1)}
+                                            </div>
+                                            <div className={styles.ratingStars}>
+                                                {renderStars(averageRating)}
+                                            </div>
+                                            <div className={styles.ratingCount}>
+                                                {totalReviews} đánh giá
+                                            </div>
                                         </div>
-                                        <h3
-                                            className="fw-bold mb-1"
-                                            style={{
-                                                color: '#f6ad55',
-                                                textShadow:
-                                                    '0 1px 2px rgba(0,0,0,0.3)',
-                                            }}
-                                        >
-                                            {averageRating.toFixed(1)}
-                                        </h3>
-                                        <p
-                                            className="mb-0 small"
-                                            style={{ color: '#e2e8f0' }}
-                                        >
-                                            {totalReviews} đánh giá
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
                         )}
-                    </div>
-                </Col>
-            </Row>
+                    </Row>
+                </div>
 
-            {/* Reviews Section Header */}
-            {reviews.length > 0 && (
-                <Row className="mb-4">
-                    <Col md={12} className="px-4">
-                        <div
-                            className={`d-flex justify-content-between align-items-center ${styles.sectionHeader}`}
-                        >
-                            <h5 className={styles.sectionTitle}>
-                                <i
-                                    className="bi bi-star-fill me-2"
-                                    style={{ color: '#f6ad55' }}
-                                ></i>
+                {/* Reviews Section */}
+                <div className={styles.reviewsSection}>
+                    {/* Section Header */}
+                    {reviews.length > 0 && (
+                        <div className={styles.sectionHeader}>
+                            <h2 className={styles.sectionTitle}>
+                                <i className="bi bi-star-fill"></i>
                                 Đánh giá từ người tham gia
-                            </h5>
-                            <span className={styles.sectionSubtitle}>
+                            </h2>
+                            <span className={styles.reviewTotal}>
                                 {totalReviews} đánh giá
                             </span>
                         </div>
-                    </Col>
-                </Row>
-            )}
+                    )}
 
-            {/* Reviews List */}
-            <Row>
-                <Col md={12} className="px-4">
+                    {/* Reviews List */}
                     {loading ? (
-                        <LoadingSpinner />
+                        <div className={styles.loadingContainer}>
+                            <LoadingSpinner />
+                        </div>
                     ) : reviews.length === 0 ? (
-                        <div className="text-center my-5">
-                            <div
-                                className={`card p-5 border-0 shadow rounded-4 ${styles.emptyState}`}
-                            >
-                                <div className="mb-4">
-                                    <i
-                                        className="bi bi-star"
-                                        style={{
-                                            fontSize: '3rem',
-                                            color: '#718096',
-                                        }}
-                                    ></i>
-                                </div>
-                                <h4 className="text-white mb-3">
-                                    Chưa có đánh giá nào
-                                </h4>
-                                <p style={{ color: '#a0aec0' }}>
-                                    Ban tổ chức này chưa có đánh giá nào từ
-                                    người tham gia.
-                                </p>
-                            </div>
+                        <div className={styles.emptyState}>
+                            <Card className={styles.emptyCard}>
+                                <Card.Body className="text-center p-5">
+                                    <div className={styles.emptyIcon}>
+                                        <i className="bi bi-star"></i>
+                                    </div>
+                                    <h3 className={styles.emptyTitle}>
+                                        Chưa có đánh giá nào
+                                    </h3>
+                                    <p className={styles.emptyText}>
+                                        Ban tổ chức này chưa có đánh giá nào từ
+                                        người tham gia.
+                                    </p>
+                                </Card.Body>
+                            </Card>
                         </div>
                     ) : (
-                        <div className="reviews-container">
-                            {reviews.map((review, index) => (
+                        <div className={styles.reviewsList}>
+                            {reviews.map((review) => (
                                 <Card
                                     key={review._id}
-                                    className={`mb-4 border-0 shadow rounded-4 ${styles.reviewCard}`}
+                                    className={styles.reviewCard}
                                 >
                                     <Card.Body className="p-4">
                                         {/* Review Header */}
-                                        <div className="d-flex justify-content-between align-items-start mb-3">
-                                            <div className="d-flex align-items-center gap-3">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    {renderStars(review.rating)}
+                                        <div className={styles.reviewHeader}>
+                                            <div className={styles.reviewMeta}>
+                                                <div
+                                                    className={
+                                                        styles.reviewRating
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles.reviewStars
+                                                        }
+                                                    >
+                                                        {renderStars(
+                                                            review.rating,
+                                                        )}
+                                                    </div>
                                                     <span
-                                                        className="fw-bold fs-6"
-                                                        style={{
-                                                            color: '#f6ad55',
-                                                        }}
+                                                        className={
+                                                            styles.reviewRatingText
+                                                        }
                                                     >
                                                         {review.rating}/5
                                                     </span>
@@ -422,62 +356,53 @@ const OrganizerReviews = () => {
                                                     review.eventInfo.length >
                                                         0 && (
                                                         <Badge
-                                                            className={`fs-6 px-3 py-2 ${styles.eventBadge}`}
-                                                        >
-                                                            <i className="bi bi-calendar-event me-1"></i>
-                                                            {
+                                                            className={
+                                                                styles.eventBadge
+                                                            }
+                                                            title={
                                                                 review
                                                                     .eventInfo[0]
                                                                     .name
-                                                            }
+                                                            } // Tooltip
+                                                        >
+                                                            <i className="bi bi-calendar-event"></i>
+                                                            <span
+                                                                className={
+                                                                    styles.eventName
+                                                                }
+                                                            >
+                                                                {
+                                                                    review
+                                                                        .eventInfo[0]
+                                                                        .name
+                                                                }
+                                                            </span>
                                                         </Badge>
                                                     )}
                                             </div>
-                                            <div className="text-end">
-                                                <small
-                                                    style={{ color: '#a0aec0' }}
-                                                >
-                                                    <TimeText
-                                                        event={
-                                                            review.eventInfo[0]
-                                                        }
-                                                    />
-                                                </small>
+                                            <div className={styles.reviewDate}>
+                                                <TimeText
+                                                    event={review.eventInfo[0]}
+                                                />
                                             </div>
                                         </div>
 
                                         {/* Review Content */}
                                         {review.comment && (
-                                            <div className="mb-4">
-                                                <div
-                                                    className={`rounded p-3 ${styles.reviewContent}`}
-                                                >
-                                                    <p
-                                                        className="mb-0"
-                                                        style={{
-                                                            lineHeight: '1.6',
-                                                            color: '#e2e8f0',
-                                                        }}
-                                                    >
-                                                        &ldquo;{review.comment}
-                                                        &rdquo;
-                                                    </p>
-                                                </div>
+                                            <div
+                                                className={styles.reviewContent}
+                                            >
+                                                <p>"{review.comment}"</p>
                                             </div>
                                         )}
 
                                         {/* Review Footer */}
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div className="d-flex align-items-center gap-3">
+                                        <div className={styles.reviewFooter}>
+                                            <div className={styles.reviewUser}>
                                                 <div
-                                                    className={`d-flex align-items-center justify-content-center rounded-circle ${styles.userAvatar}`}
-                                                    style={{
-                                                        width: '45px',
-                                                        height: '45px',
-                                                        color: 'white',
-                                                        fontWeight: 'bold',
-                                                        fontSize: '1.1rem',
-                                                    }}
+                                                    className={
+                                                        styles.userAvatar
+                                                    }
                                                 >
                                                     {review.userInfo &&
                                                     review.userInfo.length > 0
@@ -494,8 +419,14 @@ const OrganizerReviews = () => {
                                                             : 'U'
                                                         : 'U'}
                                                 </div>
-                                                <div>
-                                                    <p className="mb-0 fw-bold text-white">
+                                                <div
+                                                    className={styles.userInfo}
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles.userName
+                                                        }
+                                                    >
                                                         {review.userInfo &&
                                                         review.userInfo.length >
                                                             0
@@ -506,20 +437,16 @@ const OrganizerReviews = () => {
                                                               )[0] ||
                                                               'Người dùng'
                                                             : 'Người dùng'}
-                                                    </p>
-                                                    {review.eventInfo &&
-                                                        review.eventInfo
-                                                            .length > 0 && (
-                                                            <small
-                                                                style={{
-                                                                    color: '#a0aec0',
-                                                                }}
-                                                            >
-                                                                {formatDate(
-                                                                    review.createdAt,
-                                                                )}
-                                                            </small>
+                                                    </div>
+                                                    <div
+                                                        className={
+                                                            styles.reviewTimestamp
+                                                        }
+                                                    >
+                                                        {formatDate(
+                                                            review.createdAt,
                                                         )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -528,117 +455,61 @@ const OrganizerReviews = () => {
                             ))}
                         </div>
                     )}
-                </Col>
-            </Row>
+                </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <Row className="mt-5">
-                    <Col md={12} className="px-4">
-                        <div className="d-flex justify-content-center">
-                            <nav aria-label="Reviews pagination">
-                                <Pagination className="mb-0">
-                                    <Pagination.First
-                                        onClick={() => handlePageChange(1)}
-                                        disabled={currentPage === 1}
-                                        className="border-0"
-                                        style={{
-                                            backgroundColor: 'transparent',
-                                            color:
-                                                currentPage === 1
-                                                    ? '#4a5568'
-                                                    : '#a0aec0',
-                                        }}
-                                    />
-                                    <Pagination.Prev
-                                        onClick={() =>
-                                            handlePageChange(currentPage - 1)
-                                        }
-                                        disabled={currentPage === 1}
-                                        className="border-0"
-                                        style={{
-                                            backgroundColor: 'transparent',
-                                            color:
-                                                currentPage === 1
-                                                    ? '#4a5568'
-                                                    : '#a0aec0',
-                                        }}
-                                    />
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className={styles.paginationSection}>
+                        <nav aria-label="Reviews pagination">
+                            <Pagination className={styles.pagination}>
+                                <Pagination.First
+                                    onClick={() => handlePageChange(1)}
+                                    disabled={currentPage === 1}
+                                />
+                                <Pagination.Prev
+                                    onClick={() =>
+                                        handlePageChange(currentPage - 1)
+                                    }
+                                    disabled={currentPage === 1}
+                                />
 
-                                    {[...Array(totalPages)].map((_, index) => {
-                                        const pageNumber = index + 1;
-                                        const isActive =
-                                            pageNumber === currentPage;
+                                {[...Array(totalPages)].map((_, index) => {
+                                    const pageNumber = index + 1;
+                                    const isActive = pageNumber === currentPage;
 
-                                        return (
-                                            <Pagination.Item
-                                                key={pageNumber}
-                                                active={isActive}
-                                                onClick={() =>
-                                                    handlePageChange(pageNumber)
-                                                }
-                                                className={`border-0 mx-1 ${
-                                                    styles.paginationItem
-                                                } ${
-                                                    isActive
-                                                        ? styles.active
-                                                        : ''
-                                                }`}
-                                            >
-                                                {pageNumber}
-                                            </Pagination.Item>
-                                        );
-                                    })}
+                                    return (
+                                        <Pagination.Item
+                                            key={pageNumber}
+                                            active={isActive}
+                                            onClick={() =>
+                                                handlePageChange(pageNumber)
+                                            }
+                                        >
+                                            {pageNumber}
+                                        </Pagination.Item>
+                                    );
+                                })}
 
-                                    <Pagination.Next
-                                        onClick={() =>
-                                            handlePageChange(currentPage + 1)
-                                        }
-                                        disabled={currentPage === totalPages}
-                                        className="border-0"
-                                        style={{
-                                            backgroundColor: 'transparent',
-                                            color:
-                                                currentPage === totalPages
-                                                    ? '#4a5568'
-                                                    : '#a0aec0',
-                                        }}
-                                    />
-                                    <Pagination.Last
-                                        onClick={() =>
-                                            handlePageChange(totalPages)
-                                        }
-                                        disabled={currentPage === totalPages}
-                                        className="border-0"
-                                        style={{
-                                            backgroundColor: 'transparent',
-                                            color:
-                                                currentPage === totalPages
-                                                    ? '#4a5568'
-                                                    : '#a0aec0',
-                                        }}
-                                    />
-                                </Pagination>
-                            </nav>
+                                <Pagination.Next
+                                    onClick={() =>
+                                        handlePageChange(currentPage + 1)
+                                    }
+                                    disabled={currentPage === totalPages}
+                                />
+                                <Pagination.Last
+                                    onClick={() => handlePageChange(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                />
+                            </Pagination>
+                        </nav>
+                        <div className={styles.paginationInfo}>
+                            Trang {currentPage} của {totalPages} ({totalReviews}{' '}
+                            đánh giá)
                         </div>
-                        <div className="text-center mt-3">
-                            <small
-                                style={{
-                                    color: '#a0aec0',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    padding: '8px 16px',
-                                    borderRadius: '20px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                }}
-                            >
-                                Trang {currentPage} của {totalPages} (
-                                {totalReviews} đánh giá)
-                            </small>
-                        </div>
-                    </Col>
-                </Row>
-            )}
-        </Container>
+                    </div>
+                )}
+            </Container>
+        </div>
     );
 };
 

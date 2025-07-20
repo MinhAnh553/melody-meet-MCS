@@ -42,14 +42,14 @@ function ClientLayout() {
                     onClick={handleScrollToTop}
                     style={{
                         position: 'fixed',
-                        bottom: 32,
-                        right: 32,
+                        bottom: 80,
+                        right: 20,
                         zIndex: 9999,
                         background: 'rgba(30,30,30,0.85)',
                         border: 'none',
                         borderRadius: '50%',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                        padding: 12,
+                        padding: 10,
                         cursor: 'pointer',
                         color: '#fff',
                         fontSize: 32,

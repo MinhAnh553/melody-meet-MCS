@@ -515,12 +515,34 @@ const EventDetail = () => {
                                                         styles.reviewerInfo
                                                     }
                                                 >
-                                                    <div
+                                                    {/* <div
                                                         className={
                                                             styles.reviewerAvatar
                                                         }
                                                     >
                                                         <i className="bi bi-person-fill"></i>
+                                                    </div> */}
+                                                    <div
+                                                        className={
+                                                            styles.userAvatar
+                                                        }
+                                                    >
+                                                        {review.userInfo &&
+                                                        review.userInfo.length >
+                                                            0
+                                                            ? review.userInfo[0]
+                                                                  .name
+                                                                ? review.userInfo[0].name
+                                                                      .charAt(0)
+                                                                      .toUpperCase()
+                                                                : review
+                                                                      .userInfo[0]
+                                                                      .email
+                                                                ? review.userInfo[0].email
+                                                                      .charAt(0)
+                                                                      .toUpperCase()
+                                                                : 'U'
+                                                            : 'U'}
                                                     </div>
                                                     <div>
                                                         <div

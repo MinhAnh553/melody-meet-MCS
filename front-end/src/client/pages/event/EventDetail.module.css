@@ -4,6 +4,7 @@
     background-color: #fff;
     min-height: 100vh;
     margin-top: 85px;
+    overflow-x: hidden;
 }
 
 .loadingContainer {
@@ -614,4 +615,18 @@
     .organizerInfo {
         gap: 0.5rem;
     }
+}
+
+.userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1890ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
 }
