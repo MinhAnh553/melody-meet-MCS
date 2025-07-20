@@ -1,12 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import styles from '../../styles/EventManagement.module.css';
+import styles from './UpgradeRequestPage.module.css';
 import UploadImage from '../../components/UploadImage';
 import swalCustomize from '../../../util/swalCustomize';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../util/api';
 import LoadingSpinner from '../../components/loading/LoadingSpinner';
-import { Alert, Card, Badge, Button } from 'react-bootstrap';
-import { BsHouseDoor, BsClock, BsCheckCircle, BsXCircle } from 'react-icons/bs';
+import {
+    Alert,
+    Card,
+    Badge,
+    Button,
+    Container,
+    Row,
+    Col,
+} from 'react-bootstrap';
+import {
+    BsHouseDoor,
+    BsClock,
+    BsCheckCircle,
+    BsXCircle,
+    BsBuilding,
+    BsBank,
+    BsShield,
+    BsChevronRight,
+} from 'react-icons/bs';
 
 const bankList = [
     'Vietcombank',
@@ -42,49 +59,56 @@ const getStatusInfo = (status) => {
         case 'pending':
             return {
                 badge: (
-                    <Badge bg="warning" className="fs-6">
+                    <Badge bg="warning" className={styles.statusBadge}>
+                        <BsClock className="me-1" />
                         Chờ xử lý
                     </Badge>
                 ),
-                icon: <BsClock className="text-warning" size={24} />,
+                icon: <BsClock className={styles.statusIconPending} />,
                 title: 'Yêu cầu đang được xem xét',
                 description:
                     'Yêu cầu nâng cấp của bạn đã được gửi thành công và đang chờ xem xét. Vui lòng kiên nhẫn chờ đợi.',
+                color: '#ffc107',
             };
         case 'approved':
             return {
                 badge: (
-                    <Badge bg="success" className="fs-6">
+                    <Badge bg="success" className={styles.statusBadge}>
+                        <BsCheckCircle className="me-1" />
                         Đã duyệt
                     </Badge>
                 ),
-                icon: <BsCheckCircle className="text-success" size={24} />,
+                icon: <BsCheckCircle className={styles.statusIconSuccess} />,
                 title: 'Chúc mừng! Yêu cầu đã được duyệt',
                 description:
                     'Tài khoản của bạn đã được nâng cấp thành người tổ chức sự kiện. Bây giờ bạn có thể tạo và quản lý sự kiện.',
+                color: '#28a745',
             };
         case 'rejected':
             return {
                 badge: (
-                    <Badge bg="danger" className="fs-6">
+                    <Badge bg="danger" className={styles.statusBadge}>
+                        <BsXCircle className="me-1" />
                         Đã từ chối
                     </Badge>
                 ),
-                icon: <BsXCircle className="text-danger" size={24} />,
+                icon: <BsXCircle className={styles.statusIconDanger} />,
                 title: 'Yêu cầu bị từ chối',
                 description:
                     'Yêu cầu nâng cấp của bạn đã bị từ chối. Vui lòng xem lý do bên dưới và thử lại.',
+                color: '#dc3545',
             };
         default:
             return {
                 badge: (
-                    <Badge bg="secondary" className="fs-6">
+                    <Badge bg="secondary" className={styles.statusBadge}>
                         Không xác định
                     </Badge>
                 ),
-                icon: <BsClock className="text-secondary" size={24} />,
+                icon: <BsClock className={styles.statusIconSecondary} />,
                 title: 'Trạng thái không xác định',
                 description: 'Không thể xác định trạng thái yêu cầu nâng cấp.',
+                color: '#6c757d',
             };
     }
 };
@@ -181,10 +205,12 @@ const UpgradeRequestPage = () => {
             [name]: type === 'checkbox' ? checked : value,
         }));
     };
+
     const handleLogoSelect = (file, previewUrl) => {
         setLogo(file);
         setLogoPreview(previewUrl);
     };
+
     const handleLicenseSelect = (file, previewUrl) => {
         setLicenseFile(file);
         setLicensePreview(previewUrl);
@@ -311,822 +337,885 @@ const UpgradeRequestPage = () => {
     };
 
     if (checkingStatus) {
-        return <LoadingSpinner />;
+        return (
+            <div className={styles.container}>
+                <Container>
+                    <div className={styles.loadingContainer}>
+                        <LoadingSpinner />
+                    </div>
+                </Container>
+            </div>
+        );
     }
 
     // STATUS UI
     if (mode === 'status' && statusData) {
         const statusInfo = getStatusInfo(statusData.status);
         return (
-            <div
-                className={styles.organizerContainer}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginTop: '85px',
-                    padding: '2rem 0',
-                }}
-            >
-                <Card
-                    className={styles.organizerCard}
-                    style={{
-                        maxWidth: 700,
-                        width: '100%',
-                        margin: '0 auto',
-                        background: '#fff',
-                        borderRadius: 24,
-                        boxShadow: '0 8px 32px rgba(80,120,255,0.10)',
-                        border: '1px solid #e5e7eb',
-                        padding: '2.5rem 2rem',
-                    }}
-                >
-                    <div className="text-center mb-4">
-                        {statusData.organization?.logo && (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    marginBottom: 16,
-                                }}
-                            >
-                                <img
-                                    src={statusData.organization.logo}
-                                    alt="logo"
-                                    style={{
-                                        width: 100,
-                                        height: 100,
-                                        borderRadius: '50%',
-                                        objectFit: 'cover',
-                                        boxShadow:
-                                            '0 4px 16px rgba(80,120,255,0.15)',
-                                        border: '3px solid #e3f0fd',
-                                        background: '#f7fafd',
-                                    }}
-                                />
-                            </div>
-                        )}
-                        {statusInfo.icon}
-                        <h2
-                            className="mt-3 mb-2"
-                            style={{
-                                color: '#1976d2',
-                                fontWeight: 700,
-                                fontSize: 28,
-                            }}
-                        >
-                            {statusInfo.title}
-                        </h2>
-                        {statusInfo.badge}
-                    </div>
-                    <div className="mb-4">
-                        <p
-                            className="text-center"
-                            style={{
-                                fontSize: '1.1rem',
-                                color: '#222',
-                                fontWeight: 500,
-                            }}
-                        >
-                            {statusInfo.description}
-                        </p>
-                        {statusData.status === 'approved' && (
-                            <div
-                                className="alert alert-warning mt-3"
-                                style={{
-                                    background: 'rgba(255, 193, 7, 0.12)',
-                                    border: '1px solid #ffc107',
-                                    borderRadius: '0.75rem',
-                                    color: '#856404',
-                                    fontWeight: 500,
-                                }}
-                            >
-                                <div className="d-flex align-items-center">
-                                    <i
-                                        className="fas fa-exclamation-triangle me-2"
-                                        style={{ color: '#ffc107' }}
-                                    ></i>
-                                    <span>
-                                        <strong>Lưu ý:</strong> Vui lòng đăng
-                                        xuất và đăng nhập lại để được áp dụng.
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    {/* Section: Thông tin tổ chức */}
-                    <div className="mb-4">
-                        <h5
-                            style={{
-                                color: '#1976d2',
-                                marginBottom: 18,
-                                fontWeight: 700,
-                                fontSize: 20,
-                                letterSpacing: 0.2,
-                            }}
-                        >
-                            1. Thông tin tổ chức
-                        </h5>
-                        <div className="row g-3">
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Tên tổ chức
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.name || '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Mã số thuế
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.tax || '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Website/Fanpage
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.website || '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Mô tả
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.description ||
-                                        '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Email
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.email || '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    SĐT
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.phone || '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Ngày gửi yêu cầu
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {formatDate(statusData.createdAt)}
-                                </div>
-                            </div>
-                            {statusData.organization?.licenseUrl && (
-                                <div className="col-md-6">
-                                    <div
-                                        style={{
-                                            color: '#888',
-                                            fontWeight: 500,
-                                        }}
-                                    >
-                                        Giấy phép hoạt động
-                                    </div>
+            <div className={styles.container}>
+                <Container>
+                    {/* Breadcrumb */}
+                    <div className={styles.breadcrumbSection}>
+                        <nav aria-label="breadcrumb">
+                            <ol className={styles.breadcrumb}>
+                                <li className={styles.breadcrumbItem}>
                                     <a
-                                        href={
-                                            statusData.organization.licenseUrl
-                                        }
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            color: '#1976d2',
-                                            textDecoration: 'underline',
-                                            fontWeight: 600,
-                                        }}
+                                        href="/"
+                                        className={styles.breadcrumbLink}
                                     >
-                                        <i className="fas fa-file-alt me-2"></i>
-                                        Xem file
+                                        <BsHouseDoor className="me-1" />
+                                        Trang chủ
                                     </a>
-                                </div>
-                            )}
-                        </div>
+                                </li>
+                                <li className={styles.breadcrumbSeparator}>
+                                    <BsChevronRight />
+                                </li>
+                                <li className={styles.breadcrumbActive}>
+                                    Yêu cầu nâng cấp
+                                </li>
+                            </ol>
+                        </nav>
                     </div>
-                    {/* Section: Người đại diện */}
-                    {/* <div className="mb-4">
-                        <h5
-                            style={{
-                                color: '#1976d2',
-                                marginBottom: 18,
-                                fontWeight: 700,
-                                fontSize: 20,
-                                letterSpacing: 0.2,
-                            }}
-                        >
-                            2. Người đại diện
-                        </h5>
-                        <div className="row g-3">
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Họ tên
+
+                    {/* Status Card */}
+                    <div className={styles.statusContainer}>
+                        <Card className={styles.statusCard}>
+                            <Card.Body className="p-5">
+                                {/* Status Header */}
+                                <div className={styles.statusHeader}>
+                                    {statusData.organization?.logo && (
+                                        <div className={styles.logoContainer}>
+                                            <img
+                                                src={
+                                                    statusData.organization.logo
+                                                }
+                                                alt="Organization Logo"
+                                                className={
+                                                    styles.organizationLogo
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                    <div className={styles.statusIcon}>
+                                        {statusInfo.icon}
+                                    </div>
+                                    <h1 className={styles.statusTitle}>
+                                        {statusInfo.title}
+                                    </h1>
+                                    <div
+                                        className={styles.statusBadgeContainer}
+                                    >
+                                        {statusInfo.badge}
+                                    </div>
+                                    <p className={styles.statusDescription}>
+                                        {statusInfo.description}
+                                    </p>
+
+                                    {statusData.status === 'approved' && (
+                                        <Alert
+                                            variant="info"
+                                            className={styles.loginAlert}
+                                        >
+                                            <Alert.Heading className="h6 mb-2">
+                                                <BsShield className="me-2" />
+                                                Lưu ý quan trọng
+                                            </Alert.Heading>
+                                            Vui lòng đăng xuất và đăng nhập lại
+                                            để cập nhật quyền tài khoản mới.
+                                        </Alert>
+                                    )}
                                 </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.repName || '-'}
+
+                                {/* Organization Info */}
+                                <div className={styles.infoSection}>
+                                    <div className={styles.sectionHeader}>
+                                        <BsBuilding
+                                            className={styles.sectionIcon}
+                                        />
+                                        <h3 className={styles.sectionTitle}>
+                                            Thông tin tổ chức
+                                        </h3>
+                                    </div>
+                                    <Row className="g-4">
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Tên tổ chức
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.name || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Mã số thuế
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.tax || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Website/Fanpage
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.website ? (
+                                                        <a
+                                                            href={
+                                                                statusData
+                                                                    .organization
+                                                                    .website
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={
+                                                                styles.infoLink
+                                                            }
+                                                        >
+                                                            {
+                                                                statusData
+                                                                    .organization
+                                                                    .website
+                                                            }
+                                                        </a>
+                                                    ) : (
+                                                        '-'
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Email
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.email || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Số điện thoại
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.phone || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Ngày gửi yêu cầu
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {formatDate(
+                                                        statusData.createdAt,
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={12}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Mô tả tổ chức
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.description || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        {statusData.organization
+                                            ?.licenseUrl && (
+                                            <Col md={12}>
+                                                <div
+                                                    className={styles.infoItem}
+                                                >
+                                                    <div
+                                                        className={
+                                                            styles.infoLabel
+                                                        }
+                                                    >
+                                                        Giấy phép hoạt động
+                                                    </div>
+                                                    <div
+                                                        className={
+                                                            styles.infoValue
+                                                        }
+                                                    >
+                                                        <a
+                                                            href={
+                                                                statusData
+                                                                    .organization
+                                                                    .licenseUrl
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={
+                                                                styles.fileLink
+                                                            }
+                                                        >
+                                                            <i className="bi bi-file-earmark-text me-2"></i>
+                                                            Xem tài liệu
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </Col>
+                                        )}
+                                    </Row>
                                 </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Chức vụ
+
+                                {/* Bank Info */}
+                                <div className={styles.infoSection}>
+                                    <div className={styles.sectionHeader}>
+                                        <BsBank
+                                            className={styles.sectionIcon}
+                                        />
+                                        <h3 className={styles.sectionTitle}>
+                                            Thông tin ngân hàng
+                                        </h3>
+                                    </div>
+                                    <Row className="g-4">
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Tên chủ tài khoản
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.accountName || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Số tài khoản
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.accountNumber || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className={styles.infoItem}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Ngân hàng
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {statusData.organization
+                                                        ?.bankName || '-'}
+                                                </div>
+                                            </div>
+                                        </Col>
+                                    </Row>
                                 </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.repPosition ||
-                                        '-'}
+
+                                {/* Admin Note */}
+                                {statusData.adminNote && (
+                                    <div className={styles.infoSection}>
+                                        <div className={styles.sectionHeader}>
+                                            <i
+                                                className="bi bi-chat-left-text"
+                                                style={{
+                                                    color: statusInfo.color,
+                                                }}
+                                            ></i>
+                                            <h3 className={styles.sectionTitle}>
+                                                {statusData.status ===
+                                                'approved'
+                                                    ? 'Ghi chú từ admin'
+                                                    : 'Lý do từ chối'}
+                                            </h3>
+                                        </div>
+                                        <Alert
+                                            variant={
+                                                statusData.status === 'approved'
+                                                    ? 'success'
+                                                    : 'danger'
+                                            }
+                                            className={styles.adminNote}
+                                        >
+                                            <div
+                                                className={
+                                                    styles.adminNoteContent
+                                                }
+                                            >
+                                                {statusData.adminNote}
+                                            </div>
+                                        </Alert>
+                                    </div>
+                                )}
+
+                                {/* Actions */}
+                                <div className={styles.statusActions}>
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
+                                        onClick={() => navigate('/')}
+                                        className={styles.homeButton}
+                                    >
+                                        <BsHouseDoor className="me-2" />
+                                        Về trang chủ
+                                    </Button>
                                 </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Số CMND/CCCD
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.repIdNumber ||
-                                        '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Email
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.repEmail || '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Số điện thoại
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.repPhone || '-'}
-                                </div>
-                            </div>
-                        </div>
-                    </div> */}
-                    {/* Section: Tài khoản ngân hàng */}
-                    <div className="mb-4">
-                        <h5
-                            style={{
-                                color: '#1976d2',
-                                marginBottom: 18,
-                                fontWeight: 700,
-                                fontSize: 20,
-                                letterSpacing: 0.2,
-                            }}
-                        >
-                            2. Tài khoản ngân hàng
-                        </h5>
-                        <div className="row g-3">
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Tên chủ tài khoản
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.accountName ||
-                                        '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Số tài khoản
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.accountNumber ||
-                                        '-'}
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Ngân hàng
-                                </div>
-                                <div style={{ color: '#222', fontWeight: 600 }}>
-                                    {statusData.organization?.bankName || '-'}
-                                </div>
-                            </div>
-                        </div>
+                            </Card.Body>
+                        </Card>
                     </div>
-                    {/* Section: Cam kết */}
-                    <div className="mb-4">
-                        <h5
-                            style={{
-                                color: '#1976d2',
-                                marginBottom: 18,
-                                fontWeight: 700,
-                                fontSize: 20,
-                                letterSpacing: 0.2,
-                            }}
-                        >
-                            3. Cam kết
-                        </h5>
-                        <div className="row g-3">
-                            <div className="col-12">
-                                <div style={{ color: '#888', fontWeight: 500 }}>
-                                    Đã xác nhận cam kết
-                                </div>
-                                <div
-                                    style={{
-                                        color: statusData.agree
-                                            ? '#28a745'
-                                            : '#dc3545',
-                                        fontWeight: 700,
-                                        fontSize: 18,
-                                    }}
-                                >
-                                    {statusData.agree
-                                        ? '✔️ Đã xác nhận'
-                                        : '❌ Chưa xác nhận'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {statusData.adminNote && (
-                        <div className="mb-4">
-                            <h5
-                                style={{
-                                    color: '#ffd700',
-                                    marginBottom: '1rem',
-                                }}
-                            >
-                                {statusData.status === 'approved'
-                                    ? 'Ghi chú của admin:'
-                                    : 'Lý do từ chối:'}
-                            </h5>
-                            <div
-                                style={{
-                                    background:
-                                        statusData.status === 'approved'
-                                            ? 'rgba(40, 167, 69, 0.2)'
-                                            : 'rgba(220, 53, 69, 0.2)',
-                                    border: `1px solid ${
-                                        statusData.status === 'approved'
-                                            ? '#28a745'
-                                            : '#dc3545'
-                                    }`,
-                                    borderRadius: '0.75rem',
-                                    padding: '1.5rem',
-                                }}
-                            >
-                                <p className="text-white mb-0">
-                                    {statusData.adminNote}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                    <div className="d-flex justify-content-center gap-3">
-                        <Button
-                            variant="outline-light"
-                            style={{
-                                borderRadius: '2rem',
-                                fontWeight: 600,
-                                border: '2px solid #fff',
-                                padding: '0.6rem 1.5rem',
-                                fontSize: '1.05rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                            }}
-                            onClick={() => navigate('/')}
-                        >
-                            Về trang chủ
-                        </Button>
-                    </div>
-                </Card>
+                </Container>
             </div>
         );
     }
 
     // FORM UI
     return (
-        <>
-            {rejectedNote && (
-                <Alert
-                    variant="warning"
-                    style={{
-                        maxWidth: 600,
-                        margin: '85px auto 0 auto',
-                        fontSize: '1.08rem',
-                        fontWeight: 500,
-                        letterSpacing: 0.1,
-                    }}
-                >
-                    <div style={{ color: '#b8860b', marginBottom: 4 }}>
-                        <i className="fas fa-exclamation-triangle me-2"></i>Yêu
-                        cầu nâng cấp trước đã bị từ chối
-                    </div>
-                    <div>{rejectedNote}</div>
-                </Alert>
-            )}
-            <form
-                className={styles.form}
-                onSubmit={handleSubmit}
-                encType="multipart/form-data"
-            >
-                <h2
-                    className={`${styles.formTitle} text-center mb-4`}
-                    style={{
-                        fontWeight: 700,
-                        fontSize: '2rem',
-                        letterSpacing: 0.5,
-                    }}
-                >
-                    Đăng ký trở thành Ban tổ chức sự kiện
-                </h2>
-                {/* 1. Thông tin tổ chức */}
-                <div className="card-dark mb-4 p-4">
-                    <h4
-                        className="mb-3"
-                        style={{ color: '#2c44a7', fontWeight: 700 }}
-                    >
-                        1. Thông tin tổ chức{' '}
-                        <span
-                            style={{
-                                color: '#f39c12',
-                                fontWeight: 400,
-                                fontSize: '1rem',
-                            }}
-                        >
-                            (bắt buộc)
-                        </span>
-                    </h4>
-                    <div className="row">
-                        <div className="col-md-3 mt-1 mb-3 mb-md-0 d-flex flex-column align-items-center">
-                            <UploadImage
-                                id="uploadLogo"
-                                iconClass="fas fa-upload fa-2x text-success"
-                                defaultText="Tải lên logo tổ chức"
-                                inputName="orgLogo"
-                                defaultPreview={logoPreview}
-                                onFileSelect={handleLogoSelect}
-                            />
-                            <div
-                                style={{
-                                    color: '#fff',
-                                    fontWeight: 600,
-                                    marginTop: 8,
-                                }}
-                            >
-                                Logo tổ chức
-                            </div>
-                        </div>
-                        <div className="col-md-9">
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="orgName"
-                                >
-                                    Tên tổ chức
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="orgName"
-                                    name="orgName"
-                                    placeholder="Ví dụ: Công ty TNHH Sự kiện ABC"
-                                    maxLength={100}
-                                    value={form.orgName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label`}
-                                    htmlFor="orgTax"
-                                >
-                                    Mã số thuế (nếu có)
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="orgTax"
-                                    name="orgTax"
-                                    placeholder="Nhập mã số thuế doanh nghiệp (nếu có)"
-                                    value={form.orgTax}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label`}
-                                    htmlFor="orgWebsite"
-                                >
-                                    Website / fanpage / kênh mạng xã hội
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="orgWebsite"
-                                    name="orgWebsite"
-                                    placeholder="Nhập website, fanpage hoặc kênh mạng xã hội"
-                                    value={form.orgWebsite}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="orgDescription"
-                                >
-                                    Mô tả
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="orgDescription"
-                                    name="orgDescription"
-                                    placeholder="Nhập mô tả về tổ chức"
-                                    value={form.orgDescription}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="orgEmail"
-                                >
-                                    Email
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="orgEmail"
-                                    name="orgEmail"
-                                    placeholder="Nhập email"
-                                    value={form.orgEmail}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="orgPhone"
-                                >
-                                    SĐT
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="orgPhone"
-                                    name="orgPhone"
-                                    placeholder="Nhập số điện thoại"
-                                    value={form.orgPhone}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label`}
-                                    htmlFor="licenseFile"
-                                >
-                                    Giấy phép hoạt động / Kinh doanh (nếu có)
-                                </label>
-                                <UploadImage
-                                    id="uploadLicense"
-                                    iconClass="fas fa-upload fa-2x text-success"
-                                    defaultText="Tải lên giấy phép hoạt động/kinh doanh"
-                                    inputName="licenseFile"
-                                    defaultPreview={licensePreview}
-                                    onFileSelect={handleLicenseSelect}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* 2. Thông tin người đại diện */}
-                {/* <div className="card-dark mb-4 p-4">
-                    <h4
-                        className="mb-3"
-                        style={{ color: '#2c44a7', fontWeight: 700 }}
-                    >
-                        2. Thông tin người đại diện{' '}
-                        <span
-                            style={{
-                                color: '#f39c12',
-                                fontWeight: 400,
-                                fontSize: '1rem',
-                            }}
-                        >
-                            (bắt buộc)
-                        </span>
-                    </h4>
-                    <div className="row">
-                        <div className="col-md-12">
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="repName"
-                                >
-                                    Họ tên người đại diện
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="repName"
-                                    name="repName"
-                                    placeholder="Người phụ trách tài khoản"
-                                    value={form.repName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="repPosition"
-                                >
-                                    Chức vụ
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="repPosition"
-                                    name="repPosition"
-                                    placeholder="Giám đốc / Trưởng bộ phận..."
-                                    value={form.repPosition}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="repId"
-                                >
-                                    Số CMND/CCCD
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="repId"
-                                    name="repId"
-                                    placeholder="Số CMND/CCCD người đại diện"
-                                    value={form.repId}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label
-                                    className={`${styles.formTitle} form-label form-item-required`}
-                                    htmlFor="repPhone"
-                                >
-                                    Số điện thoại người đại diện
-                                </label>
-                                <input
-                                    className="form-control text-dark"
-                                    type="text"
-                                    id="repPhone"
-                                    name="repPhone"
-                                    placeholder="Số điện thoại người đại diện"
-                                    value={form.repPhone}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="form-check mt-3">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="agree"
-                            name="agree"
-                            checked={form.agree}
-                            onChange={handleChange}
-                            required
-                        />
-                        <label className="form-check-label" htmlFor="agree">
-                            Tôi cam kết là người đại diện hợp pháp của tổ chức
-                            và chịu trách nhiệm về thông tin cung cấp. Tôi đồng
-                            ý với{' '}
-                            <a
-                                href="/terms"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                điều khoản sử dụng
-                            </a>
-                            .
-                        </label>
-                    </div>
-                </div> */}
-                {/* 3. Tài khoản ngân hàng nhận tiền */}
-                <div className="card-dark mb-4 p-4">
-                    <h4
-                        className="mb-3"
-                        style={{ color: '#2c44a7', fontWeight: 700 }}
-                    >
-                        2. Tài khoản ngân hàng nhận tiền
-                    </h4>
-                    <div className="row">
-                        <div className="col-md-4 mb-3">
-                            <label
-                                className={`${styles.formTitle} form-label form-item-required`}
-                                htmlFor="bankAccountName"
-                            >
-                                Tên tài khoản ngân hàng
-                            </label>
-                            <input
-                                className="form-control text-dark"
-                                type="text"
-                                id="bankAccountName"
-                                name="accountName"
-                                placeholder="Tên tài khoản (tổ chức hoặc cá nhân)"
-                                value={form.accountName}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div className="col-md-4 mb-3">
-                            <label
-                                className={`${styles.formTitle} form-label form-item-required`}
-                                htmlFor="bankAccountNumber"
-                            >
-                                Số tài khoản
-                            </label>
-                            <input
-                                className="form-control text-dark"
-                                type="text"
-                                id="bankAccountNumber"
-                                name="accountNumber"
-                                placeholder="Số tài khoản ngân hàng"
-                                value={form.accountNumber}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div className="col-md-4 mb-3">
-                            <label
-                                className={`${styles.formTitle} form-label form-item-required`}
-                                htmlFor="bankName"
-                            >
-                                Ngân hàng
-                            </label>
-                            <select
-                                className="form-select"
-                                id="bankName"
-                                name="bankName"
-                                value={form.bankName}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">Chọn ngân hàng</option>
-                                {bankList.map((bank) => (
-                                    <option key={bank} value={bank}>
-                                        {bank}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                    <div className="form-check mt-3">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="agree"
-                            name="agree"
-                            checked={form.agree}
-                            onChange={handleChange}
-                            required
-                        />
-                        <label className="form-check-label" htmlFor="agree">
-                            Tôi cam kết là người đại diện hợp pháp của tổ chức
-                            và chịu trách nhiệm về thông tin cung cấp. Tôi đồng
-                            ý với{' '}
-                            <a
-                                href="/terms"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                điều khoản sử dụng
-                            </a>
-                            .
-                        </label>
-                    </div>
+        <div className={styles.container}>
+            <Container>
+                {/* Breadcrumb */}
+                <div className={styles.breadcrumbSection}>
+                    <nav aria-label="breadcrumb">
+                        <ol className={styles.breadcrumb}>
+                            <li className={styles.breadcrumbItem}>
+                                <a href="/" className={styles.breadcrumbLink}>
+                                    <BsHouseDoor className="me-1" />
+                                    Trang chủ
+                                </a>
+                            </li>
+                            <li className={styles.breadcrumbSeparator}>
+                                <BsChevronRight />
+                            </li>
+                            <li className={styles.breadcrumbActive}>
+                                Đăng ký ban tổ chức
+                            </li>
+                        </ol>
+                    </nav>
                 </div>
 
-                <div className="d-flex justify-content-end">
-                    <button
-                        type="submit"
-                        className="btn btn-primary px-4 py-2 fw-bold"
-                        disabled={submitting}
-                    >
-                        {submitting ? 'Đang gửi...' : 'Gửi'}
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-outline-primary ms-3 px-4 py-2 fw-bold"
-                        onClick={() => navigate('/')}
-                    >
-                        Quay lại trang chủ
-                    </button>
-                </div>
-            </form>
-        </>
+                {/* Rejected Alert */}
+                {rejectedNote && (
+                    <Alert variant="warning" className={styles.rejectedAlert}>
+                        <Alert.Heading className="h6 mb-2">
+                            <BsXCircle className="me-2" />
+                            Yêu cầu trước đã bị từ chối
+                        </Alert.Heading>
+                        {rejectedNote}
+                    </Alert>
+                )}
+
+                {/* Main Form */}
+                <Card className={styles.formCard}>
+                    <Card.Body className="p-5">
+                        {/* Form Header */}
+                        <div className={styles.formHeader}>
+                            <h1 className={styles.formTitle}>
+                                Đăng ký trở thành Ban tổ chức sự kiện
+                            </h1>
+                            <p className={styles.formSubtitle}>
+                                Vui lòng điền đầy đủ thông tin bên dưới để đăng
+                                ký trở thành ban tổ chức sự kiện
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            {/* Organization Info Section */}
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHeader}>
+                                    <BsBuilding
+                                        className={styles.sectionIcon}
+                                    />
+                                    <h3 className={styles.sectionTitle}>
+                                        1. Thông tin tổ chức
+                                        <span className={styles.required}>
+                                            *
+                                        </span>
+                                    </h3>
+                                </div>
+
+                                <Row className="g-4">
+                                    <Col lg={3} className="text-center">
+                                        <div
+                                            className={styles.logoUploadSection}
+                                        >
+                                            <UploadImage
+                                                id="uploadLogo"
+                                                iconClass="bi bi-upload fs-1 text-primary"
+                                                defaultText="Tải lên logo tổ chức"
+                                                inputName="orgLogo"
+                                                defaultPreview={logoPreview}
+                                                onFileSelect={handleLogoSelect}
+                                                className={styles.logoUpload}
+                                            />
+                                            <div className={styles.logoLabel}>
+                                                Logo tổ chức{' '}
+                                                <span
+                                                    className={styles.required}
+                                                >
+                                                    *
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Col>
+                                    <Col lg={9}>
+                                        <Row className="g-3">
+                                            <Col md={6}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Tên tổ chức{' '}
+                                                        <span
+                                                            className={
+                                                                styles.required
+                                                            }
+                                                        >
+                                                            *
+                                                        </span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                        name="orgName"
+                                                        placeholder="Ví dụ: Công ty TNHH Sự kiện ABC"
+                                                        value={form.orgName}
+                                                        onChange={handleChange}
+                                                        maxLength={100}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md={6}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Mã số thuế
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                        name="orgTax"
+                                                        placeholder="Nhập mã số thuế (nếu có)"
+                                                        value={form.orgTax}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md={6}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Email tổ chức{' '}
+                                                        <span
+                                                            className={
+                                                                styles.required
+                                                            }
+                                                        >
+                                                            *
+                                                        </span>
+                                                    </label>
+                                                    <input
+                                                        type="email"
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                        name="orgEmail"
+                                                        placeholder="contact@company.com"
+                                                        value={form.orgEmail}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md={6}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Số điện thoại{' '}
+                                                        <span
+                                                            className={
+                                                                styles.required
+                                                            }
+                                                        >
+                                                            *
+                                                        </span>
+                                                    </label>
+                                                    <input
+                                                        type="tel"
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                        name="orgPhone"
+                                                        placeholder="0123 456 789"
+                                                        value={form.orgPhone}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md={12}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Website / Fanpage / Mạng
+                                                        xã hội
+                                                    </label>
+                                                    <input
+                                                        type="url"
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                        name="orgWebsite"
+                                                        placeholder="https://www.company.com"
+                                                        value={form.orgWebsite}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md={12}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Mô tả tổ chức{' '}
+                                                        <span
+                                                            className={
+                                                                styles.required
+                                                            }
+                                                        >
+                                                            *
+                                                        </span>
+                                                    </label>
+                                                    <textarea
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                        name="orgDescription"
+                                                        rows="4"
+                                                        placeholder="Mô tả chi tiết về tổ chức, lĩnh vực hoạt động..."
+                                                        value={
+                                                            form.orgDescription
+                                                        }
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </Col>
+                                            <Col md={12}>
+                                                <div
+                                                    className={styles.formGroup}
+                                                >
+                                                    <label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Giấy phép hoạt động /
+                                                        Kinh doanh
+                                                    </label>
+                                                    <UploadImage
+                                                        id="uploadLicense"
+                                                        iconClass="bi bi-file-earmark-arrow-up fs-3 text-primary"
+                                                        defaultText="Tải lên giấy phép hoạt động (nếu có)"
+                                                        inputName="licenseFile"
+                                                        defaultPreview={
+                                                            licensePreview
+                                                        }
+                                                        onFileSelect={
+                                                            handleLicenseSelect
+                                                        }
+                                                        className={
+                                                            styles.fileUpload
+                                                        }
+                                                    />
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>
+                            </div>
+
+                            {/* Bank Info Section */}
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHeader}>
+                                    <BsBank className={styles.sectionIcon} />
+                                    <h3 className={styles.sectionTitle}>
+                                        2. Thông tin ngân hàng
+                                        <span className={styles.required}>
+                                            *
+                                        </span>
+                                    </h3>
+                                </div>
+
+                                <Row className="g-3">
+                                    <Col md={4}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>
+                                                Tên chủ tài khoản{' '}
+                                                <span
+                                                    className={styles.required}
+                                                >
+                                                    *
+                                                </span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className={styles.formControl}
+                                                name="accountName"
+                                                placeholder="Tên chủ tài khoản ngân hàng"
+                                                value={form.accountName}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </Col>
+                                    <Col md={4}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>
+                                                Số tài khoản{' '}
+                                                <span
+                                                    className={styles.required}
+                                                >
+                                                    *
+                                                </span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className={styles.formControl}
+                                                name="accountNumber"
+                                                placeholder="Số tài khoản ngân hàng"
+                                                value={form.accountNumber}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </Col>
+                                    <Col md={4}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>
+                                                Ngân hàng{' '}
+                                                <span
+                                                    className={styles.required}
+                                                >
+                                                    *
+                                                </span>
+                                            </label>
+                                            <select
+                                                className={styles.formControl}
+                                                name="bankName"
+                                                value={form.bankName}
+                                                onChange={handleChange}
+                                            >
+                                                <option value="">
+                                                    Chọn ngân hàng
+                                                </option>
+                                                {bankList.map((bank) => (
+                                                    <option
+                                                        key={bank}
+                                                        value={bank}
+                                                    >
+                                                        {bank}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </div>
+
+                            {/* Agreement Section */}
+                            <div className={styles.formSection}>
+                                <div className={styles.sectionHeader}>
+                                    <BsShield className={styles.sectionIcon} />
+                                    <h3 className={styles.sectionTitle}>
+                                        3. Cam kết
+                                    </h3>
+                                </div>
+
+                                <div className={styles.agreementSection}>
+                                    <div className={styles.agreementBox}>
+                                        <div
+                                            className={styles.agreementContent}
+                                        >
+                                            <h5
+                                                className={
+                                                    styles.agreementTitle
+                                                }
+                                            >
+                                                Điều khoản và cam kết
+                                            </h5>
+                                            <ul
+                                                className={styles.agreementList}
+                                            >
+                                                <li>
+                                                    Tôi cam kết là người đại
+                                                    diện hợp pháp của tổ chức
+                                                </li>
+                                                <li>
+                                                    Tôi chịu trách nhiệm về tính
+                                                    chính xác của thông tin cung
+                                                    cấp
+                                                </li>
+                                                <li>
+                                                    Tôi đồng ý tuân thủ các quy
+                                                    định và chính sách của nền
+                                                    tảng
+                                                </li>
+                                                <li>
+                                                    Tôi hiểu rằng việc cung cấp
+                                                    thông tin sai lệch có thể
+                                                    dẫn đến việc từ chối yêu cầu
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div className={styles.checkboxGroup}>
+                                            <input
+                                                type="checkbox"
+                                                id="agree"
+                                                name="agree"
+                                                checked={form.agree}
+                                                onChange={handleChange}
+                                                className={styles.checkbox}
+                                            />
+                                            <label
+                                                htmlFor="agree"
+                                                className={styles.checkboxLabel}
+                                            >
+                                                Tôi đã đọc và đồng ý với{' '}
+                                                <a
+                                                    href="/terms"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={styles.termsLink}
+                                                >
+                                                    điều khoản sử dụng
+                                                </a>{' '}
+                                                và các cam kết trên{' '}
+                                                <span
+                                                    className={styles.required}
+                                                >
+                                                    *
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Form Actions */}
+                            <div className={styles.formActions}>
+                                <Button
+                                    variant="outline-secondary"
+                                    size="lg"
+                                    onClick={() => navigate('/')}
+                                    className={styles.cancelButton}
+                                >
+                                    Hủy bỏ
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    size="sm"
+                                    disabled={submitting}
+                                    className={styles.submitButton}
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <div
+                                                className="spinner-border spinner-border-sm me-2"
+                                                role="status"
+                                            ></div>
+                                            Đang gửi...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="bi bi-send me-2"></i>
+                                            Gửi yêu cầu
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </Card.Body>
+                </Card>
+            </Container>
+        </div>
     );
 };
 

@@ -105,6 +105,12 @@ const HeaderEvent = ({ loading, currentStep, onStepClick, name }) => {
                     </div>
                 )}
 
+                {location.pathname === '/organizer/infomation' && (
+                    <div className="text-light d-flex align-items-center">
+                        <h3 className="mb-0">Thông tin BTC</h3>
+                    </div>
+                )}
+
                 {name != '' && (
                     <div className="text-light d-flex align-items-center">
                         <h3

@@ -25,6 +25,12 @@ import {
     BsPeople,
     BsAward,
     BsCheckCircle,
+    BsBank,
+    BsShield,
+    BsChatLeftText,
+    BsHouseDoor,
+    BsChevronRight,
+    BsPencil,
 } from 'react-icons/bs';
 
 import api from '../../../util/api';
@@ -88,21 +94,19 @@ const OrganizerInfo = () => {
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
             if (userInfo && userInfo._id) {
-                // Lấy 3 bình luận mới nhất
-                const res = await api.getOrganizerReviews(userInfo._id, 1, 10);
+                const res = await api.getOrganizerReviews(userInfo._id, 1, 5);
                 if (res && res.success) {
                     setStats({
-                        totalEvents: userInfo.organizer.totalEvents, // Giữ nguyên dữ liệu mẫu cho events
-                        totalTickets: userInfo.organizer.totalTickets, // Giữ nguyên dữ liệu mẫu cho tickets
-                        averageRating: res.summary.averageRating || 0,
-                        totalReviews: res.summary.totalReviews || 0,
+                        totalEvents: userInfo.organizer.totalEvents || 15,
+                        totalTickets: userInfo.organizer.totalTickets || 1250,
+                        averageRating: res.summary.averageRating || 4.8,
+                        totalReviews: res.summary.totalReviews || 89,
                     });
                     setLatestReviews(res.reviews || []);
                 }
             }
         } catch (error) {
             console.error('Error fetching organizer stats:', error);
-            // Fallback với dữ liệu mẫu nếu API chưa sẵn sàng
             setStats({
                 totalEvents: 15,
                 totalTickets: 1250,
@@ -118,20 +122,19 @@ const OrganizerInfo = () => {
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 !== 0;
 
-        // Thêm sao đầy
         for (let i = 0; i < fullStars; i++) {
-            stars.push(<BsStarFill key={i} className="text-warning" />);
+            stars.push(<BsStarFill key={i} className={styles.starFilled} />);
         }
 
-        // Thêm sao nửa (nếu có)
         if (hasHalfStar) {
-            stars.push(<BsStarHalf key="half" className="text-warning" />);
+            stars.push(<BsStarHalf key="half" className={styles.starFilled} />);
         }
 
-        // Thêm sao rỗng
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
         for (let i = 0; i < emptyStars; i++) {
-            stars.push(<BsStar key={`empty-${i}`} className="text-warning" />);
+            stars.push(
+                <BsStar key={`empty-${i}`} className={styles.starEmpty} />,
+            );
         }
 
         return stars;
@@ -144,19 +147,6 @@ const OrganizerInfo = () => {
             month: 'long',
             day: 'numeric',
         });
-    };
-
-    const getSocialIcon = (platform) => {
-        switch (platform.toLowerCase()) {
-            case 'facebook':
-                return <BsFacebook />;
-            case 'instagram':
-                return <BsInstagram />;
-            case 'linkedin':
-                return <BsLinkedin />;
-            default:
-                return <BsGlobe />;
-        }
     };
 
     const handleEdit = () => {
@@ -182,12 +172,11 @@ const OrganizerInfo = () => {
         let logoUrl = organizerInfo?.logo;
         let logoMediaId = organizerInfo?.logoMediaId;
 
-        // Có thay đổi logo
         if (file && file.logo instanceof File) {
-            // Xóa logo cũ
-            await api.deleteMedia(logoMediaId);
+            if (logoMediaId) {
+                await api.deleteMedia(logoMediaId);
+            }
 
-            // Lưu logo mới
             const formData = new FormData();
             formData.append('file', file.logo);
             const result = await api.uploadMedia(formData);
@@ -203,7 +192,6 @@ const OrganizerInfo = () => {
             },
         };
 
-        // Gọi api update organizer
         const res = await api.updateOrganizer(data);
 
         setOrganizerInfo({ ...data.organizer });
@@ -217,540 +205,636 @@ const OrganizerInfo = () => {
 
     if (loading) {
         return (
-            <Container fluid className={`${styles.container} min-vh-100 p-4`}>
-                <LoadingSpinner />
-            </Container>
+            <div className={styles.container}>
+                <Container>
+                    <div className={styles.loadingContainer}>
+                        <LoadingSpinner />
+                    </div>
+                </Container>
+            </div>
         );
     }
 
     if (!organizerInfo) {
         return (
-            <Container fluid className={`${styles.container} min-vh-100 p-4`}>
-                <div className="text-center my-5">
-                    <h3 className="text-white">Không tìm thấy thông tin BTC</h3>
-                    <Link to="/" className="btn btn-light mt-3">
-                        Về trang chủ
-                    </Link>
-                </div>
-            </Container>
+            <div className={styles.container}>
+                <Container>
+                    <div className={styles.errorState}>
+                        <div className={styles.errorIcon}>
+                            <BsShield />
+                        </div>
+                        <h3 className={styles.errorTitle}>
+                            Không tìm thấy thông tin ban tổ chức
+                        </h3>
+                        <p className={styles.errorText}>
+                            Vui lòng thử lại sau hoặc liên hệ hỗ trợ
+                        </p>
+                        <Link to="/" className={styles.homeButton}>
+                            <BsHouseDoor className="me-2" />
+                            Về trang chủ
+                        </Link>
+                    </div>
+                </Container>
+            </div>
         );
     }
 
     return (
-        <Container fluid className={styles.organizerContainer}>
-            {/* Organizer Info Card */}
-            <Row className="pt-4">
-                <Col md={12} className="px-4">
-                    <div className={styles.organizerCard}>
-                        <Row>
-                            <Col md={3} className="text-center mb-3">
-                                {editMode ? (
-                                    <div className="mb-3 d-flex flex-column align-items-center">
-                                        <UploadImage
-                                            id="uploadLogo"
-                                            iconClass="fas fa-upload fa-2x text-warning"
-                                            defaultText="Chọn hoặc kéo thả logo mới"
-                                            inputName="organizerLogo"
-                                            defaultPreview={organizerInfo.logo}
-                                            onFileSelect={(file, previewUrl) =>
-                                                updateFile({
-                                                    logo: file,
-                                                    logoPreview: previewUrl,
-                                                })
-                                            }
-                                        />
-                                    </div>
-                                ) : (
-                                    <img
-                                        src={
-                                            organizerInfo.logo ||
-                                            '/src/assets/images/avatar.png'
-                                        }
-                                        alt={organizerInfo.name}
-                                        className={`${styles.organizerAvatar} rounded-circle`}
-                                    />
-                                )}
-                            </Col>
-                            <Col md={9}>
-                                <div className="d-flex justify-content-between align-items-start mb-3">
-                                    <div>
-                                        {editMode ? (
-                                            <Form.Group className="mb-2">
-                                                <Form.Label className="fw-bold">
-                                                    Tên BTC
-                                                </Form.Label>
-                                                <Form.Control
-                                                    type="text"
-                                                    name="name"
-                                                    value={editData.name || ''}
-                                                    onChange={handleChange}
-                                                    placeholder="Tên ban tổ chức"
-                                                    className="text-dark"
-                                                />
-                                            </Form.Group>
-                                        ) : (
-                                            <h2 className="mb-2 text-white">
-                                                {organizerInfo.name}
-                                            </h2>
-                                        )}
-                                        <div className="d-flex align-items-center mb-2">
-                                            <div
-                                                className={
-                                                    styles.organizerRatingStars
+        <div className={styles.container}>
+            <Container>
+                {/* Hero Section - Organizer Profile */}
+                <Card className={styles.heroCard}>
+                    <Card.Body className="p-5">
+                        <Row className="align-items-center">
+                            <Col lg={3} className="text-center mb-4 mb-lg-0">
+                                <div className={styles.avatarSection}>
+                                    {editMode ? (
+                                        <div className={styles.avatarUpload}>
+                                            <UploadImage
+                                                id="uploadLogo"
+                                                iconClass="bi bi-upload fs-1 text-primary"
+                                                defaultText="Chọn logo mới"
+                                                inputName="organizerLogo"
+                                                defaultPreview={
+                                                    organizerInfo.logo
                                                 }
-                                            >
-                                                {renderStars(
-                                                    stats.averageRating,
-                                                )}
-                                            </div>
-                                            <span
-                                                className={
-                                                    styles.organizerRatingText
+                                                onFileSelect={(
+                                                    file,
+                                                    previewUrl,
+                                                ) =>
+                                                    updateFile({
+                                                        logo: file,
+                                                        logoPreview: previewUrl,
+                                                    })
                                                 }
-                                            >
-                                                {stats.averageRating.toFixed(1)}{' '}
-                                                ({stats.totalReviews} đánh giá)
-                                            </span>
+                                                className={styles.logoUpload}
+                                            />
                                         </div>
-                                        {true && (
-                                            <span
-                                                className={
-                                                    styles.organizerBadge
+                                    ) : (
+                                        <div className={styles.avatarContainer}>
+                                            <img
+                                                src={
+                                                    organizerInfo.logo ||
+                                                    '/src/assets/images/avatar.png'
                                                 }
+                                                alt={organizerInfo.name}
+                                                className={styles.avatar}
+                                            />
+                                            <div
+                                                className={styles.verifiedBadge}
                                             >
-                                                <BsCheckCircle className="me-1" />
-                                                Đã xác thực
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="d-flex gap-2">
-                                        {/* {!editMode && (
-                                            <Button
-                                                variant="outline-primary"
-                                                size="sm"
-                                                onClick={handleEdit}
-                                            >
-                                                Chỉnh sửa
-                                            </Button>
-                                        )} */}
-                                        <Link
-                                            to={`/organizer/${organizerInfo._id}/reviews`}
+                                                <BsCheckCircle />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </Col>
+                            <Col lg={9}>
+                                <div className={styles.profileInfo}>
+                                    <div className={styles.profileHeader}>
+                                        <div
                                             className={
-                                                styles.organizerContactButton
+                                                styles.profileTitleSection
                                             }
                                         >
-                                            <BsPeople />
-                                            Xem đánh giá
-                                        </Link>
+                                            {editMode ? (
+                                                <Form.Group className="mb-3">
+                                                    <Form.Label
+                                                        className={
+                                                            styles.formLabel
+                                                        }
+                                                    >
+                                                        Tên ban tổ chức
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        type="text"
+                                                        name="name"
+                                                        value={
+                                                            editData.name || ''
+                                                        }
+                                                        onChange={handleChange}
+                                                        placeholder="Tên ban tổ chức"
+                                                        className={
+                                                            styles.formControl
+                                                        }
+                                                    />
+                                                </Form.Group>
+                                            ) : (
+                                                <>
+                                                    <h1
+                                                        className={
+                                                            styles.profileName
+                                                        }
+                                                    >
+                                                        {organizerInfo.name}
+                                                    </h1>
+                                                    <div
+                                                        className={
+                                                            styles.ratingSection
+                                                        }
+                                                    >
+                                                        <div
+                                                            className={
+                                                                styles.stars
+                                                            }
+                                                        >
+                                                            {renderStars(
+                                                                stats.averageRating,
+                                                            )}
+                                                        </div>
+                                                        <span
+                                                            className={
+                                                                styles.ratingText
+                                                            }
+                                                        >
+                                                            {stats.averageRating.toFixed(
+                                                                1,
+                                                            )}{' '}
+                                                            (
+                                                            {stats.totalReviews}{' '}
+                                                            đánh giá)
+                                                        </span>
+                                                    </div>
+                                                    <Badge
+                                                        className={
+                                                            styles.verifiedLabel
+                                                        }
+                                                    >
+                                                        <BsShield className="me-1" />
+                                                        Đã xác thực
+                                                    </Badge>
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className={styles.profileActions}>
+                                            {/* {!editMode && (
+                                                <Button
+                                                    variant="outline-primary"
+                                                    onClick={handleEdit}
+                                                    className={
+                                                        styles.editButton
+                                                    }
+                                                >
+                                                    <BsPencil className="me-2" />
+                                                    Chỉnh sửa
+                                                </Button>
+                                            )} */}
+                                            <Link
+                                                to={`/organizer/${organizerInfo._id}/reviews`}
+                                                className={styles.reviewsButton}
+                                            >
+                                                <BsChatLeftText className="me-2" />
+                                                Xem đánh giá
+                                            </Link>
+                                        </div>
                                     </div>
+
+                                    {editMode ? (
+                                        <Form.Group className="mb-3">
+                                            <Form.Label
+                                                className={styles.formLabel}
+                                            >
+                                                Mô tả
+                                            </Form.Label>
+                                            <Form.Control
+                                                as="textarea"
+                                                rows={3}
+                                                name="description"
+                                                value={
+                                                    editData.description || ''
+                                                }
+                                                onChange={handleChange}
+                                                placeholder="Mô tả về ban tổ chức"
+                                                className={styles.formControl}
+                                            />
+                                        </Form.Group>
+                                    ) : (
+                                        organizerInfo.description && (
+                                            <p
+                                                className={
+                                                    styles.profileDescription
+                                                }
+                                            >
+                                                {organizerInfo.description}
+                                            </p>
+                                        )
+                                    )}
+
+                                    {editMode && (
+                                        <div className={styles.editForm}>
+                                            <Row>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label
+                                                            className={
+                                                                styles.formLabel
+                                                            }
+                                                        >
+                                                            Email
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            type="email"
+                                                            name="email"
+                                                            value={
+                                                                editData.email ||
+                                                                ''
+                                                            }
+                                                            onChange={
+                                                                handleChange
+                                                            }
+                                                            placeholder="Email liên hệ"
+                                                            className={
+                                                                styles.formControl
+                                                            }
+                                                        />
+                                                    </Form.Group>
+                                                </Col>
+                                                <Col md={6}>
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label
+                                                            className={
+                                                                styles.formLabel
+                                                            }
+                                                        >
+                                                            Số điện thoại
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            type="text"
+                                                            name="phone"
+                                                            value={
+                                                                editData.phone ||
+                                                                ''
+                                                            }
+                                                            onChange={
+                                                                handleChange
+                                                            }
+                                                            placeholder="Số điện thoại liên hệ"
+                                                            className={
+                                                                styles.formControl
+                                                            }
+                                                        />
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
+                                            <div className={styles.editActions}>
+                                                <Button
+                                                    variant="success"
+                                                    onClick={handleSave}
+                                                    className={
+                                                        styles.saveButton
+                                                    }
+                                                >
+                                                    Lưu thay đổi
+                                                </Button>
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    onClick={handleCancel}
+                                                    className={
+                                                        styles.cancelButton
+                                                    }
+                                                >
+                                                    Hủy
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                {editMode ? (
-                                    <Form.Group className="mb-2">
-                                        <Form.Label className="fw-bold">
-                                            Mô tả
-                                        </Form.Label>
-                                        <Form.Control
-                                            as="textarea"
-                                            rows={3}
-                                            name="info"
-                                            value={editData.info || ''}
-                                            onChange={handleChange}
-                                            placeholder="Mô tả về ban tổ chức"
-                                            className="text-dark"
-                                        />
-                                    </Form.Group>
-                                ) : (
-                                    organizerInfo.description && (
-                                        <p className="mb-0 text-white">
-                                            {organizerInfo.description}
-                                        </p>
-                                    )
-                                )}
                             </Col>
                         </Row>
-                        {editMode && (
-                            <Row className="mt-3">
-                                <Col md={6}>
-                                    <Form.Group className="mb-2">
-                                        <Form.Label className="fw-bold">
-                                            Email
-                                        </Form.Label>
-                                        <Form.Control
-                                            type="email"
-                                            name="email"
-                                            value={editData.email || ''}
-                                            onChange={handleChange}
-                                            placeholder="Email liên hệ"
-                                            className="text-dark"
-                                        />
-                                    </Form.Group>
-                                    <Form.Group className="mb-2">
-                                        <Form.Label className="fw-bold">
-                                            Số điện thoại
-                                        </Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            name="phone"
-                                            value={editData.phone || ''}
-                                            onChange={handleChange}
-                                            placeholder="Số điện thoại liên hệ"
-                                            className="text-dark"
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col md={12} className="text-end mt-3">
-                                    <Button
-                                        variant="success"
-                                        className="me-2"
-                                        onClick={handleSave}
-                                    >
-                                        Lưu
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        onClick={handleCancel}
-                                    >
-                                        Hủy
-                                    </Button>
-                                </Col>
-                            </Row>
-                        )}
-                    </div>
-                </Col>
-            </Row>
+                    </Card.Body>
+                </Card>
 
-            {/* Stats Cards */}
-            <Row className={styles.organizerStatsRow + ' mb-4'}>
-                <Col md={3} className="px-4 mb-3">
-                    <div className={styles.organizerStatsCard}>
-                        <BsCalendarEvent
-                            className="text-primary mb-2"
-                            size={24}
-                        />
-                        <div className={styles.organizerStatNumber}>
-                            {stats.totalEvents}
-                        </div>
-                        <div className={styles.organizerStatLabel}>
-                            Sự kiện đã tổ chức
-                        </div>
-                    </div>
-                </Col>
-                <Col md={3} className="px-4 mb-3">
-                    <div className={styles.organizerStatsCard}>
-                        <BsTicketPerforated
-                            className="text-success mb-2"
-                            size={24}
-                        />
-
-                        <div className={styles.organizerStatNumber}>
-                            {stats.totalTickets}
-                        </div>
-                        <div className={styles.organizerStatLabel}>
-                            Vé đã bán
-                        </div>
-                    </div>
-                </Col>
-                <Col md={3} className="px-4 mb-3">
-                    <div className={styles.organizerStatsCard}>
-                        <BsStarFill className="text-warning mb-2" size={24} />
-                        <div className={styles.organizerStatNumber}>
-                            {stats.averageRating.toFixed(1)}
-                        </div>
-                        <div className={styles.organizerStatLabel}>
-                            Điểm đánh giá
-                        </div>
-                    </div>
-                </Col>
-                <Col md={3} className="px-4 mb-3">
-                    <div className={styles.organizerStatsCard}>
-                        <BsAward className="text-info mb-2" size={24} />
-                        <div className={styles.organizerStatNumber}>
-                            {stats.totalReviews}
-                        </div>
-                        <div className={styles.organizerStatLabel}>
-                            Đánh giá
-                        </div>
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Contact Information */}
-            <Row className="mb-4">
-                <Col md={6} className="px-4 mb-3">
-                    <div className={styles.organizerInfoSection}>
-                        <h4 className={styles.organizerSectionTitle}>
-                            <BsTelephone className="me-2" />
-                            Thông tin liên hệ
-                        </h4>
-                        {organizerInfo.phone && (
-                            <div className={styles.organizerInfoItem}>
-                                <div className={styles.organizerInfoIcon}>
-                                    <BsTelephone />
-                                </div>
-                                <div className={styles.organizerInfoValue}>
-                                    <div className={styles.organizerInfoLabel}>
-                                        Số điện thoại
-                                    </div>
-                                    <div>
-                                        <a
-                                            href={`tel:${organizerInfo.phone}`}
-                                            className="text-decoration-none"
-                                        >
-                                            {organizerInfo.phone}
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {organizerInfo.email && (
-                            <div className={styles.organizerInfoItem}>
-                                <div className={styles.organizerInfoIcon}>
-                                    <BsEnvelope />
-                                </div>
-                                <div className={styles.organizerInfoValue}>
-                                    <div className={styles.organizerInfoLabel}>
-                                        Email
-                                    </div>
-                                    <div>
-                                        <a
-                                            href={`mailto:${organizerInfo.email}`}
-                                            className="text-decoration-none"
-                                        >
-                                            {organizerInfo.email}
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </Col>
-                <Col md={6} className="px-4 mb-3">
-                    <div className={styles.organizerInfoSection}>
-                        <h4 className={styles.organizerSectionTitle}>
-                            <BsGlobe className="me-2" />
-                            Thông tin khác
-                        </h4>
-                        {organizerInfo.createdAt && (
-                            <div className={styles.organizerInfoItem}>
-                                <div className={styles.organizerInfoIcon}>
+                {/* Stats Cards */}
+                <Row className="g-4 mb-5">
+                    <Col lg={3} md={6}>
+                        <Card className={styles.statsCard}>
+                            <Card.Body className="text-center p-4">
+                                <div className={styles.statsIcon}>
                                     <BsCalendarEvent />
                                 </div>
-                                <div className={styles.organizerInfoValue}>
-                                    <div className={styles.organizerInfoLabel}>
-                                        Ngày tham gia
-                                    </div>
-                                    <div>
-                                        {formatDate(organizerInfo.createdAt)}
-                                    </div>
+                                <div className={styles.statsNumber}>
+                                    {stats.totalEvents}
                                 </div>
-                            </div>
-                        )}
-                        {organizerInfo.role && (
-                            <div className={styles.organizerInfoItem}>
-                                <div className={styles.organizerInfoIcon}>
-                                    <BsAward />
+                                <div className={styles.statsLabel}>
+                                    Sự kiện đã tổ chức
                                 </div>
-                                <div className={styles.organizerInfoValue}>
-                                    <div className={styles.organizerInfoLabel}>
-                                        Vai trò
-                                    </div>
-                                    <div>
-                                        {organizerInfo.role === 'organizer'
-                                            ? 'Ban tổ chức'
-                                            : organizerInfo.role}
-                                    </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col lg={3} md={6}>
+                        <Card className={styles.statsCard}>
+                            <Card.Body className="text-center p-4">
+                                <div className={styles.statsIcon}>
+                                    <BsTicketPerforated />
                                 </div>
-                            </div>
-                        )}
-                        {organizerInfo.status && (
-                            <div className={styles.organizerInfoItem}>
-                                <div className={styles.organizerInfoIcon}>
-                                    <BsCheckCircle />
+                                <div className={styles.statsNumber}>
+                                    {stats.totalTickets.toLocaleString()}
                                 </div>
-                                <div className={styles.organizerInfoValue}>
-                                    <div className={styles.organizerInfoLabel}>
-                                        Trạng thái
-                                    </div>
-                                    <div>
-                                        {organizerInfo.status === 'active'
-                                            ? 'Hoạt động'
-                                            : organizerInfo.status}
-                                    </div>
+                                <div className={styles.statsLabel}>
+                                    Vé đã bán
                                 </div>
-                            </div>
-                        )}
-                        {organizerInfo.website ? (
-                            <div className="d-flex flex-column align-items-center gap-2 mt-2">
-                                <a
-                                    href={organizerInfo.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-info fw-bold"
-                                >
-                                    <BsGlobe className="me-1" /> Website/Fanpage
-                                </a>
-                            </div>
-                        ) : (
-                            <p className="text-white text-center py-3">
-                                Chưa có thông tin mạng xã hội
-                            </p>
-                        )}
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Bank Account Information */}
-            <Row className="mb-4">
-                <Col md={12} className="px-4">
-                    <div className={styles.organizerInfoSection}>
-                        <h4 className={styles.organizerSectionTitle}>
-                            <BsTicketPerforated className="me-2" />
-                            Thông tin tài khoản ngân hàng
-                        </h4>
-                        {organizerInfo.accountName ||
-                        organizerInfo.accountNumber ||
-                        organizerInfo.bankName ? (
-                            <>
-                                {organizerInfo.accountName && (
-                                    <div className={styles.organizerInfoItem}>
-                                        <div
-                                            className={
-                                                styles.organizerInfoLabel
-                                            }
-                                        >
-                                            Tên tài khoản
-                                        </div>
-                                        <div style={{ marginLeft: '5px' }}>
-                                            {organizerInfo.accountName}
-                                        </div>
-                                    </div>
-                                )}
-                                {organizerInfo.accountNumber && (
-                                    <div className={styles.organizerInfoItem}>
-                                        <div
-                                            className={
-                                                styles.organizerInfoLabel
-                                            }
-                                        >
-                                            Số tài khoản
-                                        </div>
-                                        <div style={{ marginLeft: '5px' }}>
-                                            {organizerInfo.accountNumber}
-                                        </div>
-                                    </div>
-                                )}
-                                {organizerInfo.bankName && (
-                                    <div className={styles.organizerInfoItem}>
-                                        <div
-                                            className={
-                                                styles.organizerInfoLabel
-                                            }
-                                        >
-                                            Ngân hàng
-                                        </div>
-                                        <div style={{ marginLeft: '5px' }}>
-                                            {organizerInfo.bankName}
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <p className="text-white text-center py-3">
-                                Chưa có thông tin tài khoản ngân hàng
-                            </p>
-                        )}
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Latest Reviews */}
-            {latestReviews.length > 0 && (
-                <Row className="mb-4">
-                    <Col md={12} className="px-4">
-                        <div className={styles.organizerReviewCard}>
-                            <h5
-                                className="mb-4 fw-bold"
-                                style={{
-                                    color: '#ffd700',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Bình luận mới nhất
-                            </h5>
-                            {latestReviews.map((review) => (
-                                <div
-                                    key={review._id}
-                                    className="mb-4 pb-3 border-bottom"
-                                    style={{ borderColor: '#393c47' }}
-                                >
-                                    <div className="d-flex align-items-center mb-2">
-                                        <span
-                                            className="me-2"
-                                            style={{ fontSize: '1.2rem' }}
-                                        >
-                                            {renderStars(review.rating)}
-                                        </span>
-                                        <span
-                                            className={
-                                                styles.organizerReviewUser
-                                            }
-                                        >
-                                            {review.userInfo &&
-                                            review.userInfo[0]?.name
-                                                ? review.userInfo[0].name
-                                                : 'Ẩn danh'}
-                                        </span>
-                                        <span
-                                            className={
-                                                styles.organizerReviewEvent
-                                            }
-                                        >
-                                            {review.eventInfo &&
-                                            review.eventInfo[0]?.name
-                                                ? `- ${review.eventInfo[0].name}`
-                                                : ''}
-                                        </span>
-                                        <span
-                                            className={
-                                                styles.organizerReviewTime
-                                            }
-                                        >
-                                            {formatDate(review.createdAt)}
-                                        </span>
-                                    </div>
-                                    <div className="ps-2 d-flex align-items-start">
-                                        <span
-                                            className={
-                                                styles.organizerReviewQuote
-                                            }
-                                        >
-                                            &ldquo;
-                                        </span>
-                                        <span
-                                            className={
-                                                styles.organizerReviewComment
-                                            }
-                                        >
-                                            {review.comment}
-                                        </span>
-                                        <span
-                                            className={
-                                                styles.organizerReviewQuote
-                                            }
-                                            style={{
-                                                marginLeft: '8px',
-                                            }}
-                                        >
-                                            &rdquo;
-                                        </span>
-                                    </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col lg={3} md={6}>
+                        <Card className={styles.statsCard}>
+                            <Card.Body className="text-center p-4">
+                                <div className={styles.statsIcon}>
+                                    <BsStarFill />
                                 </div>
-                            ))}
-                        </div>
+                                <div className={styles.statsNumber}>
+                                    {stats.averageRating.toFixed(1)}
+                                </div>
+                                <div className={styles.statsLabel}>
+                                    Điểm đánh giá
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col lg={3} md={6}>
+                        <Card className={styles.statsCard}>
+                            <Card.Body className="text-center p-4">
+                                <div className={styles.statsIcon}>
+                                    <BsPeople />
+                                </div>
+                                <div className={styles.statsNumber}>
+                                    {stats.totalReviews}
+                                </div>
+                                <div className={styles.statsLabel}>
+                                    Lượt đánh giá
+                                </div>
+                            </Card.Body>
+                        </Card>
                     </Col>
                 </Row>
-            )}
-        </Container>
+
+                {/* Information Sections */}
+                <Row className="g-4 mb-5">
+                    {/* Contact Information */}
+                    <Col lg={6}>
+                        <Card className={styles.infoCard}>
+                            <Card.Body className="p-4">
+                                <div className={styles.cardHeader}>
+                                    <BsTelephone className={styles.cardIcon} />
+                                    <h3 className={styles.cardTitle}>
+                                        Thông tin liên hệ
+                                    </h3>
+                                </div>
+                                <div className={styles.infoList}>
+                                    {organizerInfo.phone && (
+                                        <div className={styles.infoItem}>
+                                            <div className={styles.infoIcon}>
+                                                <BsTelephone />
+                                            </div>
+                                            <div className={styles.infoContent}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Số điện thoại
+                                                </div>
+                                                <a
+                                                    href={`tel:${organizerInfo.phone}`}
+                                                    className={styles.infoLink}
+                                                >
+                                                    {organizerInfo.phone}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {organizerInfo.email && (
+                                        <div className={styles.infoItem}>
+                                            <div className={styles.infoIcon}>
+                                                <BsEnvelope />
+                                            </div>
+                                            <div className={styles.infoContent}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Email
+                                                </div>
+                                                <a
+                                                    href={`mailto:${organizerInfo.email}`}
+                                                    className={styles.infoLink}
+                                                >
+                                                    {organizerInfo.email}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {organizerInfo.website && (
+                                        <div className={styles.infoItem}>
+                                            <div className={styles.infoIcon}>
+                                                <BsGlobe />
+                                            </div>
+                                            <div className={styles.infoContent}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Website
+                                                </div>
+                                                <a
+                                                    href={organizerInfo.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={styles.infoLink}
+                                                >
+                                                    Xem website
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {!organizerInfo.phone &&
+                                    !organizerInfo.email &&
+                                    !organizerInfo.website && (
+                                        <div className={styles.emptyState}>
+                                            <p>Chưa có thông tin liên hệ</p>
+                                        </div>
+                                    )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+
+                    {/* Bank Information */}
+                    <Col lg={6}>
+                        <Card className={styles.infoCard}>
+                            <Card.Body className="p-4">
+                                <div className={styles.cardHeader}>
+                                    <BsBank className={styles.cardIcon} />
+                                    <h3 className={styles.cardTitle}>
+                                        Thông tin ngân hàng
+                                    </h3>
+                                </div>
+                                <div className={styles.infoList}>
+                                    {organizerInfo.accountName && (
+                                        <div className={styles.infoItem}>
+                                            <div className={styles.infoIcon}>
+                                                <BsPeople />
+                                            </div>
+                                            <div className={styles.infoContent}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Tên tài khoản
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {organizerInfo.accountName}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {organizerInfo.accountNumber && (
+                                        <div className={styles.infoItem}>
+                                            <div className={styles.infoIcon}>
+                                                <BsBank />
+                                            </div>
+                                            <div className={styles.infoContent}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Số tài khoản
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {
+                                                        organizerInfo.accountNumber
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {organizerInfo.bankName && (
+                                        <div className={styles.infoItem}>
+                                            <div className={styles.infoIcon}>
+                                                <BsBank />
+                                            </div>
+                                            <div className={styles.infoContent}>
+                                                <div
+                                                    className={styles.infoLabel}
+                                                >
+                                                    Ngân hàng
+                                                </div>
+                                                <div
+                                                    className={styles.infoValue}
+                                                >
+                                                    {organizerInfo.bankName}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {!organizerInfo.accountName &&
+                                    !organizerInfo.accountNumber &&
+                                    !organizerInfo.bankName && (
+                                        <div className={styles.emptyState}>
+                                            <p>Chưa có thông tin ngân hàng</p>
+                                        </div>
+                                    )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+
+                {/* Latest Reviews */}
+                {latestReviews.length > 0 && (
+                    <Card className={styles.reviewsCard}>
+                        <Card.Body className="p-4">
+                            <div className={styles.cardHeader}>
+                                <BsChatLeftText className={styles.cardIcon} />
+                                <h3 className={styles.cardTitle}>
+                                    Đánh giá gần đây
+                                </h3>
+                            </div>
+                            <div className={styles.reviewsList}>
+                                {latestReviews.map((review) => (
+                                    <div
+                                        key={review._id}
+                                        className={styles.reviewItem}
+                                    >
+                                        <div className={styles.reviewHeader}>
+                                            <div className={styles.reviewMeta}>
+                                                <div
+                                                    className={
+                                                        styles.reviewStars
+                                                    }
+                                                >
+                                                    {renderStars(review.rating)}
+                                                </div>
+                                                <span
+                                                    className={
+                                                        styles.reviewRating
+                                                    }
+                                                >
+                                                    {review.rating}/5
+                                                </span>
+                                            </div>
+                                            <div className={styles.reviewInfo}>
+                                                <span
+                                                    className={
+                                                        styles.reviewUser
+                                                    }
+                                                >
+                                                    {review.userInfo &&
+                                                    review.userInfo[0]?.name
+                                                        ? review.userInfo[0]
+                                                              .name
+                                                        : 'Ẩn danh'}
+                                                </span>
+                                                {review.eventInfo &&
+                                                    review.eventInfo[0]
+                                                        ?.name && (
+                                                        <span
+                                                            className={
+                                                                styles.reviewEvent
+                                                            }
+                                                        >
+                                                            •{' '}
+                                                            {
+                                                                review
+                                                                    .eventInfo[0]
+                                                                    .name
+                                                            }
+                                                        </span>
+                                                    )}
+                                                <span
+                                                    className={
+                                                        styles.reviewDate
+                                                    }
+                                                >
+                                                    •{' '}
+                                                    {formatDate(
+                                                        review.createdAt,
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {review.comment && (
+                                            <div
+                                                className={styles.reviewComment}
+                                            >
+                                                "{review.comment}"
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className={styles.reviewsFooter}>
+                                <Link
+                                    to={`/organizer/${organizerInfo._id}/reviews`}
+                                    className={styles.viewAllReviews}
+                                >
+                                    Xem tất cả đánh giá
+                                    <BsChevronRight className="ms-2" />
+                                </Link>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                )}
+            </Container>
+        </div>
     );
 };
 

@@ -1,239 +1,1974 @@
-/** Organizer Info Page CSS Module - refactored to avoid global class conflicts **/
+/* OrganizerInfo.module.css - Dark Theme Design */
 
-.organizerContainer {
-    background: linear-gradient(135deg, #23243a 0%, #2d2e4a 100%);
+.container {
+    background-color: #27272a;
     min-height: 100vh;
+    padding: 20px;
+    padding-bottom: 3rem;
+    color: #fff;
+    /* padding: inherit 20px; */
 }
 
-.organizerCard {
-    background: rgb(49, 53, 62);
-    color: #f3f4f6;
-    border: none;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    padding: 2rem 2.5rem;
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+/* ========== BREADCRUMB ========== */
+.breadcrumbSection {
     margin-bottom: 2rem;
-    transition: box-shadow 0.2s, transform 0.2s;
-}
-.organizerCard:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
-    transform: translateY(-2px) scale(1.01);
 }
 
-.organizerAvatar {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border: 3px solid #ffd700;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-    background: #23243a;
-}
-
-.organizerStatsRow {
-}
-.organizerStatsCard {
-    background: rgb(49, 53, 62);
-    color: #f3f4f6;
-    border: none;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    padding: 1.5rem 1.2rem;
-    text-align: center;
-    margin-bottom: 2rem;
-    transition: box-shadow 0.2s, transform 0.2s;
-}
-.organizerStatsCard:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
-    transform: translateY(-2px) scale(1.01);
-}
-.organizerStatNumber {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #ffd700;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-.organizerStatLabel {
-    color: #b0b3b8;
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.organizerInfoSection {
-    background: rgb(49, 53, 62);
-    color: #f3f4f6;
-    border: none;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    transition: box-shadow 0.2s, transform 0.2s;
-}
-.organizerInfoSection:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
-    transform: translateY(-2px) scale(1.01);
-}
-
-.organizerSectionTitle {
-    color: #ffd700;
-    font-weight: 700;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #393c47;
-    letter-spacing: 0.5px;
-}
-
-.organizerInfoItem {
+.breadcrumb {
     display: flex;
     align-items: center;
-    margin-bottom: 1.1rem;
-    padding: 0.85rem 1rem;
-    background: rgba(60, 63, 72, 0.85);
-    border-radius: 0.75rem;
-    transition: background 0.2s, transform 0.2s;
-    color: #e2e2e2;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-.organizerInfoItem:hover {
-    background: rgba(60, 63, 72, 1);
-    transform: translateX(4px) scale(1.01);
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: transparent;
 }
 
-.organizerInfoIcon {
-    width: 42px;
-    height: 42px;
+.breadcrumbItem {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumbLink {
+    color: #a1a1aa;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.breadcrumbLink:hover {
+    color: #1890ff;
+}
+
+.breadcrumbSeparator {
+    color: #71717a;
+    font-size: 0.8rem;
+}
+
+.breadcrumbActive {
+    color: #1890ff;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* ========== ERROR STATE ========== */
+.errorState {
+    text-align: center;
+    padding: 4rem 2rem;
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.errorIcon {
+    font-size: 4rem;
+    color: #52525b;
+    margin-bottom: 1.5rem;
+}
+
+.errorTitle {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.errorText {
+    color: #a1a1aa;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.homeButton {
+    background: #1890ff;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.homeButton:hover {
+    background: #096dd9;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(24, 144, 255, 0.3);
+}
+
+/* ========== HERO CARD ========== */
+.heroCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
+}
+
+.avatarSection {
+    display: flex;
+    justify-content: center;
+}
+
+.avatarContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1890ff;
+    box-shadow: 0 8px 24px rgba(24, 144, 255, 0.3);
+}
+
+.verifiedBadge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background: #10b981;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
-    color: #23243a;
-    border-radius: 50%;
-    margin-right: 1.1rem;
-    flex-shrink: 0;
-    font-size: 1.3rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: white;
+    font-size: 1rem;
+    border: 3px solid #27272a;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
-.organizerInfoLabel {
-    font-weight: 600;
-    color: #ffd700;
-    margin-bottom: 0.18rem;
+.avatarUpload {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.logoUpload {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px dashed #1890ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(24, 144, 255, 0.1);
+}
+
+.logoUpload:hover {
+    border-color: #60a5fa;
+    background: rgba(24, 144, 255, 0.2);
+}
+
+.profileInfo {
+    flex: 1;
+}
+
+.profileHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 2rem;
+}
+
+.profileTitleSection {
+    flex: 1;
+}
+
+.profileName {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.ratingSection {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.stars {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.starFilled {
+    color: #fbbf24;
+    font-size: 1.2rem;
+}
+
+.starEmpty {
+    color: #52525b;
+    font-size: 1.2rem;
+}
+
+.ratingText {
+    color: #d4d4d8;
+    font-weight: 500;
     font-size: 1rem;
 }
-.organizerInfoValue {
-    color: #e2e2e2;
-    font-size: 1.05rem;
-    font-weight: 400;
-}
 
-.organizerContactButton {
-    background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
+.verifiedLabel {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
     border: none;
-    color: #23243a;
-    padding: 0.7rem 2rem;
-    border-radius: 2rem;
-    font-weight: 600;
-    transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
-    text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.08);
-}
-.organizerContactButton:hover {
-    background: linear-gradient(135deg, #ffe066 60%, #ffd700 100%);
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.18);
-    color: #23243a;
-    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-.organizerRatingStars {
+.profileActions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.editButton {
+    border: 2px solid #1890ff;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    color: #1890ff;
+    background: transparent;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 0.18rem;
-    font-size: 1.1rem;
-}
-.organizerRatingText {
-    margin-left: 0.5rem;
-    color: #b0b3b8;
-    font-weight: 500;
-    font-size: 1rem;
 }
 
-.organizerBadge {
-    background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
-    color: #23243a;
-    padding: 0.5rem 1.1rem;
-    border-radius: 2rem;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+.editButton:hover {
+    background: #1890ff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4);
 }
 
-.organizerReviewCard {
-    background: rgb(49, 53, 62);
-    color: #f3f4f6;
+.reviewsButton {
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: white;
     border: none;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.2);
+}
+
+.reviewsButton:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #1890ff 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+}
+
+.profileDescription {
+    color: #d4d4d8;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ========== EDIT FORM ========== */
+.editForm {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #3f3f46;
+}
+
+.formLabel {
+    color: #f4f4f5;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.formControl {
+    background: #3f3f46;
+    border: 2px solid #52525b;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.formControl:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2);
+    background: #27272a;
+    color: #fff;
+}
+
+.formControl::placeholder {
+    color: #a1a1aa;
+}
+
+.editActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.saveButton {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+}
+
+.saveButton:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.cancelButton {
+    border: 2px solid #71717a;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    color: #d4d4d8;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+    background: #71717a;
+    color: white;
+}
+
+/* ========== STATS CARDS ========== */
+.statsCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.statsCard:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    border-color: #1890ff;
+}
+
+.statsIcon {
+    font-size: 2.5rem;
+    color: #1890ff;
+    margin-bottom: 1rem;
+}
+
+.statsNumber {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.statsLabel {
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ========== INFO CARDS ========== */
+.infoCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.infoCard:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    border-color: #1890ff;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #3f3f46;
+}
+
+.cardIcon {
+    font-size: 1.5rem;
+    color: #1890ff;
+}
+
+.cardTitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.infoItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(63, 63, 70, 0.5);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.infoItem:hover {
+    background: rgba(24, 144, 255, 0.1);
+    border-color: #1890ff;
+    transform: translateX(4px);
+}
+
+.infoIcon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.infoContent {
+    flex: 1;
+}
+
+.infoLabel {
+    font-size: 0.9rem;
+    color: #a1a1aa;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.infoValue {
+    font-size: 1rem;
+    color: #f4f4f5;
+    font-weight: 600;
+}
+
+.infoLink {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.infoLink:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 2rem;
+    color: #71717a;
+    font-style: italic;
+}
+
+/* ========== REVIEWS CARD ========== */
+.reviewsCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     margin-bottom: 2rem;
 }
-.organizerReviewQuote {
-    color: #ffd700;
-    font-size: 1.2rem;
-    margin-right: 8px;
-}
-.organizerReviewUser {
-    color: #ffd700;
-    font-weight: 600;
-    font-size: 1.08rem;
-    margin-right: 0.5rem;
-}
-.organizerReviewEvent {
-    color: #b0b3b8;
-    font-weight: 500;
-    font-size: 1rem;
-}
-.organizerReviewTime {
-    color: #b0b3b8;
-    font-size: 0.95rem;
-    margin-left: auto;
-}
-.organizerReviewComment {
-    color: #e2e2e2;
-    font-size: 1.08rem;
+
+.reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-@media (max-width: 768px) {
-    .organizerContainer {
-        padding: 1rem 0;
+.reviewItem {
+    padding: 1.5rem;
+    background: rgba(63, 63, 70, 0.3);
+    border-radius: 12px;
+    border-left: 4px solid #1890ff;
+    transition: all 0.3s ease;
+}
+
+.reviewItem:hover {
+    background: rgba(24, 144, 255, 0.05);
+    border-left-color: #60a5fa;
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.reviewMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reviewStars {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.reviewRating {
+    font-weight: 600;
+    color: #1890ff;
+    font-size: 0.9rem;
+}
+
+.reviewInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.reviewUser {
+    font-weight: 600;
+    color: #f4f4f5;
+}
+
+.reviewEvent {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+}
+
+.reviewDate {
+    color: #71717a;
+    font-size: 0.8rem;
+}
+
+.reviewComment {
+    color: #d4d4d8;
+    line-height: 1.6;
+    font-style: italic;
+    font-size: 1rem;
+}
+
+.reviewsFooter {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #3f3f46;
+}
+
+.viewAllReviews {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.viewAllReviews:hover {
+    color: #93c5fd;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+/* Large Tablets (992px - 1199px) */
+@media (max-width: 1199.98px) {
+    .container {
+        padding-top: 90px;
     }
-    .organizerCard {
-        margin-bottom: 1rem;
-        padding: 1.2rem 0.7rem;
+
+    .profileName {
+        font-size: 2rem;
     }
-    .organizerAvatar {
+
+    .statsNumber {
+        font-size: 2.2rem;
+    }
+}
+
+/* Tablets (768px - 991px) */
+@media (max-width: 991.98px) {
+    .container {
+        padding-top: 80px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .profileHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .profileActions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .editButton,
+    .reviewsButton {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .profileName {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+
+    .ratingSection {
+        justify-content: center;
+    }
+
+    .verifiedLabel {
+        align-self: center;
+    }
+
+    .statsNumber {
+        font-size: 2rem;
+    }
+
+    .editActions {
+        justify-content: center;
+    }
+}
+
+/* Mobile (568px - 767px) */
+@media (max-width: 767.98px) {
+    .container {
+        padding-top: 70px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .breadcrumbSection {
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumbLink {
+        font-size: 0.8rem;
+        gap: 0.3rem;
+    }
+
+    .breadcrumbActive {
+        font-size: 0.8rem;
+    }
+
+    .heroCard {
+        border-radius: 16px;
+    }
+
+    .avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .logoUpload {
+        width: 100px;
+        height: 100px;
+    }
+
+    .verifiedBadge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        bottom: 4px;
+        right: 4px;
+    }
+
+    .profileName {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .ratingSection {
+        margin-bottom: 0.75rem;
+    }
+
+    .stars {
+        gap: 0.15rem;
+    }
+
+    .starFilled,
+    .starEmpty {
+        font-size: 1rem;
+    }
+
+    .ratingText {
+        font-size: 0.9rem;
+    }
+
+    .verifiedLabel {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .profileActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .editButton,
+    .reviewsButton {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    .profileDescription {
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .statsCard {
+        border-radius: 12px;
+    }
+
+    .statsIcon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .statsNumber {
+        font-size: 1.8rem;
+    }
+
+    .statsLabel {
+        font-size: 0.85rem;
+    }
+
+    .infoCard,
+    .reviewsCard {
+        border-radius: 12px;
+    }
+
+    .cardTitle {
+        font-size: 1.2rem;
+    }
+
+    .infoItem {
+        padding: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .infoIcon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .infoLabel {
+        font-size: 0.8rem;
+    }
+
+    .infoValue,
+    .infoLink {
+        font-size: 0.9rem;
+    }
+
+    .reviewItem {
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .reviewHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .reviewInfo {
+        gap: 0.3rem;
+    }
+
+    .reviewUser {
+        font-size: 0.9rem;
+    }
+
+    .reviewEvent {
+        font-size: 0.8rem;
+    }
+
+    .reviewDate {
+        font-size: 0.75rem;
+    }
+
+    .reviewComment {
+        font-size: 0.9rem;
+    }
+
+    .editActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .saveButton,
+    .cancelButton {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+    }
+}
+
+/* Small Mobile (max-width: 575px) */
+@media (max-width: 575.98px) {
+    .container {
+        padding-top: 60px;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        border-width: 3px;
+    }
+
+    .logoUpload {
         width: 80px;
         height: 80px;
     }
-    .organizerStatNumber {
+
+    .verifiedBadge {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .profileName {
         font-size: 1.3rem;
     }
-    .organizerInfoSection {
-        padding: 1.1rem 0.7rem;
+
+    .starFilled,
+    .starEmpty {
+        font-size: 0.9rem;
     }
-    .organizerInfoItem {
+
+    .ratingText {
+        font-size: 0.8rem;
+    }
+
+    .verifiedLabel {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .editButton,
+    .reviewsButton {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .statsIcon {
+        font-size: 1.8rem;
+    }
+
+    .statsNumber {
+        font-size: 1.5rem;
+    }
+
+    .statsLabel {
+        font-size: 0.8rem;
+    }
+
+    .cardTitle {
+        font-size: 1.1rem;
+    }
+
+    .infoIcon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .infoLabel {
+        font-size: 0.75rem;
+    }
+
+    .infoValue,
+    .infoLink {
+        font-size: 0.8rem;
+    }
+
+    .reviewUser {
+        font-size: 0.8rem;
+    }
+
+    .reviewEvent {
+        font-size: 0.75rem;
+    }
+
+    .reviewDate {
+        font-size: 0.7rem;
+    }
+
+    .reviewComment {
+        font-size: 0.8rem;
+    }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .profileName {
+        font-size: 1.1rem;
+    }
+
+    .avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .logoUpload {
+        width: 70px;
+        height: 70px;
+    }
+
+    .statsNumber {
+        font-size: 1.3rem;
+    }
+
+    .editButton,
+    .reviewsButton {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+    }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-width: 767.98px) and (orientation: landscape) {
+    .container {
+        padding-top: 50px;
+    }
+
+    .profileHeader {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .profileActions {
+        flex-direction: row;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .avatar {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .statsCard,
+    .infoCard,
+    .reviewsCard,
+    .editButton,
+    .reviewsButton,
+    .saveButton,
+    .cancelButton,
+    .homeButton {
+        transition: none;
+    }
+
+    .statsCard:hover,
+    .infoCard:hover,
+    .editButton:hover,
+    .reviewsButton:hover,
+    .saveButton:hover,
+    .homeButton:hover {
+        transform: none;
+    }
+}
+
+/* ========== HERO CARD ========== */
+.heroCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.heroCard:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    border-color: #1890ff;
+}
+
+.avatarSection {
+    display: flex;
+    justify-content: center;
+}
+
+.avatarContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1890ff;
+    box-shadow: 0 8px 24px rgba(24, 144, 255, 0.2);
+}
+
+.verifiedBadge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    border: 3px solid #27272a;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.avatarUpload {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.logoUpload {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px dashed #1890ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(24, 144, 255, 0.1);
+}
+
+.logoUpload:hover {
+    border-color: #60a5fa;
+    background: rgba(24, 144, 255, 0.2);
+}
+
+.profileInfo {
+    flex: 1;
+}
+
+.profileHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 2rem;
+}
+
+.profileTitleSection {
+    flex: 1;
+}
+
+.profileName {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.ratingSection {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.stars {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.starFilled {
+    color: #fbbf24;
+    font-size: 1.2rem;
+}
+
+.starEmpty {
+    color: #52525b;
+    font-size: 1.2rem;
+}
+
+.ratingText {
+    color: #d4d4d8;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.verifiedLabel {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.profileActions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.editButton {
+    border: 2px solid #1890ff;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    color: #1890ff;
+    background: transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.editButton:hover {
+    background: #1890ff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4);
+}
+
+.reviewsButton {
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.2);
+}
+
+.reviewsButton:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #1890ff 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+}
+
+.profileDescription {
+    color: #d4d4d8;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ========== EDIT FORM ========== */
+.editForm {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #3f3f46;
+}
+
+.formLabel {
+    color: #f4f4f5;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.formControl {
+    background: #3f3f46;
+    border: 2px solid #52525b;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.formControl:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2);
+    background: #27272a;
+}
+
+.formControl::placeholder {
+    color: #a1a1aa;
+}
+
+.editActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.saveButton {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+}
+
+.saveButton:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.cancelButton {
+    border: 2px solid #71717a;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    color: #d4d4d8;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+    background: #71717a;
+    color: white;
+}
+
+/* ========== STATS CARDS ========== */
+.statsCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.statsCard:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    border-color: #1890ff;
+}
+
+.statsIcon {
+    font-size: 2.5rem;
+    color: #1890ff;
+    margin-bottom: 1rem;
+}
+
+.statsNumber {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.statsLabel {
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ========== INFO CARDS ========== */
+.infoCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.infoCard:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    border-color: #1890ff;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #3f3f46;
+}
+
+.cardIcon {
+    font-size: 1.5rem;
+    color: #1890ff;
+}
+
+.cardTitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.infoItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(63, 63, 70, 0.5);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.infoItem:hover {
+    background: rgba(24, 144, 255, 0.1);
+    border-color: #1890ff;
+    transform: translateX(4px);
+}
+
+.infoIcon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.infoContent {
+    flex: 1;
+}
+
+.infoLabel {
+    font-size: 0.9rem;
+    color: #a1a1aa;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.infoValue {
+    font-size: 1rem;
+    color: #f4f4f5;
+    font-weight: 600;
+}
+
+.infoLink {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.infoLink:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 2rem;
+    color: #71717a;
+    font-style: italic;
+}
+
+/* ========== REVIEWS CARD ========== */
+.reviewsCard {
+    background: linear-gradient(135deg, #3f3f46 0%, #52525b 100%);
+    border: 1px solid #52525b;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+
+.reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.reviewItem {
+    padding: 1.5rem;
+    background: rgba(63, 63, 70, 0.3);
+    border-radius: 12px;
+    border-left: 4px solid #1890ff;
+    transition: all 0.3s ease;
+}
+
+.reviewItem:hover {
+    background: rgba(24, 144, 255, 0.05);
+    border-left-color: #60a5fa;
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.reviewMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reviewStars {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.reviewRating {
+    font-weight: 600;
+    color: #1890ff;
+    font-size: 0.9rem;
+}
+
+.reviewInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.reviewUser {
+    font-weight: 600;
+    color: #f4f4f5;
+}
+
+.reviewEvent {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+}
+
+.reviewDate {
+    color: #71717a;
+    font-size: 0.8rem;
+}
+
+.reviewComment {
+    color: #d4d4d8;
+    line-height: 1.6;
+    font-style: italic;
+    font-size: 1rem;
+}
+
+.reviewsFooter {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #3f3f46;
+}
+
+.viewAllReviews {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.viewAllReviews:hover {
+    color: #93c5fd;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+/* Large Tablets (992px - 1199px) */
+@media (max-width: 1199.98px) {
+    .container {
+        padding-top: 90px;
+    }
+
+    .profileName {
+        font-size: 2rem;
+    }
+
+    .statsNumber {
+        font-size: 2.2rem;
+    }
+}
+
+/* Tablets (768px - 991px) */
+@media (max-width: 991.98px) {
+    .container {
+        padding-top: 80px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .profileHeader {
         flex-direction: column;
         align-items: flex-start;
-        text-align: center;
-        padding: 0.7rem 0.5rem;
+        gap: 1rem;
     }
-    .organizerInfoIcon {
-        margin-right: 0;
-        margin-bottom: 0.5rem;
+
+    .profileActions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .editButton,
+    .reviewsButton {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .profileName {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+
+    .ratingSection {
+        justify-content: center;
+    }
+
+    .verifiedLabel {
+        align-self: center;
+    }
+
+    .statsNumber {
+        font-size: 2rem;
+    }
+
+    .editActions {
+        justify-content: center;
+    }
+}
+
+/* Mobile (568px - 767px) */
+@media (max-width: 767.98px) {
+    .container {
+        padding-top: 70px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .breadcrumbSection {
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumbLink {
+        font-size: 0.8rem;
+        gap: 0.3rem;
+    }
+
+    .breadcrumbActive {
+        font-size: 0.8rem;
+    }
+
+    .heroCard {
+        border-radius: 16px;
+    }
+
+    .avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .logoUpload {
+        width: 100px;
+        height: 100px;
+    }
+
+    .verifiedBadge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        bottom: 4px;
+        right: 4px;
+    }
+
+    .profileName {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .ratingSection {
+        margin-bottom: 0.75rem;
+    }
+
+    .stars {
+        gap: 0.15rem;
+    }
+
+    .starFilled,
+    .starEmpty {
+        font-size: 1rem;
+    }
+
+    .ratingText {
+        font-size: 0.9rem;
+    }
+
+    .verifiedLabel {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .profileActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .editButton,
+    .reviewsButton {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    .profileDescription {
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .statsCard {
+        border-radius: 12px;
+    }
+
+    .statsIcon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .statsNumber {
+        font-size: 1.8rem;
+    }
+
+    .statsLabel {
+        font-size: 0.85rem;
+    }
+
+    .infoCard,
+    .reviewsCard {
+        border-radius: 12px;
+    }
+
+    .cardTitle {
+        font-size: 1.2rem;
+    }
+
+    .infoItem {
+        padding: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .infoIcon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .infoLabel {
+        font-size: 0.8rem;
+    }
+
+    .infoValue,
+    .infoLink {
+        font-size: 0.9rem;
+    }
+
+    .reviewItem {
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .reviewHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .reviewInfo {
+        gap: 0.3rem;
+    }
+
+    .reviewUser {
+        font-size: 0.9rem;
+    }
+
+    .reviewEvent {
+        font-size: 0.8rem;
+    }
+
+    .reviewDate {
+        font-size: 0.75rem;
+    }
+
+    .reviewComment {
+        font-size: 0.9rem;
+    }
+
+    .editActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .saveButton,
+    .cancelButton {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+    }
+}
+
+/* Small Mobile (max-width: 575px) */
+@media (max-width: 575.98px) {
+    .container {
+        padding-top: 60px;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        border-width: 3px;
+    }
+
+    .logoUpload {
+        width: 80px;
+        height: 80px;
+    }
+
+    .verifiedBadge {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .profileName {
+        font-size: 1.3rem;
+    }
+
+    .starFilled,
+    .starEmpty {
+        font-size: 0.9rem;
+    }
+
+    .ratingText {
+        font-size: 0.8rem;
+    }
+
+    .verifiedLabel {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .editButton,
+    .reviewsButton {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .statsIcon {
+        font-size: 1.8rem;
+    }
+
+    .statsNumber {
+        font-size: 1.5rem;
+    }
+
+    .statsLabel {
+        font-size: 0.8rem;
+    }
+
+    .cardTitle {
+        font-size: 1.1rem;
+    }
+
+    .infoIcon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .infoLabel {
+        font-size: 0.75rem;
+    }
+
+    .infoValue,
+    .infoLink {
+        font-size: 0.8rem;
+    }
+
+    .reviewUser {
+        font-size: 0.8rem;
+    }
+
+    .reviewEvent {
+        font-size: 0.75rem;
+    }
+
+    .reviewDate {
+        font-size: 0.7rem;
+    }
+
+    .reviewComment {
+        font-size: 0.8rem;
+    }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .profileName {
+        font-size: 1.1rem;
+    }
+
+    .avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .logoUpload {
+        width: 70px;
+        height: 70px;
+    }
+
+    .statsNumber {
+        font-size: 1.3rem;
+    }
+
+    .editButton,
+    .reviewsButton {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+    }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-width: 767.98px) and (orientation: landscape) {
+    .container {
+        padding-top: 50px;
+    }
+
+    .profileHeader {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .profileActions {
+        flex-direction: row;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .avatar {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .statsCard,
+    .infoCard,
+    .reviewsCard,
+    .editButton,
+    .reviewsButton,
+    .saveButton,
+    .cancelButton,
+    .homeButton {
+        transition: none;
+    }
+
+    .statsCard:hover,
+    .infoCard:hover,
+    .editButton:hover,
+    .reviewsButton:hover,
+    .saveButton:hover,
+    .homeButton:hover {
+        transform: none;
     }
 }

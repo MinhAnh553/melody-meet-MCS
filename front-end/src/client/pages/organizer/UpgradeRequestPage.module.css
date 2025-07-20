@@ -1,0 +1,1211 @@
+/* UpgradeRequestPage.module.css - Modern Design */
+
+.container {
+    background-color: #fff;
+    min-height: 100vh;
+    padding-top: 85px;
+    padding-bottom: 3rem;
+}
+
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+/* ========== BREADCRUMB ========== */
+.breadcrumbSection {
+    margin-bottom: 2rem;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: transparent;
+}
+
+.breadcrumbItem {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumbLink {
+    color: #666;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.breadcrumbLink:hover {
+    color: #1890ff;
+}
+
+.breadcrumbSeparator {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.breadcrumbActive {
+    color: #1890ff;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* ========== STATUS VIEW ========== */
+.statusContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.statusCard {
+    max-width: 900px;
+    width: 100%;
+    border: 1px solid #f0f0f0;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    background: #fff;
+}
+
+.statusHeader {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.logoContainer {
+    margin-bottom: 1.5rem;
+}
+
+.organizationLogo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1890ff;
+    box-shadow: 0 8px 24px rgba(24, 144, 255, 0.2);
+}
+
+.statusIcon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.statusIconPending {
+    color: #ffc107;
+}
+
+.statusIconSuccess {
+    color: #28a745;
+}
+
+.statusIconDanger {
+    color: #dc3545;
+}
+
+.statusIconSecondary {
+    color: #6c757d;
+}
+
+.statusTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1890ff;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.statusBadgeContainer {
+    margin-bottom: 1rem;
+}
+
+.statusBadge {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.statusDescription {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.loginAlert {
+    background: rgba(24, 144, 255, 0.1);
+    border: 1px solid #1890ff;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+}
+
+/* ========== INFO SECTIONS ========== */
+.infoSection {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.sectionIcon {
+    font-size: 1.5rem;
+    color: #1890ff;
+}
+
+.sectionTitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1890ff;
+    margin: 0;
+}
+
+.infoItem {
+    margin-bottom: 1rem;
+}
+
+.infoLabel {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.infoValue {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.infoLink {
+    color: #1890ff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.infoLink:hover {
+    color: #096dd9;
+    text-decoration: underline;
+}
+
+.fileLink {
+    color: #1890ff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(24, 144, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.fileLink:hover {
+    background: rgba(24, 144, 255, 0.2);
+    color: #096dd9;
+}
+
+.adminNote {
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 0;
+}
+
+.adminNoteContent {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.statusActions {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f8f9fa;
+}
+
+.homeButton {
+    background: #1890ff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.homeButton:hover {
+    background: #096dd9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+}
+
+/* ========== FORM VIEW ========== */
+.rejectedAlert {
+    margin-bottom: 2rem;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+}
+
+.formCard {
+    border: 1px solid #f0f0f0;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    background: #fff;
+    margin-bottom: 2rem;
+}
+
+.formHeader {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.formTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1890ff;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.formSubtitle {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ========== FORM SECTIONS ========== */
+.formSection {
+    margin-bottom: 10px;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+}
+
+.required {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+/* ========== LOGO UPLOAD ========== */
+.logoUploadSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logoUpload {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px dashed #1890ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(24, 144, 255, 0.05);
+}
+
+.logoUpload:hover {
+    border-color: #096dd9;
+    background: rgba(24, 144, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.logoLabel {
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* ========== FORM CONTROLS ========== */
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.formLabel {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.formControl {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #333;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.formControl:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+}
+
+.formControl::placeholder {
+    color: #999;
+}
+
+/* File Upload */
+.fileUpload {
+    width: 100%;
+    min-height: 100px;
+    border: 2px dashed #1890ff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(24, 144, 255, 0.05);
+    padding: 1.5rem;
+}
+
+.fileUpload:hover {
+    border-color: #096dd9;
+    background: rgba(24, 144, 255, 0.1);
+}
+
+/* ========== AGREEMENT SECTION ========== */
+.agreementSection {
+    margin-top: 1rem;
+}
+
+.agreementBox {
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.agreementContent {
+    margin-bottom: 1.5rem;
+}
+
+.agreementTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1890ff;
+    margin-bottom: 1rem;
+}
+
+.agreementList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.agreementList li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.agreementList li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.checkboxGroup {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(24, 144, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(24, 144, 255, 0.2);
+}
+
+.checkbox {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #1890ff;
+}
+
+.checkboxLabel {
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.5;
+    cursor: pointer;
+    margin: 0;
+}
+
+.termsLink {
+    color: #1890ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.termsLink:hover {
+    color: #096dd9;
+    text-decoration: underline;
+}
+
+/* ========== FORM ACTIONS ========== */
+.formActions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    border-top: 2px solid #f8f9fa;
+}
+
+.cancelButton {
+    border: 2px solid #6c757d;
+    border-radius: 12px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    color: #6c757d;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(108, 117, 125, 0.3);
+}
+
+.submitButton {
+    background: #1890ff;
+    border: 2px solid #1890ff;
+    border-radius: 12px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+    background: #096dd9;
+    border-color: #096dd9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+}
+
+.submitButton:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+/* Large Tablets (992px - 1199px) */
+@media (max-width: 1199.98px) {
+    .container {
+        padding-top: 90px;
+    }
+
+    .formTitle {
+        font-size: 2rem;
+    }
+
+    .statusTitle {
+        font-size: 1.8rem;
+    }
+}
+
+/* Tablets (768px - 991px) */
+@media (max-width: 991.98px) {
+    .container {
+        padding-top: 80px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .formTitle {
+        font-size: 1.8rem;
+    }
+
+    .statusTitle {
+        font-size: 1.6rem;
+    }
+
+    .formSection,
+    .infoSection {
+        padding: 1.5rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.2rem;
+    }
+
+    .formActions {
+        flex-direction: column;
+    }
+
+    .cancelButton,
+    .submitButton {
+        width: 100%;
+        margin: 0;
+    }
+
+    .organizationLogo {
+        width: 100px;
+        height: 100px;
+    }
+
+    .logoUpload {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* Mobile (568px - 767px) */
+@media (max-width: 767.98px) {
+    .container {
+        padding-top: 70px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .breadcrumbSection {
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumbLink {
+        font-size: 0.8rem;
+        gap: 0.3rem;
+    }
+
+    .breadcrumbActive {
+        font-size: 0.8rem;
+    }
+
+    .formTitle {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .formSubtitle {
+        font-size: 1rem;
+    }
+
+    .statusTitle {
+        font-size: 1.4rem;
+    }
+
+    .statusIcon {
+        font-size: 3rem;
+    }
+
+    .statusDescription {
+        font-size: 1rem;
+    }
+
+    .organizationLogo {
+        width: 80px;
+        height: 80px;
+    }
+
+    .logoUpload {
+        width: 80px;
+        height: 80px;
+    }
+
+    .logoLabel {
+        font-size: 0.8rem;
+    }
+
+    .formSection,
+    .infoSection {
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.1rem;
+    }
+
+    .sectionHeader {
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .sectionIcon {
+        font-size: 1.25rem;
+    }
+
+    .formLabel {
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .formControl {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+
+    .fileUpload {
+        min-height: 80px;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .agreementBox {
+        padding: 1.5rem;
+        border-radius: 10px;
+    }
+
+    .agreementTitle {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .agreementList li {
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .checkboxGroup {
+        padding: 0.8rem;
+        gap: 0.6rem;
+    }
+
+    .checkboxLabel {
+        font-size: 0.85rem;
+    }
+
+    .checkbox {
+        width: 18px;
+        height: 18px;
+    }
+
+    .cancelButton,
+    .submitButton {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    .homeButton {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    .infoLabel {
+        font-size: 0.8rem;
+    }
+
+    .infoValue {
+        font-size: 0.9rem;
+    }
+
+    .statusBadge {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .adminNote {
+        padding: 1.25rem;
+        border-radius: 10px;
+    }
+
+    .adminNoteContent {
+        font-size: 0.9rem;
+    }
+
+    .fileLink {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+    }
+}
+
+/* Small Mobile (max-width: 575px) */
+@media (max-width: 575.98px) {
+    .container {
+        padding-top: 70px;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .breadcrumbSection {
+        margin-bottom: 1.25rem;
+    }
+
+    .breadcrumbLink {
+        font-size: 0.75rem;
+        gap: 0.25rem;
+    }
+
+    .breadcrumbActive {
+        font-size: 0.75rem;
+    }
+
+    .formCard,
+    .statusCard {
+        border-radius: 16px;
+    }
+
+    .formHeader {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .formTitle {
+        font-size: 1.3rem;
+        line-height: 1.2;
+    }
+
+    .formSubtitle {
+        font-size: 0.9rem;
+    }
+
+    .statusHeader {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .statusTitle {
+        font-size: 1.2rem;
+        line-height: 1.2;
+    }
+
+    .statusIcon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .statusDescription {
+        font-size: 0.9rem;
+    }
+
+    .organizationLogo {
+        width: 70px;
+        height: 70px;
+        border-width: 3px;
+    }
+
+    .logoUpload {
+        width: 70px;
+        height: 70px;
+    }
+
+    .logoLabel {
+        font-size: 0.75rem;
+    }
+
+    .formSection,
+    .infoSection {
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .sectionTitle {
+        font-size: 1rem;
+    }
+
+    .sectionHeader {
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.6rem;
+    }
+
+    .sectionIcon {
+        font-size: 1.1rem;
+    }
+
+    .formLabel {
+        font-size: 0.85rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .formControl {
+        padding: 0.55rem 0.7rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        border-width: 1px;
+    }
+
+    .fileUpload {
+        min-height: 70px;
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .agreementBox {
+        padding: 1.25rem;
+        border-radius: 8px;
+    }
+
+    .agreementTitle {
+        font-size: 0.9rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .agreementList li {
+        font-size: 0.8rem;
+        margin-bottom: 0.35rem;
+        padding-left: 1.25rem;
+    }
+
+    .checkboxGroup {
+        padding: 0.7rem;
+        gap: 0.5rem;
+        border-radius: 6px;
+    }
+
+    .checkboxLabel {
+        font-size: 0.8rem;
+    }
+
+    .checkbox {
+        width: 16px;
+        height: 16px;
+    }
+
+    .formActions {
+        gap: 0.75rem;
+    }
+
+    .cancelButton,
+    .submitButton {
+        padding: 0.55rem 1.25rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        border-width: 1px;
+    }
+
+    .homeButton {
+        padding: 0.55rem 1.25rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+
+    .statusActions {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .infoLabel {
+        font-size: 0.75rem;
+    }
+
+    .infoValue {
+        font-size: 0.85rem;
+    }
+
+    .statusBadge {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 15px;
+    }
+
+    .loginAlert {
+        margin-top: 1.25rem;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+
+    .adminNote {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .adminNoteContent {
+        font-size: 0.85rem;
+    }
+
+    .fileLink {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+        border-radius: 5px;
+    }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+    .container {
+        padding-top: 50px;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .formTitle {
+        font-size: 1.1rem;
+    }
+
+    .formSubtitle {
+        font-size: 0.8rem;
+    }
+
+    .statusTitle {
+        font-size: 1rem;
+    }
+
+    .statusIcon {
+        font-size: 2rem;
+    }
+
+    .statusDescription {
+        font-size: 0.8rem;
+    }
+
+    .organizationLogo {
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
+    }
+
+    .logoUpload {
+        width: 60px;
+        height: 60px;
+    }
+
+    .logoLabel {
+        font-size: 0.7rem;
+    }
+
+    .formSection,
+    .infoSection {
+        padding: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .sectionTitle {
+        font-size: 0.9rem;
+    }
+
+    .sectionIcon {
+        font-size: 1rem;
+    }
+
+    .formLabel {
+        font-size: 0.8rem;
+    }
+
+    .formControl {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .agreementBox {
+        padding: 1rem;
+    }
+
+    .agreementTitle {
+        font-size: 0.85rem;
+    }
+
+    .agreementList li {
+        font-size: 0.75rem;
+    }
+
+    .checkboxLabel {
+        font-size: 0.75rem;
+    }
+
+    .checkbox {
+        width: 14px;
+        height: 14px;
+    }
+
+    .cancelButton,
+    .submitButton,
+    .homeButton {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .statusBadge {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .infoLabel {
+        font-size: 0.7rem;
+    }
+
+    .infoValue {
+        font-size: 0.8rem;
+    }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-width: 767.98px) and (orientation: landscape) {
+    .container {
+        padding-top: 50px;
+    }
+
+    .formHeader,
+    .statusHeader {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+
+    .formSection,
+    .infoSection {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .organizationLogo {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .logoUpload,
+    .fileUpload,
+    .formControl,
+    .cancelButton,
+    .submitButton,
+    .homeButton,
+    .infoLink,
+    .fileLink {
+        transition: none;
+    }
+
+    .logoUpload:hover,
+    .cancelButton:hover,
+    .submitButton:hover,
+    .homeButton:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .container {
+        background-color: #1a1a1a;
+        color: #fff;
+    }
+
+    .formCard,
+    .statusCard {
+        background: #2a2a2a;
+        border-color: #404040;
+        color: #fff;
+    }
+
+    .formSection,
+    .infoSection {
+        background: #333;
+        border-color: #555;
+    }
+
+    .formTitle,
+    .statusTitle,
+    .sectionTitle {
+        color: #4dabf7;
+    }
+
+    .formControl {
+        background: #444;
+        border-color: #666;
+        color: #fff;
+    }
+
+    .formControl:focus {
+        border-color: #4dabf7;
+        box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
+    }
+
+    .formControl::placeholder {
+        color: #aaa;
+    }
+
+    .agreementBox {
+        background: #444;
+        border-color: #666;
+    }
+
+    .checkboxGroup {
+        background: rgba(77, 171, 247, 0.1);
+        border-color: rgba(77, 171, 247, 0.3);
+    }
+
+    .logoUpload,
+    .fileUpload {
+        background: rgba(77, 171, 247, 0.1);
+        border-color: #4dabf7;
+    }
+
+    .breadcrumbLink {
+        color: #aaa;
+    }
+
+    .breadcrumbLink:hover {
+        color: #4dabf7;
+    }
+
+    .breadcrumbActive {
+        color: #4dabf7;
+    }
+
+    .infoValue {
+        color: #fff;
+    }
+
+    .infoLabel {
+        color: #ccc;
+    }
+
+    .infoLink,
+    .termsLink {
+        color: #4dabf7;
+    }
+
+    .fileLink {
+        background: rgba(77, 171, 247, 0.2);
+        color: #4dabf7;
+    }
+}
