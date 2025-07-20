@@ -1,6 +1,70 @@
+export default PurchasedTickets;
 import React, { useEffect, useState, useRef } from 'react';
-import { Container, Row, Col, Button, Nav, Pagination } from 'react-bootstrap';
-import { BsTicket, BsCalendar, BsChevronRight } from 'react-icons/bs';
+import {
+    Container,
+    Row,
+    Col,
+    Button,
+    Nav,
+    Pagination,
+    Modal,
+    Card,
+    Form,
+    InputGroup,
+} from 'react-bootstrap';
+import {
+    BsTicket,
+    BsCalendar,
+    BsChevronRight,
+    BsSearch,
+    BsFilter,
+    BsDownload,
+    BsEye,
+    BsStar,
+    BsStarFill,
+} from 'react-icons/bs';
+import {
+    Table,
+    Space,
+    Tag,
+    Tooltip,
+    Empty,
+    Input,
+    Select,
+    Modal as AntModal,
+    Card as AntCard,
+    Row as AntRow,
+    Col as AntCol,
+    Button as AntButton,
+    Typography,
+    Divider,
+    Badge,
+    Avatar,
+    Statistic,
+    Progress,
+    Timeline,
+    notification,
+    Spin,
+} from 'antd';
+import {
+    EyeOutlined,
+    DownloadOutlined,
+    CalendarOutlined,
+    UserOutlined,
+    DollarOutlined,
+    ShoppingCartOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseOutlined,
+    StarOutlined,
+    StarFilled,
+    ThunderboltOutlined,
+    TrophyOutlined,
+    HeartOutlined,
+    GiftOutlined,
+    CrownOutlined,
+    FireOutlined,
+} from '@ant-design/icons';
 import QRCode from 'react-qr-code';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +78,10 @@ import styles from './PurchasedTickets.module.css';
 import LoadingSpinner from '../components/loading/LoadingSpinner';
 import html2canvas from 'html2canvas';
 
+const { Title, Text, Paragraph } = Typography;
+const { Search } = Input;
+const { Option } = Select;
+
 function PurchasedTickets() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -24,7 +92,8 @@ function PurchasedTickets() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [activeTab, setActiveTab] = useState('tickets');
-    const [expandedOrders, setExpandedOrders] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
+    const [downloadingTickets, setDownloadingTickets] = useState(new Set());
 
     // State cho review
     const [showReviewForm, setShowReviewForm] = useState(false);
@@ -32,105 +101,353 @@ function PurchasedTickets() {
     const [selectedReview, setSelectedReview] = useState(null);
     const [eventReviews, setEventReviews] = useState({});
 
-    const itemsPerPage = 5;
+    // State cho modal chi tiết
+    const [showTicketDetails, setShowTicketDetails] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState(null);
+
+    const itemsPerPage = 10;
 
     // Refs cho việc tải xuống
-    const ticketRefs = useRef({});
-    const orderRefs = useRef({});
     const ticketCardRefs = useRef({});
 
-    // Hàm tải vé thành ảnh với cải tiến
-    const handleDownloadTicketCard = async (orderId, ticketIdx) => {
-        const ref = ticketCardRefs.current[`${orderId}_${ticketIdx}`];
-        if (!ref) {
-            console.error('Không tìm thấy element để chụp ảnh');
+    // Enhanced notification system
+    const showNotification = (type, message, description) => {
+        notification[type]({
+            message,
+            description,
+            placement: 'topRight',
+            duration: 3,
+            style: {
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+            },
+        });
+    };
+
+    // Hàm format location với enhancement
+    const formatLocation = (location) => {
+        if (!location) return 'Chưa cập nhật';
+        if (typeof location === 'string') return location;
+        if (typeof location === 'object') {
+            const parts = [];
+            if (location.venueName) parts.push(location.venueName);
+            if (location.address) parts.push(location.address);
+            if (location.ward) parts.push(location.ward);
+            if (location.district) parts.push(location.district);
+            if (location.province) parts.push(location.province);
+            return parts.length > 0 ? parts.join(', ') : 'Chưa cập nhật';
+        }
+        return 'Chưa cập nhật';
+    };
+
+    // Hàm tải tất cả vé trong modal chi tiết
+    const handleDownloadAllTicketsInModal = async (order) => {
+        showNotification(
+            'info',
+            'Bắt đầu tải',
+            'Đang tải tất cả vé trong modal...',
+        );
+
+        let successCount = 0;
+        let errorCount = 0;
+        const totalTickets = order.tickets.reduce(
+            (sum, ticket) => sum + ticket.quantity,
+            0,
+        );
+
+        for (
+            let ticketIndex = 0;
+            ticketIndex < order.tickets.length;
+            ticketIndex++
+        ) {
+            const ticket = order.tickets[ticketIndex];
+            for (let qtyIndex = 0; qtyIndex < ticket.quantity; qtyIndex++) {
+                try {
+                    const ticketIdentifier = `${ticketIndex}_${qtyIndex}`;
+                    await handleDownloadTicketCard(order._id, ticketIdentifier);
+                    successCount++;
+
+                    // Show progress
+                    const progress = Math.round(
+                        (successCount / totalTickets) * 100,
+                    );
+                    notification.open({
+                        message: `Đang tải vé... ${successCount}/${totalTickets}`,
+                        description: `Tiến độ: ${progress}%`,
+                        duration: 1,
+                        key: 'download-progress',
+                    });
+
+                    // Delay between downloads
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                } catch (error) {
+                    console.error(
+                        `Lỗi tải vé ${ticketIndex}_${qtyIndex}:`,
+                        error,
+                    );
+                    errorCount++;
+                }
+            }
+        }
+
+        // Close progress notification
+        notification.destroy('download-progress');
+
+        if (errorCount === 0) {
+            showNotification(
+                'success',
+                'Hoàn thành!',
+                `Đã tải xong tất cả ${successCount} vé từ modal chi tiết!`,
+            );
+        } else {
+            showNotification(
+                'warning',
+                'Hoàn thành với lỗi',
+                `Đã tải ${successCount} vé, ${errorCount} vé lỗi`,
+            );
+        }
+    };
+
+    // Hàm tải tất cả vé của một đơn hàng
+    const handleDownloadAllTickets = async (order) => {
+        if (order.status !== 'PAID') {
+            showNotification(
+                'warning',
+                'Không thể tải vé',
+                'Chỉ có thể tải vé đã thanh toán',
+            );
             return;
         }
 
-        try {
-            // Hiển thị loading indicator
-            const downloadBtn = ref.querySelector('.download-btn');
-            const originalText = downloadBtn?.innerHTML;
-            if (downloadBtn) {
-                downloadBtn.innerHTML =
-                    '<i class="bi bi-arrow-clockwise me-1 spin"></i>Đang tải...';
-                downloadBtn.disabled = true;
-            }
+        // Mở modal chi tiết trước để render QR codes
+        if (!showTicketDetails) {
+            showNotification(
+                'info',
+                'Đang chuẩn bị',
+                'Vui lòng mở chi tiết vé trước khi tải',
+            );
+            handleViewTicketDetails(order.tickets[0], order);
+            return;
+        }
 
-            // Thêm class capturing để ẩn các element không cần thiết
+        showNotification('info', 'Bắt đầu tải', 'Đang tải tất cả vé...');
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (
+            let ticketIndex = 0;
+            ticketIndex < order.tickets.length;
+            ticketIndex++
+        ) {
+            const ticket = order.tickets[ticketIndex];
+            for (let qtyIndex = 0; qtyIndex < ticket.quantity; qtyIndex++) {
+                try {
+                    const ticketIdentifier = `${ticketIndex}_${qtyIndex}`;
+                    await handleDownloadTicketCard(order._id, ticketIdentifier);
+                    successCount++;
+                    // Delay between downloads to avoid overwhelming
+                    await new Promise((resolve) => setTimeout(resolve, 800));
+                } catch (error) {
+                    console.error(
+                        `Lỗi tải vé ${ticketIndex}_${qtyIndex}:`,
+                        error,
+                    );
+                    errorCount++;
+                }
+            }
+        }
+
+        if (errorCount === 0) {
+            showNotification(
+                'success',
+                'Hoàn thành',
+                `Đã tải xong ${successCount} vé!`,
+            );
+        } else {
+            showNotification(
+                'warning',
+                'Hoàn thành với lỗi',
+                `Đã tải ${successCount} vé, ${errorCount} vé lỗi`,
+            );
+        }
+    };
+
+    // Enhanced download function
+    const handleDownloadTicketCard = async (orderId, ticketIdentifier) => {
+        const ticketKey = `${orderId}_${ticketIdentifier}`;
+        const ref = ticketCardRefs.current[ticketKey];
+
+        if (!ref) {
+            showNotification('error', 'Lỗi', 'Không tìm thấy vé để tải xuống');
+            return Promise.reject(new Error('Không tìm thấy vé'));
+        }
+
+        // Prevent multiple downloads
+        if (downloadingTickets.has(ticketKey)) {
+            showNotification(
+                'warning',
+                'Đang tải',
+                'Vé đang được tải xuống, vui lòng đợi...',
+            );
+            return Promise.reject(new Error('Vé đang được tải'));
+        }
+
+        setDownloadingTickets((prev) => new Set(prev).add(ticketKey));
+
+        try {
+            // Show loading notification
+            const hideLoading = notification.open({
+                message: 'Đang tạo vé...',
+                description: 'Vui lòng đợi trong giây lát',
+                duration: 0,
+                key: `download-${ticketKey}`,
+            });
+
+            // Add capturing class
             ref.classList.add('capturing');
 
-            // Đợi DOM cập nhật
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            // Wait for DOM update and ensure element is visible
+            await new Promise((resolve) => setTimeout(resolve, 300));
 
-            // Cấu hình canvas với chất lượng cao
+            // Check if element is visible
+            const rect = ref.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+                throw new Error('Element không hiển thị hoặc có kích thước 0');
+            }
+
+            // Enhanced canvas configuration to avoid gradient issues
             const canvas = await html2canvas(ref, {
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 allowTaint: true,
-                scale: 3, // Tăng độ phân giải
+                scale: 2, // Reduced scale to avoid memory issues
                 logging: false,
                 letterRendering: true,
                 removeContainer: false,
-                imageTimeout: 0,
+                imageTimeout: 10000,
+                width: rect.width,
+                height: rect.height,
                 onclone: (clonedDoc) => {
-                    // Đảm bảo ẩn tất cả nút download trong bản clone
-                    const elementsToHide = clonedDoc.querySelectorAll(
-                        '.hide-when-download',
-                    );
-                    elementsToHide.forEach((element) => {
-                        element.style.display = 'none';
-                        element.style.visibility = 'hidden';
-                        element.style.opacity = '0';
-                    });
+                    try {
+                        // Hide download elements
+                        const elementsToHide = clonedDoc.querySelectorAll(
+                            '.hide-when-download',
+                        );
+                        elementsToHide.forEach((element) => {
+                            element.style.display = 'none';
+                            element.style.visibility = 'hidden';
+                            element.style.opacity = '0';
+                        });
 
-                    // Cải thiện font rendering
-                    const allText = clonedDoc.querySelectorAll('*');
-                    allText.forEach((element) => {
-                        element.style.fontSmooth = 'always';
-                        element.style.webkitFontSmoothing = 'antialiased';
-                        element.style.mozOsxFontSmoothing = 'grayscale';
-                    });
+                        // Remove problematic CSS properties that might cause gradient issues
+                        const allElements = clonedDoc.querySelectorAll('*');
+                        allElements.forEach((element) => {
+                            // Remove complex gradients and effects that might cause issues
+                            const computedStyle =
+                                window.getComputedStyle(element);
+
+                            // Replace gradients with solid colors
+                            if (
+                                computedStyle.background &&
+                                computedStyle.background.includes('gradient')
+                            ) {
+                                element.style.background = '#ffffff';
+                            }
+                            if (
+                                computedStyle.backgroundImage &&
+                                computedStyle.backgroundImage.includes(
+                                    'gradient',
+                                )
+                            ) {
+                                element.style.backgroundImage = 'none';
+                                element.style.backgroundColor = '#ffffff';
+                            }
+
+                            // Enhance font rendering
+                            element.style.fontSmooth = 'always';
+                            element.style.webkitFontSmoothing = 'antialiased';
+                            element.style.mozOsxFontSmoothing = 'grayscale';
+                            element.style.textRendering = 'optimizeLegibility';
+
+                            // Remove transform that might cause issues
+                            element.style.transform = 'none';
+                            element.style.filter = 'none';
+                            element.style.boxShadow = 'none';
+                        });
+
+                        // Ensure the cloned element has proper dimensions
+                        const clonedElement =
+                            clonedDoc.querySelector(
+                                `[data-ticket-key="${ticketKey}"]`,
+                            ) || clonedDoc.querySelector('.ticketCard');
+                        if (clonedElement) {
+                            clonedElement.style.width = rect.width + 'px';
+                            clonedElement.style.height = rect.height + 'px';
+                            clonedElement.style.position = 'relative';
+                            clonedElement.style.display = 'block';
+                        }
+                    } catch (cloneError) {
+                        console.warn('Lỗi khi xử lý clone:', cloneError);
+                    }
                 },
             });
 
-            // Tạo tên file có timestamp
+            // Validate canvas
+            if (!canvas || canvas.width === 0 || canvas.height === 0) {
+                throw new Error('Canvas không hợp lệ');
+            }
+
+            // Generate filename with better format
             const timestamp = new Date()
                 .toISOString()
                 .slice(0, 19)
                 .replace(/:/g, '-');
-            const filename = `ve_${orderId.slice(-6)}_${
-                ticketIdx + 1
-            }_${timestamp}.png`;
+            const orderCode = orderId.slice(-6);
+            const filename = `ticket_${orderCode}_${ticketIdentifier}_${timestamp}.png`;
 
-            // Tải xuống với chất lượng cao
+            // Create and trigger download
             const link = document.createElement('a');
             link.download = filename;
-            link.href = canvas.toDataURL('image/png', 1.0);
-
-            // Trigger download
+            link.href = canvas.toDataURL('image/png', 0.95); // Slightly compressed
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            // Hiển thị thông báo thành công
-            console.log(`✅ Đã tải vé thành công: ${filename}`);
+            // Close loading notification
+            notification.destroy(`download-${ticketKey}`);
 
-            // Có thể thêm toast notification ở đây
-            // toast.success('Đã tải vé thành công!');
+            // Show success notification
+            showNotification(
+                'success',
+                'Tải vé thành công!',
+                `Vé đã được lưu với tên: ${filename}`,
+            );
+
+            return Promise.resolve();
         } catch (error) {
             console.error('❌ Lỗi khi tải vé:', error);
-            // toast.error('Có lỗi xảy ra khi tải vé. Vui lòng thử lại!');
-        } finally {
-            // Khôi phục lại trạng thái ban đầu
-            ref.classList.remove('capturing');
+            notification.destroy(`download-${ticketKey}`);
 
-            const downloadBtn = ref.querySelector('.download-btn');
-            if (downloadBtn) {
-                downloadBtn.innerHTML =
-                    '<i class="bi bi-download me-1"></i>Tải về';
-                downloadBtn.disabled = false;
+            let errorMessage = 'Có lỗi xảy ra khi tải vé. Vui lòng thử lại!';
+            if (error.message.includes('gradient')) {
+                errorMessage = 'Lỗi render CSS. Vui lòng thử lại!';
+            } else if (error.message.includes('Element không hiển thị')) {
+                errorMessage =
+                    'Vé chưa được hiển thị. Vui lòng mở chi tiết vé trước!';
             }
+
+            showNotification('error', 'Lỗi tải vé', errorMessage);
+
+            return Promise.reject(error);
+        } finally {
+            // Clean up
+            ref.classList.remove('capturing');
+            setDownloadingTickets((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(ticketKey);
+                return newSet;
+            });
         }
     };
 
@@ -139,11 +456,9 @@ function PurchasedTickets() {
         navigate(path);
     };
 
-    const handleToggleOrder = (orderId) => {
-        setExpandedOrders((prev) => ({
-            ...prev,
-            [orderId]: !prev[orderId],
-        }));
+    const handleViewTicketDetails = (ticket, order) => {
+        setSelectedTicket({ ...ticket, order });
+        setShowTicketDetails(true);
     };
 
     useEffect(() => {
@@ -184,9 +499,19 @@ function PurchasedTickets() {
             const res = await api.getMyOrders();
             if (res.success) {
                 setOrders(res.orders);
+                // showNotification(
+                //     'success',
+                //     'Tải dữ liệu thành công',
+                //     `Đã tải ${res.orders.length} đơn hàng`,
+                // );
             }
         } catch (error) {
             console.error('fetchOrders -> error', error);
+            showNotification(
+                'error',
+                'Lỗi tải dữ liệu',
+                'Không thể tải danh sách vé. Vui lòng thử lại!',
+            );
         } finally {
             setLoading(false);
         }
@@ -239,31 +564,35 @@ function PurchasedTickets() {
         return `${eventId}_${userId}`;
     };
 
-    // Lọc theo status
+    // Enhanced filtering with event status instead of payment status
     const filteredOrders = orders.filter((order) => {
-        if (statusFilter === 'all') return true;
-
         const now = new Date();
         const eventEndTime = new Date(order.endTime);
 
+        let matchesStatus = true;
         if (statusFilter === 'upcoming') {
-            return eventEndTime > now;
+            matchesStatus = eventEndTime > now;
+        } else if (statusFilter === 'completed') {
+            matchesStatus = eventEndTime <= now;
         }
+        // 'all' doesn't filter anything
 
-        if (statusFilter === 'event_over') {
-            return eventEndTime <= now;
-        }
-
-        return true;
+        const matchesSearch =
+            !searchTerm ||
+            order.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.orderCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            formatLocation(order.location)
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase());
+        return matchesStatus && matchesSearch;
     });
 
-    // Phân trang
+    // Enhanced pagination
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-    const indexOfLastOrder = currentPage * itemsPerPage;
-    const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;
-    const currentOrders = filteredOrders.slice(
-        indexOfFirstOrder,
-        indexOfLastOrder,
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedOrders = filteredOrders.slice(
+        startIndex,
+        startIndex + itemsPerPage,
     );
 
     const handlePageChange = (pageNumber) => {
@@ -273,676 +602,1345 @@ function PurchasedTickets() {
 
     const getEventStatus = (order) => {
         const now = new Date();
-        const eventStartTime = new Date(order.startTime);
         const eventEndTime = new Date(order.endTime);
+        const eventStartTime = new Date(order.startTime);
 
-        if (eventEndTime <= now) {
+        if (eventEndTime < now) {
             return {
-                className: 'status-completed',
-                icon: 'bi-calendar-check',
+                status: 'ended',
                 text: 'Đã kết thúc',
+                color: 'default',
+                icon: <CheckCircleOutlined />,
             };
         } else if (eventStartTime <= now && eventEndTime > now) {
             return {
-                className: 'status-ongoing',
-                icon: 'bi-play-circle',
+                status: 'ongoing',
                 text: 'Đang diễn ra',
+                color: 'processing',
+                icon: <FireOutlined />,
             };
         } else {
             return {
-                className: 'status-upcoming',
-                icon: 'bi-calendar-event',
+                status: 'upcoming',
                 text: 'Sắp diễn ra',
+                color: 'success',
+                icon: <ThunderboltOutlined />,
             };
         }
     };
 
-    const renderOrders = () => {
-        if (loading) {
-            return <LoadingSpinner />;
-        }
+    const getStatusTag = (status) => {
+        const statusConfig = {
+            PAID: {
+                color: 'success',
+                icon: <CheckCircleOutlined />,
+                text: 'Đã thanh toán',
+            },
+            PENDING: {
+                color: 'processing',
+                icon: <ClockCircleOutlined />,
+                text: 'Chờ thanh toán',
+            },
+            CANCELED: {
+                color: 'error',
+                icon: <CloseOutlined />,
+                text: 'Đã hủy',
+            },
+        };
 
-        if (currentOrders.length === 0) {
-            let emptyMessage = 'Không có vé phù hợp';
-            let emptyDescription = 'Bạn chưa mua vé nào.';
-
-            if (statusFilter === 'upcoming') {
-                emptyMessage = 'Không có vé sắp diễn ra';
-                emptyDescription =
-                    'Bạn chưa có vé nào cho các sự kiện sắp diễn ra.';
-            } else if (statusFilter === 'event_over') {
-                emptyMessage = 'Không có vé đã diễn ra';
-                emptyDescription =
-                    'Bạn chưa có vé nào cho các sự kiện đã kết thúc.';
-            } else if (orders.length === 0) {
-                emptyMessage = 'Chưa có vé nào';
-                emptyDescription =
-                    'Bạn chưa mua vé nào. Hãy khám phá các sự kiện thú vị!';
-            } else {
-                emptyMessage = 'Không tìm thấy vé phù hợp';
-                emptyDescription = `Không có vé nào ${
-                    statusFilter === 'upcoming' ? 'sắp diễn ra' : 'đã diễn ra'
-                } trong bộ lọc hiện tại.`;
-            }
-
-            return (
-                <div className={styles['empty-state']}>
-                    <img src={noTicket} alt="No tickets" />
-                    <h4>{emptyMessage}</h4>
-                    <p>{emptyDescription}</p>
-
-                    {orders.length === 0 && (
-                        <Button
-                            onClick={() => navigate('/')}
-                            className={styles['empty-state-btn']}
-                        >
-                            <i className="bi bi-search me-2"></i>
-                            Khám phá sự kiện
-                        </Button>
-                    )}
-
-                    {orders.length > 0 && statusFilter !== 'all' && (
-                        <Button
-                            variant="outline-primary"
-                            onClick={() => setStatusFilter('all')}
-                            className={styles['empty-state-btn']}
-                        >
-                            <i className="bi bi-collection me-2"></i>
-                            Xem tất cả vé
-                        </Button>
-                    )}
-                </div>
-            );
-        }
+        const config = statusConfig[status] || {
+            color: 'default',
+            icon: null,
+            text: status,
+        };
 
         return (
-            <>
-                {currentOrders.map((order) => {
-                    const isExpanded = !!expandedOrders[order._id];
-                    const eventStatus = getEventStatus(order);
+            <Tag
+                color={config.color}
+                icon={config.icon}
+                className={styles.statusTag}
+            >
+                {config.text}
+            </Tag>
+        );
+    };
 
-                    return (
-                        <div key={order._id} className={styles['order-card']}>
-                            {/* Order Header */}
-                            <div
-                                className={styles['order-header']}
-                                onClick={() => handleToggleOrder(order._id)}
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
+
+    const formatDateTime = (dateString) => {
+        return new Date(dateString).toLocaleString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
+    // Enhanced statistics with event status
+    const getOrderStats = () => {
+        const totalOrders = orders.length;
+        const paidOrders = orders.filter((o) => o.status === 'PAID').length;
+        const totalRevenue = orders
+            .filter((o) => o.status === 'PAID')
+            .reduce((sum, o) => sum + o.totalPrice, 0);
+        const now = new Date();
+        const upcomingEvents = orders.filter(
+            (o) => new Date(o.endTime) > now,
+        ).length;
+        const completedEvents = orders.filter(
+            (o) => new Date(o.endTime) <= now,
+        ).length;
+
+        return {
+            totalOrders,
+            paidOrders,
+            totalRevenue,
+            upcomingEvents,
+            completedEvents,
+        };
+    };
+
+    const stats = getOrderStats();
+
+    // Enhanced table columns
+    const columns = [
+        {
+            title: (
+                <Space>
+                    <ShoppingCartOutlined style={{ color: '#3b82f6' }} />
+                    <span style={{ fontWeight: 600 }}>Mã đơn hàng</span>
+                </Space>
+            ),
+            dataIndex: 'orderCode',
+            key: 'orderCode',
+            render: (orderCode, record) => (
+                <div
+                    className={styles.orderCode}
+                    onClick={() =>
+                        handleViewTicketDetails(record.tickets[0], record)
+                    }
+                    style={{ cursor: 'pointer' }}
+                    title="Click để xem chi tiết vé"
+                >
+                    {orderCode}
+                </div>
+            ),
+            width: 130,
+        },
+        {
+            title: (
+                <Space>
+                    <CalendarOutlined style={{ color: '#10b981' }} />
+                    <span style={{ fontWeight: 600 }}>Sự kiện</span>
+                </Space>
+            ),
+            dataIndex: 'eventName',
+            key: 'eventName',
+            render: (eventName, record) => {
+                const eventStatus = getEventStatus(record);
+                return (
+                    <div>
+                        <div style={{ marginBottom: 4 }}>
+                            <Text
+                                strong
+                                style={{ fontSize: 14, cursor: 'pointer' }}
+                                onClick={() =>
+                                    handleViewTicketDetails(
+                                        record.tickets[0],
+                                        record,
+                                    )
+                                }
                             >
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <div className="flex-grow-1">
-                                        <h3 className={styles['order-title']}>
-                                            Đơn hàng #{order.orderCode}
-                                        </h3>
-                                        <p className={styles['order-subtitle']}>
-                                            {order.eventName}
-                                        </p>
-                                        <div
-                                            className={`${
-                                                styles['status-badge']
-                                            } ${styles[eventStatus.className]}`}
+                                {eventName}
+                            </Text>
+                        </div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                marginBottom: 4,
+                            }}
+                        >
+                            <CalendarOutlined
+                                style={{ fontSize: 12, color: '#6b7280' }}
+                            />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                {formatDateTime(record.startTime)}
+                            </Text>
+                        </div>
+                        <Tag
+                            color={eventStatus.color}
+                            icon={eventStatus.icon}
+                            style={{ fontSize: 11, padding: '2px 6px' }}
+                        >
+                            {eventStatus.text}
+                        </Tag>
+                    </div>
+                );
+            },
+            width: 250,
+        },
+        {
+            title: (
+                <Space>
+                    <UserOutlined style={{ color: '#f59e0b' }} />
+                    <span style={{ fontWeight: 600 }}>Ngày mua</span>
+                </Space>
+            ),
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (createdAt) => (
+                <Space>
+                    <Avatar
+                        size="small"
+                        icon={<CalendarOutlined />}
+                        style={{ backgroundColor: '#f59e0b' }}
+                    />
+                    <div>
+                        <div style={{ fontSize: 13, fontWeight: 500 }}>
+                            {formatDateTime(createdAt)}
+                        </div>
+                    </div>
+                </Space>
+            ),
+            width: 180,
+        },
+        {
+            title: (
+                <Space>
+                    <DollarOutlined style={{ color: '#10b981' }} />
+                    <span style={{ fontWeight: 600 }}>Tổng tiền</span>
+                </Space>
+            ),
+            dataIndex: 'totalPrice',
+            key: 'totalPrice',
+            render: (totalPrice) => (
+                <div style={{ textAlign: 'left' }}>
+                    <Text strong style={{ color: '#10b981', fontSize: 15 }}>
+                        {formatCurrency(totalPrice)}
+                    </Text>
+                </div>
+            ),
+            width: 150,
+        },
+        {
+            title: (
+                <Space>
+                    <GiftOutlined style={{ color: '#ef4444' }} />
+                    <span style={{ fontWeight: 600 }}>Thao tác</span>
+                </Space>
+            ),
+            key: 'actions',
+            render: (_, record) => {
+                const totalTickets = record.tickets.reduce(
+                    (sum, ticket) => sum + ticket.quantity,
+                    0,
+                );
+
+                return (
+                    <Space size="small">
+                        <Tooltip title="Xem chi tiết vé">
+                            <AntButton
+                                type="primary"
+                                size="small"
+                                icon={<EyeOutlined />}
+                                onClick={() =>
+                                    handleViewTicketDetails(
+                                        record.tickets[0],
+                                        record,
+                                    )
+                                }
+                                className={styles.actionButton}
+                            >
+                                Xem ({totalTickets} vé)
+                            </AntButton>
+                        </Tooltip>
+                        {canReviewEvent(record) && (
+                            <Tooltip
+                                title={
+                                    eventReviews[
+                                        generateReviewId(
+                                            record.eventId,
+                                            user?.id,
+                                        )
+                                    ]
+                                        ? 'Chỉnh sửa đánh giá'
+                                        : 'Đánh giá sự kiện'
+                                }
+                            >
+                                <AntButton
+                                    type={
+                                        eventReviews[
+                                            generateReviewId(
+                                                record.eventId,
+                                                user?.id,
+                                            )
+                                        ]
+                                            ? 'default'
+                                            : 'dashed'
+                                    }
+                                    size="small"
+                                    icon={
+                                        eventReviews[
+                                            generateReviewId(
+                                                record.eventId,
+                                                user?.id,
+                                            )
+                                        ] ? (
+                                            <StarFilled
+                                                style={{ color: '#faad14' }}
+                                            />
+                                        ) : (
+                                            <StarOutlined />
+                                        )
+                                    }
+                                    onClick={() =>
+                                        handleOpenReviewForm(record.eventId)
+                                    }
+                                    className={styles.actionButton}
+                                    style={
+                                        eventReviews[
+                                            generateReviewId(
+                                                record.eventId,
+                                                user?.id,
+                                            )
+                                        ]
+                                            ? {
+                                                  backgroundColor: '#fff7e6',
+                                                  borderColor: '#faad14',
+                                                  color: '#d48806',
+                                              }
+                                            : {}
+                                    }
+                                >
+                                    {eventReviews[
+                                        generateReviewId(
+                                            record.eventId,
+                                            user?.id,
+                                        )
+                                    ]
+                                        ? 'Đã đánh giá'
+                                        : 'Đánh giá'}
+                                </AntButton>
+                            </Tooltip>
+                        )}
+                    </Space>
+                );
+            },
+            width: 200,
+        },
+    ];
+
+    if (loading) {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '60vh',
+                    flexDirection: 'column',
+                    gap: 16,
+                }}
+            >
+                <Spin size="large" />
+                <Text>Đang tải danh sách vé...</Text>
+            </div>
+        );
+    }
+
+    return (
+        <Container fluid className={styles.ordersContainer}>
+            {/* Enhanced Header Card with Stats */}
+            <AntCard className={styles.headerCard}>
+                <AntRow
+                    align="middle"
+                    justify="space-between"
+                    gutter={[24, 24]}
+                >
+                    <AntCol xs={24} lg={12}>
+                        <div className={styles.titleSection}>
+                            <div className={styles.titleIcon}>
+                                <BsTicket />
+                            </div>
+                            <div>
+                                <Title level={2} className={styles.pageTitle}>
+                                    Vé đã mua
+                                    <BsTicket
+                                        className={styles.titleIconSmall}
+                                    />
+                                </Title>
+                                <Text
+                                    type="secondary"
+                                    className={styles.pageSubtitle}
+                                >
+                                    <span className={styles.subtitleIcon}>
+                                        ✓
+                                    </span>
+                                    Quản lý và xem chi tiết vé đã mua
+                                </Text>
+
+                                {/* Quick Stats */}
+                                <div
+                                    style={{
+                                        marginTop: 16,
+                                        display: 'flex',
+                                        gap: 16,
+                                        flexWrap: 'wrap',
+                                    }}
+                                >
+                                    <div>
+                                        <Text
+                                            strong
+                                            style={{ color: '#3b82f6' }}
                                         >
-                                            <i
-                                                className={`bi ${eventStatus.icon}`}
-                                            ></i>
-                                            {eventStatus.text}
-                                        </div>
+                                            {stats.totalOrders}
+                                        </Text>
+                                        <Text
+                                            type="secondary"
+                                            style={{
+                                                marginLeft: 4,
+                                                fontSize: 12,
+                                            }}
+                                        >
+                                            đơn hàng
+                                        </Text>
                                     </div>
-                                    <i
-                                        className={`bi ${
-                                            isExpanded
-                                                ? 'bi-chevron-up'
-                                                : 'bi-chevron-down'
-                                        } ${styles['expand-icon']}`}
-                                    ></i>
+                                    <div>
+                                        <Text
+                                            strong
+                                            style={{ color: '#f59e0b' }}
+                                        >
+                                            {stats.upcomingEvents}
+                                        </Text>
+                                        <Text
+                                            type="secondary"
+                                            style={{
+                                                marginLeft: 4,
+                                                fontSize: 12,
+                                            }}
+                                        >
+                                            sắp diễn ra
+                                        </Text>
+                                    </div>
+                                    <div>
+                                        <Text
+                                            strong
+                                            style={{ color: '#6b7280' }}
+                                        >
+                                            {stats.completedEvents}
+                                        </Text>
+                                        <Text
+                                            type="secondary"
+                                            style={{
+                                                marginLeft: 4,
+                                                fontSize: 12,
+                                            }}
+                                        >
+                                            đã diễn ra
+                                        </Text>
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Order Content */}
-                            <div
-                                className={styles['transition-panel']}
-                                style={{
-                                    maxHeight: isExpanded ? '10000px' : '0px',
-                                }}
+                        </div>
+                    </AntCol>
+                    <AntCol xs={24} lg={12}>
+                        <div className={styles.searchFilter}>
+                            <Search
+                                placeholder="Tìm kiếm theo tên sự kiện, mã đơn hàng hoặc địa điểm..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ width: '100%', maxWidth: 400 }}
+                                allowClear
+                                enterButton={<BsSearch />}
+                                size="large"
+                            />
+                            <Select
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                style={{ width: 200 }}
+                                size="large"
+                                suffixIcon={<BsFilter />}
                             >
-                                <div className="p-4">
-                                    {/* Event Info */}
-                                    <div className={styles['event-info']}>
-                                        <div className="row align-items-center">
-                                            <div className="col-md-3 mb-3 mb-md-0">
-                                                <img
-                                                    src={order.background}
-                                                    alt={order.eventName}
-                                                    className={
-                                                        styles['event-image']
-                                                    }
-                                                />
-                                            </div>
-                                            <div className="col-md-9">
-                                                <h4
-                                                    className={
-                                                        styles['event-title']
-                                                    }
-                                                >
-                                                    {order.eventName}
-                                                </h4>
-                                                <div
-                                                    className={
-                                                        styles['event-details']
-                                                    }
-                                                >
-                                                    <div
-                                                        className={
-                                                            styles[
-                                                                'event-location'
-                                                            ]
-                                                        }
-                                                    >
-                                                        <i
-                                                            className={`bi bi-geo-alt-fill ${styles['event-icon']}`}
-                                                        ></i>
-                                                        <div>
-                                                            <div className="fw-semibold text-dark">
-                                                                {
-                                                                    order
-                                                                        .location
-                                                                        .venueName
-                                                                }
-                                                            </div>
-                                                            <div className="text-muted small">
-                                                                {
-                                                                    order
-                                                                        .location
-                                                                        .address
-                                                                }
-                                                                ,{' '}
-                                                                {
-                                                                    order
-                                                                        .location
-                                                                        .ward
-                                                                }
-                                                                ,{' '}
-                                                                {
-                                                                    order
-                                                                        .location
-                                                                        .district
-                                                                }
-                                                                ,{' '}
-                                                                {
-                                                                    order
-                                                                        .location
-                                                                        .province
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        className={
-                                                            styles['event-time']
-                                                        }
-                                                    >
-                                                        <i
-                                                            className={`bi bi-clock ${styles['event-icon']}`}
-                                                        ></i>
-                                                        <div>
-                                                            <div className="fw-semibold text-dark">
-                                                                <TimeText
-                                                                    event={
-                                                                        order
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <Option value="all">
+                                    <Space>
+                                        <CrownOutlined />
+                                        Tất cả
+                                    </Space>
+                                </Option>
+                                <Option value="upcoming">
+                                    <Space>
+                                        <ThunderboltOutlined />
+                                        Sắp diễn ra
+                                    </Space>
+                                </Option>
+                                <Option value="completed">
+                                    <Space>
+                                        <CheckCircleOutlined />
+                                        Đã diễn ra
+                                    </Space>
+                                </Option>
+                            </Select>
+                        </div>
+                    </AntCol>
+                </AntRow>
+            </AntCard>
+
+            {/* Enhanced Table Card */}
+            <AntCard className={styles.tableCard}>
+                {filteredOrders.length === 0 ? (
+                    <Empty
+                        image={noTicket}
+                        imageStyle={{ height: 180 }}
+                        description={
+                            <div className={styles.emptyState}>
+                                <Title level={4}>
+                                    {searchTerm
+                                        ? 'Không tìm thấy kết quả'
+                                        : 'Chưa có vé nào'}
+                                </Title>
+                                <Text type="secondary">
+                                    {searchTerm
+                                        ? `Không có vé nào phù hợp với từ khóa "${searchTerm}"`
+                                        : 'Bạn chưa mua vé nào hoặc không có vé phù hợp với bộ lọc hiện tại.'}
+                                </Text>
+                            </div>
+                        }
+                    >
+                        <Space>
+                            <AntButton
+                                type="primary"
+                                icon={<HeartOutlined />}
+                                onClick={() => navigate('/')}
+                                size="large"
+                            >
+                                Khám phá sự kiện
+                            </AntButton>
+                            {searchTerm && (
+                                <AntButton
+                                    onClick={() => setSearchTerm('')}
+                                    size="large"
+                                >
+                                    Xóa bộ lọc
+                                </AntButton>
+                            )}
+                        </Space>
+                    </Empty>
+                ) : (
+                    <>
+                        <Table
+                            columns={columns}
+                            dataSource={paginatedOrders}
+                            rowKey="_id"
+                            pagination={false}
+                            loading={loading}
+                            className={styles.orderTable}
+                            scroll={{ x: 1000 }}
+                            size="middle"
+                        />
+
+                        {/* Enhanced Pagination */}
+                        {totalPages > 1 && (
+                            <div className={styles.paginationContainer}>
+                                <Pagination
+                                    current={currentPage}
+                                    total={filteredOrders.length}
+                                    pageSize={itemsPerPage}
+                                    onChange={handlePageChange}
+                                    showSizeChanger={false}
+                                    showQuickJumper
+                                    showTotal={(total, range) =>
+                                        `Hiển thị ${range[0]}-${range[1]} trong tổng số ${total} vé`
+                                    }
+                                    size="default"
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
+            </AntCard>
+
+            {/* Enhanced Modal Chi tiết vé */}
+            <AntModal
+                open={showTicketDetails}
+                onCancel={() => setShowTicketDetails(false)}
+                width={1200}
+                footer={null}
+                title={
+                    <Space>
+                        <Avatar
+                            icon={<BsTicket />}
+                            style={{ backgroundColor: '#3b82f6' }}
+                        />
+                        <span style={{ fontWeight: 600, fontSize: 18 }}>
+                            Chi tiết vé
+                        </span>
+                    </Space>
+                }
+                styles={{
+                    body: { padding: 0 },
+                    header: {
+                        // background:
+                        //     'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                        color: 'white',
+                        borderRadius: '8px 8px 0 0',
+                    },
+                }}
+            >
+                {selectedTicket && (
+                    <div className={styles.orderDetailsGridContainer}>
+                        {/* Enhanced Header */}
+                        <div className={styles.orderDetailsGridHeader}>
+                            <div>
+                                <Space align="center">
+                                    <Avatar
+                                        icon={<ShoppingCartOutlined />}
+                                        style={{ backgroundColor: '#10b981' }}
+                                    />
+                                    <div>
+                                        <Text
+                                            strong
+                                            className={
+                                                styles.orderDetailsOrderCodeLink
+                                            }
+                                        >
+                                            Đơn hàng:{' '}
+                                            {selectedTicket.order.orderCode}
+                                        </Text>
+                                        <br />
+                                        <Text
+                                            type="secondary"
+                                            className={
+                                                styles.orderDetailsOrderDate
+                                            }
+                                        >
+                                            <CalendarOutlined
+                                                style={{ marginRight: 4 }}
+                                            />
+                                            {formatDateTime(
+                                                selectedTicket.order.createdAt,
+                                            )}
+                                        </Text>
                                     </div>
+                                </Space>
 
-                                    {/* Tickets */}
-                                    {order.tickets?.map((ticket, idx) => {
-                                        const subTotal =
-                                            ticket.price * ticket.quantity;
-                                        return (
-                                            <div
-                                                key={ticket._id || idx}
-                                                className={
-                                                    styles['ticket-section']
-                                                }
-                                                ref={(el) => {
-                                                    ticketCardRefs.current[
-                                                        `${order._id}_${idx}`
-                                                    ] = el;
-                                                }}
-                                            >
-                                                {/* Ticket Type Header */}
-                                                <div
-                                                    className={
-                                                        styles[
-                                                            'ticket-type-header'
-                                                        ]
-                                                    }
-                                                >
-                                                    <h5
-                                                        className={
-                                                            styles[
-                                                                'ticket-type-title'
-                                                            ]
-                                                        }
-                                                    >
-                                                        {ticket.name}
-                                                    </h5>
-                                                    <span
-                                                        className={
-                                                            styles[
-                                                                'ticket-type-quantity'
-                                                            ]
-                                                        }
-                                                    >
-                                                        {ticket.quantity} vé
-                                                    </span>
-                                                </div>
+                                {/* Review Button in Header */}
+                                {canReviewEvent(selectedTicket.order) && (
+                                    <AntButton
+                                        type={
+                                            eventReviews[
+                                                generateReviewId(
+                                                    selectedTicket.order
+                                                        .eventId,
+                                                    user?.id,
+                                                )
+                                            ]
+                                                ? 'default'
+                                                : 'primary'
+                                        }
+                                        size="small"
+                                        icon={
+                                            eventReviews[
+                                                generateReviewId(
+                                                    selectedTicket.order
+                                                        .eventId,
+                                                    user?.id,
+                                                )
+                                            ] ? (
+                                                <StarFilled
+                                                    style={{ color: '#faad14' }}
+                                                />
+                                            ) : (
+                                                <StarOutlined />
+                                            )
+                                        }
+                                        onClick={() => {
+                                            setShowTicketDetails(false);
+                                            handleOpenReviewForm(
+                                                selectedTicket.order.eventId,
+                                            );
+                                        }}
+                                        className={styles.headerReviewButton}
+                                        style={
+                                            eventReviews[
+                                                generateReviewId(
+                                                    selectedTicket.order
+                                                        .eventId,
+                                                    user?.id,
+                                                )
+                                            ]
+                                                ? {
+                                                      backgroundColor:
+                                                          '#fff7e6',
+                                                      borderColor: '#faad14',
+                                                      color: '#d48806',
+                                                  }
+                                                : {}
+                                        }
+                                    >
+                                        {eventReviews[
+                                            generateReviewId(
+                                                selectedTicket.order.eventId,
+                                                user?.id,
+                                            )
+                                        ]
+                                            ? 'Đã đánh giá'
+                                            : 'Đánh giá'}
+                                    </AntButton>
+                                )}
+                            </div>
+                            <div>
+                                {getStatusTag(selectedTicket.order.status)}
+                            </div>
+                        </div>
 
-                                                {/* Individual Tickets Grid */}
-                                                <div
-                                                    className={
-                                                        styles[
-                                                            'ticket-items-grid'
-                                                        ]
-                                                    }
-                                                >
-                                                    {Array.from({
-                                                        length: ticket.quantity,
-                                                    }).map((_, ticketIndex) => (
-                                                        <div
-                                                            key={ticketIndex}
-                                                            className={
-                                                                styles[
-                                                                    'ticket-item'
-                                                                ]
-                                                            }
+                        <div className={styles.orderDetailsGridContent}>
+                            {/* Enhanced Left Column */}
+                            <div className={styles.orderDetailsGridLeft}>
+                                {/* Event Info */}
+                                <AntCard
+                                    title={
+                                        <Space>
+                                            <CalendarOutlined
+                                                style={{ color: '#3b82f6' }}
+                                            />
+                                            THÔNG TIN SỰ KIỆN
+                                        </Space>
+                                    }
+                                    size="small"
+                                >
+                                    <Timeline
+                                        items={[
+                                            {
+                                                key: 'event-name',
+                                                dot: (
+                                                    <FireOutlined
+                                                        style={{
+                                                            color: '#3b82f6',
+                                                        }}
+                                                    />
+                                                ),
+                                                children: (
+                                                    <div>
+                                                        <Text
+                                                            strong
+                                                            style={{
+                                                                fontSize: 16,
+                                                            }}
                                                         >
-                                                            <div
-                                                                className={
-                                                                    styles[
-                                                                        'ticket-item-header'
-                                                                    ]
-                                                                }
-                                                            >
-                                                                <div>
+                                                            {
+                                                                selectedTicket
+                                                                    .order
+                                                                    .eventName
+                                                            }
+                                                        </Text>
+                                                    </div>
+                                                ),
+                                            },
+                                            {
+                                                key: 'start-time',
+                                                dot: (
+                                                    <CalendarOutlined
+                                                        style={{
+                                                            color: '#10b981',
+                                                        }}
+                                                    />
+                                                ),
+                                                children: (
+                                                    <div>
+                                                        <Text>Bắt đầu: </Text>
+                                                        <Text strong>
+                                                            {formatDateTime(
+                                                                selectedTicket
+                                                                    .order
+                                                                    .startTime,
+                                                            )}
+                                                        </Text>
+                                                    </div>
+                                                ),
+                                            },
+                                            {
+                                                key: 'end-time',
+                                                dot: (
+                                                    <ClockCircleOutlined
+                                                        style={{
+                                                            color: '#f59e0b',
+                                                        }}
+                                                    />
+                                                ),
+                                                children: (
+                                                    <div>
+                                                        <Text>Kết thúc: </Text>
+                                                        <Text strong>
+                                                            {formatDateTime(
+                                                                selectedTicket
+                                                                    .order
+                                                                    .endTime,
+                                                            )}
+                                                        </Text>
+                                                    </div>
+                                                ),
+                                            },
+                                            {
+                                                key: 'location',
+                                                dot: (
+                                                    <UserOutlined
+                                                        style={{
+                                                            color: '#ef4444',
+                                                        }}
+                                                    />
+                                                ),
+                                                children: (
+                                                    <div>
+                                                        <Text>Địa điểm: </Text>
+                                                        <Text strong>
+                                                            {formatLocation(
+                                                                selectedTicket
+                                                                    .order
+                                                                    .location,
+                                                            )}
+                                                        </Text>
+                                                    </div>
+                                                ),
+                                            },
+                                        ]}
+                                    />
+                                </AntCard>
+
+                                {/* Ticket Info */}
+                                <AntCard
+                                    title={
+                                        <Space>
+                                            <TrophyOutlined
+                                                style={{ color: '#8b5cf6' }}
+                                            />
+                                            THÔNG TIN VÉ
+                                        </Space>
+                                    }
+                                    size="small"
+                                >
+                                    <Table
+                                        columns={[
+                                            {
+                                                title: 'Tên vé',
+                                                dataIndex: 'name',
+                                                key: 'name',
+                                                render: (name) => (
+                                                    <Text strong>{name}</Text>
+                                                ),
+                                            },
+                                            {
+                                                title: 'Số lượng',
+                                                dataIndex: 'quantity',
+                                                key: 'quantity',
+                                                render: (qty) => (
+                                                    <Badge
+                                                        count={qty}
+                                                        style={{
+                                                            backgroundColor:
+                                                                '#3b82f6',
+                                                        }}
+                                                        showZero
+                                                    />
+                                                ),
+                                            },
+                                            {
+                                                title: 'Đơn giá',
+                                                dataIndex: 'price',
+                                                key: 'price',
+                                                render: (price) => (
+                                                    <Text
+                                                        style={{
+                                                            color: '#10b981',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    >
+                                                        {formatCurrency(price)}
+                                                    </Text>
+                                                ),
+                                            },
+                                            {
+                                                title: 'Tổng tiền',
+                                                key: 'total',
+                                                render: (_, record) => (
+                                                    <Text
+                                                        strong
+                                                        style={{
+                                                            color: '#ef4444',
+                                                            fontSize: 15,
+                                                        }}
+                                                    >
+                                                        {formatCurrency(
+                                                            record.price *
+                                                                record.quantity,
+                                                        )}
+                                                    </Text>
+                                                ),
+                                            },
+                                        ]}
+                                        dataSource={
+                                            selectedTicket.order.tickets?.map(
+                                                (ticket, index) => ({
+                                                    ...ticket,
+                                                    key: `ticket-info-${
+                                                        selectedTicket.order._id
+                                                    }-${
+                                                        ticket.ticketId || index
+                                                    }`,
+                                                }),
+                                            ) || []
+                                        }
+                                        pagination={false}
+                                        size="small"
+                                    />
+                                </AntCard>
+
+                                {/* Payment Info */}
+                                <AntCard
+                                    title={
+                                        <Space>
+                                            <DollarOutlined
+                                                style={{ color: '#10b981' }}
+                                            />
+                                            THÔNG TIN THANH TOÁN
+                                        </Space>
+                                    }
+                                    size="small"
+                                >
+                                    <Space
+                                        direction="vertical"
+                                        style={{ width: '100%' }}
+                                        size="middle"
+                                    >
+                                        <div>
+                                            <Text type="secondary">
+                                                Phương thức thanh toán:
+                                            </Text>
+                                            <br />
+                                            <Text
+                                                strong
+                                                style={{ fontSize: 15 }}
+                                            >
+                                                {
+                                                    selectedTicket.order.payment
+                                                        .method
+                                                }
+                                            </Text>
+                                        </div>
+                                        <div>
+                                            <Text type="secondary">
+                                                Trạng thái thanh toán:
+                                            </Text>
+                                            <br />
+                                            {getStatusTag(
+                                                selectedTicket.order.status,
+                                            )}
+                                        </div>
+                                        <div>
+                                            <Text type="secondary">
+                                                Ngày thanh toán:
+                                            </Text>
+                                            <br />
+                                            <Text strong>
+                                                {formatDateTime(
+                                                    selectedTicket.order
+                                                        .createdAt,
+                                                )}
+                                            </Text>
+                                        </div>
+                                    </Space>
+                                </AntCard>
+                            </div>
+
+                            {/* Enhanced Right Column */}
+                            <div className={styles.orderDetailsGridRight}>
+                                {/* QR Codes for all tickets */}
+                                {selectedTicket.order.status === 'PAID' && (
+                                    <AntCard
+                                        title={
+                                            <Space>
+                                                <GiftOutlined
+                                                    style={{ color: '#f59e0b' }}
+                                                />
+                                                MÃ QR VÉ
+                                            </Space>
+                                        }
+                                        size="small"
+                                        extra={
+                                            selectedTicket.order.tickets.reduce(
+                                                (sum, ticket) =>
+                                                    sum + ticket.quantity,
+                                                0,
+                                            ) >= 2 ? (
+                                                <AntButton
+                                                    type="primary"
+                                                    size="small"
+                                                    icon={<DownloadOutlined />}
+                                                    onClick={() =>
+                                                        handleDownloadAllTicketsInModal(
+                                                            selectedTicket.order,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        background:
+                                                            'linear-gradient(135deg, #10b981, #059669)',
+                                                        border: 'none',
+                                                        borderRadius: 6,
+                                                        fontWeight: 600,
+                                                    }}
+                                                >
+                                                    Tải tất cả
+                                                </AntButton>
+                                            ) : null
+                                        }
+                                    >
+                                        <Space
+                                            direction="vertical"
+                                            size="large"
+                                            style={{ width: '100%' }}
+                                        >
+                                            {selectedTicket.order.tickets.map(
+                                                (ticket, ticketIndex) => {
+                                                    // Tạo quantity cards cho mỗi loại vé
+                                                    return Array.from(
+                                                        {
+                                                            length: ticket.quantity,
+                                                        },
+                                                        (_, qtyIndex) => {
+                                                            // Format: orderCode + ticketTypeIndex (1-based) + ticketSequence (1-based)
+                                                            const ticketTypeNumber =
+                                                                (
+                                                                    ticketIndex +
+                                                                    1
+                                                                )
+                                                                    .toString()
+                                                                    .padStart(
+                                                                        2,
+                                                                        '0',
+                                                                    ); // 01, 02, 03...
+                                                            const ticketSequence =
+                                                                (qtyIndex + 1)
+                                                                    .toString()
+                                                                    .padStart(
+                                                                        2,
+                                                                        '0',
+                                                                    ); // 01, 02, 03...
+                                                            const qrValue = `${selectedTicket.order.orderCode}${ticketTypeNumber}${ticketSequence}`;
+                                                            const ticketKey = `${selectedTicket.order._id}_${ticketIndex}_${qtyIndex}`;
+                                                            const displayTicketNumber = `${ticketSequence}`;
+
+                                                            return (
+                                                                <div
+                                                                    key={`ticket-${selectedTicket.order._id}-${ticketIndex}-${qtyIndex}`}
+                                                                    ref={(
+                                                                        el,
+                                                                    ) => {
+                                                                        if (
+                                                                            el
+                                                                        ) {
+                                                                            ticketCardRefs.current[
+                                                                                ticketKey
+                                                                            ] =
+                                                                                el;
+                                                                        }
+                                                                    }}
+                                                                    data-ticket-key={
+                                                                        ticketKey
+                                                                    }
+                                                                    className={
+                                                                        styles.ticketCard
+                                                                    }
+                                                                    style={{
+                                                                        marginBottom:
+                                                                            '20px',
+                                                                    }}
+                                                                >
                                                                     <div
                                                                         className={
-                                                                            styles[
-                                                                                'ticket-code'
-                                                                            ]
+                                                                            styles.ticketHeader
                                                                         }
                                                                     >
-                                                                        Mã vé:{' '}
-                                                                        {
-                                                                            order.orderCode
-                                                                        }
-                                                                        {idx +
-                                                                            1}
-                                                                        {ticketIndex +
-                                                                            1}
+                                                                        <Title
+                                                                            level={
+                                                                                5
+                                                                            }
+                                                                            style={{
+                                                                                color: '#1f2937',
+                                                                                marginBottom: 8,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                selectedTicket
+                                                                                    .order
+                                                                                    .eventName
+                                                                            }
+                                                                        </Title>
+                                                                        <div>
+                                                                            <Text
+                                                                                type="secondary"
+                                                                                style={{
+                                                                                    fontSize: 13,
+                                                                                    display:
+                                                                                        'block',
+                                                                                }}
+                                                                            >
+                                                                                Mã
+                                                                                vé:{' '}
+                                                                                {
+                                                                                    qrValue
+                                                                                }
+                                                                            </Text>
+                                                                            <Text
+                                                                                strong
+                                                                                style={{
+                                                                                    fontSize: 14,
+                                                                                    color: '#3b82f6',
+                                                                                    display:
+                                                                                        'block',
+                                                                                    marginTop: 4,
+                                                                                }}
+                                                                            >
+                                                                                {
+                                                                                    ticket.name
+                                                                                }{' '}
+                                                                                -
+                                                                                Vé{' '}
+                                                                                {
+                                                                                    displayTicketNumber
+                                                                                }
+                                                                            </Text>
+                                                                            <Text
+                                                                                style={{
+                                                                                    fontSize: 13,
+                                                                                    color: '#10b981',
+                                                                                    display:
+                                                                                        'block',
+                                                                                    fontWeight: 600,
+                                                                                }}
+                                                                            >
+                                                                                {formatCurrency(
+                                                                                    ticket.price,
+                                                                                )}
+                                                                            </Text>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div
-                                                                    className={
-                                                                        styles[
-                                                                            'ticket-price'
-                                                                        ]
-                                                                    }
-                                                                >
-                                                                    {ticket.price.toLocaleString(
-                                                                        'vi-VN',
-                                                                    )}{' '}
-                                                                    đ
-                                                                </div>
-                                                            </div>
-
-                                                            <div
-                                                                className={
-                                                                    styles[
-                                                                        'ticket-item-footer'
-                                                                    ]
-                                                                }
-                                                            >
-                                                                <div
-                                                                    className={
-                                                                        styles[
-                                                                            'qr-container'
-                                                                        ]
-                                                                    }
-                                                                >
-                                                                    <QRCode
-                                                                        value={`${
-                                                                            order.orderCode
-                                                                        }${
-                                                                            idx +
-                                                                            1
-                                                                        }${
-                                                                            ticketIndex +
-                                                                            1
-                                                                        }`}
-                                                                        size={
-                                                                            80
+                                                                    <div
+                                                                        className={
+                                                                            styles.qrCodeContainer
                                                                         }
-                                                                        bgColor="#ffffff"
-                                                                        fgColor="#000000"
-                                                                        level="H"
-                                                                    />
-                                                                </div>
-
-                                                                <div className="hide-when-download">
-                                                                    <button
-                                                                        className={`${styles['download-btn']} download-btn`}
+                                                                    >
+                                                                        <QRCode
+                                                                            value={
+                                                                                qrValue
+                                                                            }
+                                                                            size={
+                                                                                180
+                                                                            }
+                                                                            level="H"
+                                                                            style={{
+                                                                                border: '4px solid #f3f4f6',
+                                                                                borderRadius: 8,
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    <div
+                                                                        className={
+                                                                            styles.ticketFooter
+                                                                        }
+                                                                    ></div>
+                                                                    <AntButton
+                                                                        type="primary"
+                                                                        icon={
+                                                                            <DownloadOutlined />
+                                                                        }
+                                                                        className="hide-when-download"
                                                                         onClick={() =>
                                                                             handleDownloadTicketCard(
-                                                                                order._id,
-                                                                                idx,
+                                                                                selectedTicket
+                                                                                    .order
+                                                                                    ._id,
+                                                                                `${ticketIndex}_${qtyIndex}`,
                                                                             )
                                                                         }
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            marginTop: 16,
+                                                                            background:
+                                                                                'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                                                            border: 'none',
+                                                                            borderRadius: 8,
+                                                                            fontWeight: 600,
+                                                                            height: 36,
+                                                                            fontSize:
+                                                                                '12px',
+                                                                        }}
+                                                                        size="small"
                                                                     >
-                                                                        <i className="bi bi-download me-1"></i>
-                                                                        Tải về
-                                                                    </button>
+                                                                        Tải vé
+                                                                    </AntButton>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                            );
+                                                        },
+                                                    );
+                                                },
+                                            )}
+                                        </Space>
+                                    </AntCard>
+                                )}
 
-                                                {/* Ticket Total */}
-                                                <div
-                                                    className={
-                                                        styles['ticket-total']
+                                {/* Action Buttons */}
+                                <div className={styles.orderDetailsActionRow}>
+                                    <Space
+                                        style={{ width: '100%' }}
+                                        direction="vertical"
+                                        size="middle"
+                                    >
+                                        {/* Download All Button - Only show if >= 2 tickets */}
+                                        {selectedTicket.order.status ===
+                                            'PAID' &&
+                                            selectedTicket.order.tickets.reduce(
+                                                (sum, ticket) =>
+                                                    sum + ticket.quantity,
+                                                0,
+                                            ) >= 2 && (
+                                                <AntButton
+                                                    type="default"
+                                                    icon={<DownloadOutlined />}
+                                                    onClick={() =>
+                                                        handleDownloadAllTicketsInModal(
+                                                            selectedTicket.order,
+                                                        )
                                                     }
+                                                    size="large"
+                                                    style={{
+                                                        width: '100%',
+                                                        background:
+                                                            'linear-gradient(135deg, #10b981, #059669)',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        fontWeight: 600,
+                                                    }}
                                                 >
-                                                    <span
-                                                        className={
-                                                            styles[
-                                                                'ticket-total-label'
-                                                            ]
-                                                        }
-                                                    >
-                                                        Tổng tiền loại vé:
-                                                    </span>
-                                                    <span
-                                                        className={
-                                                            styles[
-                                                                'ticket-total-amount'
-                                                            ]
-                                                        }
-                                                    >
-                                                        {subTotal.toLocaleString(
-                                                            'vi-VN',
-                                                        )}{' '}
-                                                        đ
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                                    Tải tất cả{' '}
+                                                    {selectedTicket.order.tickets.reduce(
+                                                        (sum, ticket) =>
+                                                            sum +
+                                                            ticket.quantity,
+                                                        0,
+                                                    )}{' '}
+                                                    vé
+                                                </AntButton>
+                                            )}
 
-                                    {/* Review Button for completed events */}
-                                    {canReviewEvent(order) && (
-                                        <div className="mt-3 text-center">
-                                            <Button
-                                                variant="outline-primary"
-                                                size="sm"
-                                                onClick={() =>
-                                                    handleOpenReviewForm(
-                                                        order.eventId,
+                                        {canReviewEvent(
+                                            selectedTicket.order,
+                                        ) && (
+                                            <AntButton
+                                                type={
+                                                    eventReviews[
+                                                        generateReviewId(
+                                                            selectedTicket.order
+                                                                .eventId,
+                                                            user?.id,
+                                                        )
+                                                    ]
+                                                        ? 'default'
+                                                        : 'primary'
+                                                }
+                                                icon={
+                                                    eventReviews[
+                                                        generateReviewId(
+                                                            selectedTicket.order
+                                                                .eventId,
+                                                            user?.id,
+                                                        )
+                                                    ] ? (
+                                                        <StarFilled
+                                                            style={{
+                                                                color: '#faad14',
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <StarOutlined />
                                                     )
                                                 }
-                                                className="rounded-pill"
+                                                onClick={() => {
+                                                    setShowTicketDetails(false);
+                                                    handleOpenReviewForm(
+                                                        selectedTicket.order
+                                                            .eventId,
+                                                    );
+                                                }}
+                                                size="large"
+                                                style={
+                                                    eventReviews[
+                                                        generateReviewId(
+                                                            selectedTicket.order
+                                                                .eventId,
+                                                            user?.id,
+                                                        )
+                                                    ]
+                                                        ? {
+                                                              width: '100%',
+                                                              backgroundColor:
+                                                                  '#fff7e6',
+                                                              borderColor:
+                                                                  '#faad14',
+                                                              color: '#d48806',
+                                                          }
+                                                        : { width: '100%' }
+                                                }
                                             >
-                                                <i className="bi bi-star me-1"></i>
                                                 {eventReviews[
                                                     generateReviewId(
-                                                        order.eventId,
+                                                        selectedTicket.order
+                                                            .eventId,
                                                         user?.id,
                                                     )
                                                 ]
                                                     ? 'Chỉnh sửa đánh giá'
                                                     : 'Đánh giá sự kiện'}
-                                            </Button>
-                                        </div>
-                                    )}
+                                            </AntButton>
+                                        )}
+                                        <AntButton
+                                            type="default"
+                                            onClick={() =>
+                                                setShowTicketDetails(false)
+                                            }
+                                            size="large"
+                                            style={{ width: '100%' }}
+                                        >
+                                            Đóng
+                                        </AntButton>
+                                    </Space>
                                 </div>
                             </div>
                         </div>
-                    );
-                })}
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="d-flex justify-content-center mt-4">
-                        <Pagination>
-                            <Pagination.First
-                                onClick={() => handlePageChange(1)}
-                                disabled={currentPage === 1}
-                            />
-                            <Pagination.Prev
-                                onClick={() =>
-                                    handlePageChange(currentPage - 1)
-                                }
-                                disabled={currentPage === 1}
-                            />
-
-                            {[...Array(totalPages)].map((_, index) => (
-                                <Pagination.Item
-                                    key={index + 1}
-                                    active={index + 1 === currentPage}
-                                    onClick={() => handlePageChange(index + 1)}
-                                >
-                                    {index + 1}
-                                </Pagination.Item>
-                            ))}
-
-                            <Pagination.Next
-                                onClick={() =>
-                                    handlePageChange(currentPage + 1)
-                                }
-                                disabled={currentPage === totalPages}
-                            />
-                            <Pagination.Last
-                                onClick={() => handlePageChange(totalPages)}
-                                disabled={currentPage === totalPages}
-                            />
-                        </Pagination>
                     </div>
                 )}
-            </>
-        );
-    };
+            </AntModal>
 
-    return (
-        <Container
-            fluid
-            className="text-dark min-vh-100 p-4 bg-light"
-            style={{ margin: '80px 0' }}
-        >
-            <Row className="pt-4">
-                <Col md={12} className="px-4">
-                    {/* Breadcrumb */}
-                    <div className="mb-4">
-                        <Link
-                            to="/"
-                            className="text-decoration-none text-muted"
-                        >
-                            Trang chủ
-                        </Link>
-                        <BsChevronRight className="mx-2 text-muted" />
-                        <span className="text-dark fw-semibold">Vé đã mua</span>
-                    </div>
-
-                    {/* Main Container */}
-                    <div className={styles['main-container']}>
-                        {/* Header */}
-                        <div className="p-4 border-bottom">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h1 className="mb-2 fw-bold text-primary d-flex align-items-center">
-                                        <i className="bi bi-ticket-perforated me-3"></i>
-                                        Vé đã mua
-                                    </h1>
-                                    <p className="text-muted mb-0">
-                                        Quản lý và tải xuống vé của bạn
-                                    </p>
-                                </div>
-                                <div className="d-none d-md-block">
-                                    <div className="text-end">
-                                        <div className="fw-semibold text-primary">
-                                            {orders.length} đơn hàng
-                                        </div>
-                                        <small className="text-muted">
-                                            {
-                                                orders.filter(
-                                                    (order) =>
-                                                        new Date(
-                                                            order.endTime,
-                                                        ) > new Date(),
-                                                ).length
-                                            }{' '}
-                                            sự kiện sắp tới
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Filters */}
-                        <div className="p-4 border-bottom bg-light">
-                            <div className="d-flex justify-content-center mb-3">
-                                <div className={styles['filter-container']}>
-                                    <button
-                                        className={`${styles.filterButton} ${
-                                            statusFilter === 'all'
-                                                ? styles.filterButtonActive
-                                                : ''
-                                        }`}
-                                        onClick={() => {
-                                            setStatusFilter('all');
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        <i className="bi bi-collection me-2"></i>
-                                        Tất cả
-                                        <span
-                                            className={styles['filter-badge']}
-                                        >
-                                            {orders.length}
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        className={`${styles.filterButton} ${
-                                            statusFilter === 'upcoming'
-                                                ? styles.filterButtonActive
-                                                : ''
-                                        }`}
-                                        onClick={() => {
-                                            setStatusFilter('upcoming');
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        <i className="bi bi-calendar-event me-2"></i>
-                                        Sắp diễn ra
-                                        <span
-                                            className={styles['filter-badge']}
-                                        >
-                                            {
-                                                orders.filter(
-                                                    (order) =>
-                                                        new Date(
-                                                            order.endTime,
-                                                        ) > new Date(),
-                                                ).length
-                                            }
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        className={`${styles.filterButton} ${
-                                            statusFilter === 'event_over'
-                                                ? styles.filterButtonActive
-                                                : ''
-                                        }`}
-                                        onClick={() => {
-                                            setStatusFilter('event_over');
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        <i className="bi bi-calendar-check me-2"></i>
-                                        Đã diễn ra
-                                        <span
-                                            className={styles['filter-badge']}
-                                        >
-                                            {
-                                                orders.filter(
-                                                    (order) =>
-                                                        new Date(
-                                                            order.endTime,
-                                                        ) <= new Date(),
-                                                ).length
-                                            }
-                                        </span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Filter Summary */}
-                            {statusFilter !== 'all' && (
-                                <div
-                                    className={`alert py-2 px-3 mb-0 ${styles.filterSummary}`}
-                                >
-                                    <i className="bi bi-info-circle me-2"></i>
-                                    Hiển thị {filteredOrders.length} vé{' '}
-                                    {statusFilter === 'upcoming'
-                                        ? 'sắp diễn ra'
-                                        : 'đã diễn ra'}{' '}
-                                    trong tổng số {orders.length} vé
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-4">{renderOrders()}</div>
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Review Form Modal */}
-            <ReviewForm
-                show={showReviewForm}
-                onHide={() => {
-                    setShowReviewForm(false);
-                    setSelectedEvent(null);
-                    setSelectedReview(null);
-                }}
-                eventId={selectedEvent?.eventId}
-                review={selectedReview}
-                onSuccess={handleReviewSuccess}
-            />
-
-            {/* Add CSS for spin animation */}
-            <style jsx>{`
-                .spin {
-                    animation: spin 1s linear infinite;
-                }
-
-                @keyframes spin {
-                    from {
-                        transform: rotate(0deg);
-                    }
-                    to {
-                        transform: rotate(360deg);
-                    }
-                }
-            `}</style>
+            {/* Enhanced Review Form Modal */}
+            {showReviewForm && (
+                <ReviewForm
+                    show={showReviewForm}
+                    onHide={() => {
+                        setShowReviewForm(false);
+                        setSelectedEvent(null);
+                        setSelectedReview(null);
+                    }}
+                    eventId={selectedEvent?.eventId}
+                    review={selectedReview}
+                    onSuccess={handleReviewSuccess}
+                />
+            )}
         </Container>
     );
 }
-
-export default PurchasedTickets;

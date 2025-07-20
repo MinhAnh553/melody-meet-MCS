@@ -1,91 +1,103 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Button, Row, Col } from 'react-bootstrap';
-import { FaStar } from 'react-icons/fa';
+import {
+    Modal,
+    Form,
+    Rate,
+    Input,
+    Button,
+    Space,
+    Typography,
+    Divider,
+    Card,
+    Avatar,
+    notification,
+    Spin,
+} from 'antd';
+import {
+    StarOutlined,
+    StarFilled,
+    SendOutlined,
+    EditOutlined,
+    UserOutlined,
+    MessageOutlined,
+    CheckCircleOutlined,
+} from '@ant-design/icons';
 import api from '../../util/api';
-import swalCustomize from '../../util/swalCustomize';
+import styles from './ReviewForm.module.css';
+
+const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 const ReviewForm = ({ show, onHide, eventId, review = null, onSuccess }) => {
-    const [formData, setFormData] = useState({
-        rating: 5,
-        comment: '',
-    });
+    const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState('');
 
     useEffect(() => {
         if (review) {
-            setFormData({
+            setRating(review.rating);
+            setComment(review.comment || '');
+            form.setFieldsValue({
                 rating: review.rating,
                 comment: review.comment || '',
             });
         } else {
-            setFormData({
+            setRating(5);
+            setComment('');
+            form.setFieldsValue({
                 rating: 5,
                 comment: '',
             });
         }
-        setErrors({});
-    }, [review, show]);
+    }, [review, show, form]);
 
-    const handleRatingChange = (rating) => {
-        setFormData((prev) => ({ ...prev, rating }));
-        if (errors.rating) {
-            setErrors((prev) => ({ ...prev, rating: null }));
-        }
+    const handleRatingChange = (value) => {
+        setRating(value);
     };
 
     const handleCommentChange = (e) => {
-        const comment = e.target.value;
-        setFormData((prev) => ({ ...prev, comment }));
-        if (errors.comment) {
-            setErrors((prev) => ({ ...prev, comment: null }));
-        }
+        setComment(e.target.value);
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
-            newErrors.rating = 'Vui lòng chọn đánh giá từ 1 đến 5 sao';
-        }
-
-        if (formData.comment && formData.comment.length > 1000) {
-            newErrors.comment = 'Bình luận không được quá 1000 ký tự';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+    const showNotification = (type, message, description) => {
+        notification[type]({
+            message,
+            description,
+            placement: 'topRight',
+            duration: 3,
+            style: {
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+            },
+        });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!validateForm()) {
-            return;
-        }
-
+    const handleSubmit = async (values) => {
         setLoading(true);
 
         try {
-            const newFormData = new FormData();
-            newFormData.append('eventId', eventId);
-            newFormData.append('rating', formData.rating);
-            newFormData.append('comment', formData.comment);
+            const formData = new FormData();
+            formData.append('eventId', eventId);
+            formData.append('rating', values.rating);
+            formData.append('comment', values.comment || '');
 
             if (review) {
                 // Cập nhật đánh giá
-                await api.updateReview(review._id, newFormData);
-                swalCustomize.Toast.fire({
-                    icon: 'success',
-                    title: 'Cập nhật đánh giá thành công!',
-                });
+                await api.updateReview(review._id, formData);
+                showNotification(
+                    'success',
+                    'Cập nhật thành công!',
+                    'Đánh giá của bạn đã được cập nhật.',
+                );
             } else {
                 // Tạo đánh giá mới
-                await api.createReview(newFormData);
-                swalCustomize.Toast.fire({
-                    icon: 'success',
-                    title: 'Đánh giá thành công!',
-                });
+                await api.createReview(formData);
+                showNotification(
+                    'success',
+                    'Đánh giá thành công!',
+                    'Cảm ơn bạn đã chia sẻ trải nghiệm.',
+                );
             }
 
             onSuccess && onSuccess();
@@ -93,119 +105,176 @@ const ReviewForm = ({ show, onHide, eventId, review = null, onSuccess }) => {
         } catch (error) {
             console.error('Review error:', error);
             const message = error.response?.data?.message || 'Có lỗi xảy ra';
-            swalCustomize.Toast.fire({
-                icon: 'error',
-                title: message,
-            });
+            showNotification('error', 'Lỗi', message);
         } finally {
             setLoading(false);
         }
     };
 
-    const renderStars = () => {
-        return (
-            <div className="d-flex align-items-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <FaStar
-                        key={star}
-                        className={`star-icon ${
-                            star <= formData.rating
-                                ? 'text-warning'
-                                : 'text-light'
-                        }`}
-                        style={{
-                            cursor: 'pointer',
-                            fontSize: '24px',
-                            transition: 'color 0.2s ease',
-                        }}
-                        onClick={() => handleRatingChange(star)}
-                    />
-                ))}
-                <span className="ms-2 text-light">({formData.rating}/5)</span>
-            </div>
-        );
+    const getRatingText = (rating) => {
+        const ratingTexts = {
+            1: 'Rất không hài lòng',
+            2: 'Không hài lòng',
+            3: 'Bình thường',
+            4: 'Hài lòng',
+            5: 'Rất hài lòng',
+        };
+        return ratingTexts[rating] || '';
+    };
+
+    const getRatingColor = (rating) => {
+        const colors = {
+            1: '#ff4d4f',
+            2: '#ff7a45',
+            3: '#faad14',
+            4: '#52c41a',
+            5: '#1890ff',
+        };
+        return colors[rating] || '#faad14';
     };
 
     return (
-        <Modal show={show} onHide={onHide} centered size="lg">
-            <Modal.Header closeButton>
-                <Modal.Title>
-                    {review ? 'Chỉnh sửa đánh giá' : 'Đánh giá sự kiện'}
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Form onSubmit={handleSubmit}>
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="mb-3">
-                                <Form.Label className="fw-bold">
-                                    Đánh giá của bạn{' '}
-                                    <span className="text-danger">*</span>
-                                </Form.Label>
-                                {renderStars()}
-                                {errors.rating && (
-                                    <div className="text-danger mt-1 small">
-                                        {errors.rating}
-                                    </div>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
-
-                    <Row>
-                        <Col md={12}>
-                            <Form.Group className="mb-3">
-                                <Form.Label className="fw-bold">
-                                    Bình luận (tùy chọn)
-                                </Form.Label>
-                                <Form.Control
-                                    as="textarea"
-                                    className="text-dark"
-                                    rows={4}
-                                    value={formData.comment}
-                                    onChange={handleCommentChange}
-                                    placeholder="Chia sẻ trải nghiệm của bạn về sự kiện này..."
-                                    isInvalid={!!errors.comment}
+        <Modal
+            open={show}
+            onCancel={onHide}
+            footer={null}
+            width={800}
+            centered
+            className={styles.reviewModal}
+            title={
+                <div className={styles.modalHeader}>
+                    <div className={styles.headerIcon}>
+                        {review ? <EditOutlined /> : <StarOutlined />}
+                    </div>
+                    <div>
+                        <Title level={4} className={styles.modalTitle}>
+                            {review ? 'Chỉnh sửa đánh giá' : 'Đánh giá sự kiện'}
+                        </Title>
+                    </div>
+                </div>
+            }
+        >
+            <div className={styles.modalContent}>
+                <Form
+                    form={form}
+                    layout="horizontal"
+                    onFinish={handleSubmit}
+                    className={styles.reviewForm}
+                    initialValues={{
+                        rating: 5,
+                        comment: '',
+                    }}
+                >
+                    {/* Main Content - Side by Side Layout */}
+                    <div className={styles.mainContent}>
+                        {/* Rating Section */}
+                        <div className={styles.ratingSection}>
+                            <div className={styles.sectionHeader}>
+                                <StarFilled
+                                    style={{
+                                        color: getRatingColor(rating),
+                                        fontSize: '16px',
+                                    }}
                                 />
-                                <Form.Text className="text-muted">
-                                    {formData.comment.length}/1000 ký tự
-                                </Form.Text>
-                                {errors.comment && (
-                                    <Form.Control.Feedback type="invalid">
-                                        {errors.comment}
-                                    </Form.Control.Feedback>
-                                )}
-                            </Form.Group>
-                        </Col>
-                    </Row>
+                                <Text strong>Đánh giá: </Text>
+                                <Text
+                                    style={{
+                                        color: getRatingColor(rating),
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {getRatingText(rating)}
+                                </Text>
+                            </div>
 
-                    <div className="d-flex justify-content-end gap-2">
-                        <Button
-                            variant="secondary"
-                            onClick={onHide}
-                            disabled={loading}
-                        >
-                            Hủy
-                        </Button>
-                        <Button
-                            variant="success"
-                            type="submit"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <>
-                                    <span className="spinner-border spinner-border-sm me-2" />
-                                    Đang xử lý...
-                                </>
-                            ) : review ? (
-                                'Cập nhật'
-                            ) : (
-                                'Gửi đánh giá'
-                            )}
-                        </Button>
+                            <Form.Item
+                                name="rating"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng chọn đánh giá!',
+                                    },
+                                ]}
+                                className={styles.ratingFormItem}
+                            >
+                                <Rate
+                                    character={<StarFilled />}
+                                    value={rating}
+                                    onChange={handleRatingChange}
+                                    className={styles.ratingStars}
+                                    style={{ fontSize: '24px' }}
+                                />
+                            </Form.Item>
+
+                            <div className={styles.ratingDisplay}>
+                                <Text
+                                    strong
+                                    style={{
+                                        fontSize: '18px',
+                                        color: getRatingColor(rating),
+                                    }}
+                                >
+                                    {rating}/5
+                                </Text>
+                            </div>
+                        </div>
+
+                        {/* Comment Section */}
+                        <div className={styles.commentSection}>
+                            <div className={styles.sectionHeader}>
+                                <MessageOutlined
+                                    style={{
+                                        color: '#52c41a',
+                                        fontSize: '16px',
+                                    }}
+                                />
+                                <Text strong>Bình luận (tùy chọn)</Text>
+                            </div>
+
+                            <Form.Item
+                                name="comment"
+                                rules={[
+                                    {
+                                        max: 1000,
+                                        message: 'Không được quá 1000 ký tự!',
+                                    },
+                                ]}
+                                className={styles.commentFormItem}
+                            >
+                                <TextArea
+                                    placeholder="Chia sẻ trải nghiệm của bạn..."
+                                    autoSize={{ minRows: 3, maxRows: 4 }}
+                                    value={comment}
+                                    onChange={handleCommentChange}
+                                    className={styles.commentTextarea}
+                                    showCount
+                                    maxLength={1000}
+                                />
+                            </Form.Item>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className={styles.actionButtons}>
+                        <Space>
+                            <Button onClick={onHide} disabled={loading}>
+                                Hủy
+                            </Button>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                loading={loading}
+                                icon={
+                                    review ? <EditOutlined /> : <SendOutlined />
+                                }
+                                className={styles.submitButton}
+                            >
+                                {review ? 'Cập nhật' : 'Gửi đánh giá'}
+                            </Button>
+                        </Space>
                     </div>
                 </Form>
-            </Modal.Body>
+            </div>
         </Modal>
     );
 };
