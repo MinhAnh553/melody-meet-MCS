@@ -143,9 +143,7 @@ services:
         env_file: 
             - ./notification-service/.env
         depends_on:
-            - redis
             - rabbitmq
         environment:
-            - REDIS_URL=redis://redis:6379
             - RABBITMQ_URL=amqp://rabbitmq:5672
 
