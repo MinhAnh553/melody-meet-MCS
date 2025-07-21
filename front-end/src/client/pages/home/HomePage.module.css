@@ -17,7 +17,7 @@
     /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
     background: 
         linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)),
-        url('https://cdn-media.sforum.vn/storage/app/media/ctv_seo10/hinh-nen-powerpoint-ve-am-nhac-5.jpg') center/cover no-repeat;
+        url('../../../assets/images/carousel.png') center/cover no-repeat;
     color: rgb(255, 255, 255);
     min-height: 400px;
 }
@@ -31,7 +31,7 @@
 }
 
 .eventTitle {
-    font-size: 42px;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1.1;
@@ -46,7 +46,7 @@
 
 .eventDate,
 .eventLocation {
-    font-size: 20px;
+    font-size: 18px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -342,5 +342,30 @@
     width: 40%;
     height: 16px;
     margin-bottom: 8px;
+}
+
+.trendingTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(255, 87, 34, 0.15);
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+    width: fit-content;
+    animation: trendingFireGlow 1s infinite alternate;
+}
+@keyframes trendingFireGlow {
+    0% {
+        box-shadow: 0 0 8px 2px #ff9800;
+    }
+    100% {
+        box-shadow: 0 0 16px 6px #ff5722;
+    }
 }
 

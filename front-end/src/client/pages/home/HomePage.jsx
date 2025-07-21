@@ -80,12 +80,12 @@ const HomePage = () => {
                                                       styles.desktopLayout
                                                   }
                                               >
-                                                  {/* Bên trái: Thông tin sự kiện */}
-                                                  <div
-                                                      className={
-                                                          styles.eventInfo
-                                                      }
-                                                  >
+                                                  {/* Trending fire tag */}
+                                                  <div className={styles.eventInfo}>
+                                                      <div className={styles.trendingTag}>
+                                                          <span role="img" aria-label="fire">🔥</span> Trending
+                                                      </div>
+                                                      {/* Bên trái: Thông tin sự kiện */}
                                                       <h2
                                                           className={`${styles.eventTitle} fw-bold mb-3`}
                                                       >
