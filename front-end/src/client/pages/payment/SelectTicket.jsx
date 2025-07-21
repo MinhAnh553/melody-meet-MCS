@@ -184,7 +184,7 @@ const SelectTicket = () => {
                     style={{
                         maxWidth: 1400,
                         margin: '0 auto',
-                        padding: '32px 0',
+                        padding: '0',
                     }}
                 >
                     {/* LEFT: Vé */}
