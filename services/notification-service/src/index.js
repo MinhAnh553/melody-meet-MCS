@@ -7,7 +7,7 @@ import {
     handleEventReminderNotification,
     handleUpgradeApprovedNotification,
     handleUpgradeRejectedNotification
-} from './queues/notificationController.js';
+} from './queues/notificationHandlers.js';
 
 dotenv.config();
 

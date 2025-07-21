@@ -32,4 +32,24 @@ export const handleEventReminderNotification = async (event) => {
         'Melody Meet: Nhắc Nhở Sự Kiện',
         mailTemplate.eventReminderTemplate(event.name, event.event)
     );
+};
+
+export const handleUpgradeApprovedNotification = async (event) => {
+    // event: { email, organizationName }
+    if (!event.email || !event.organizationName) return;
+    await emailProvider.sendMail(
+        event.email,
+        'Melody Meet: Yêu cầu nâng cấp được duyệt',
+        mailTemplate.upgradeApprovedTemplate(event.organizationName)
+    );
+};
+
+export const handleUpgradeRejectedNotification = async (event) => {
+    // event: { email, adminNote }
+    if (!event.email) return;
+    await emailProvider.sendMail(
+        event.email,
+        'Melody Meet: Yêu cầu nâng cấp bị từ chối',
+        mailTemplate.upgradeRejectedTemplate(event.adminNote)
+    );
 }; 
