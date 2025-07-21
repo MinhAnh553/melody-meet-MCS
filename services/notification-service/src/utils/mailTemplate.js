@@ -1,4 +1,4 @@
-import timeText from '../utils/timeText.js';
+import timeText from './timeText.js';
 
 const otpTemplate = (otp) => `
   <div style="
@@ -14,14 +14,12 @@ const otpTemplate = (otp) => `
     <h2 style="color: #007bff; margin-bottom: 10px;">
       🔐 Mã Xác Minh
     </h2>
-
     <p style="font-size: 16px; color: #333; margin: 0 0 10px;">
       Chào bạn,
     </p>
     <p style="font-size: 16px; color: #333; margin: 0 0 20px;">
       Dưới đây là mã xác minh của bạn:
     </p>
-
     <div style="
       font-size: 24px; 
       font-weight: bold; 
@@ -33,14 +31,11 @@ const otpTemplate = (otp) => `
     >
       ${otp}
     </div>
-
     <p style="font-size: 14px; color: #555; margin-top: 20px;">
       Mã này sẽ hết hạn sau <strong>5 phút</strong>. 
       Vui lòng không chia sẻ mã này với bất kỳ ai.
     </p>
-
     <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-
     <p style="font-size: 12px; color: #777; margin: 0;">
       Nếu bạn không yêu cầu mã này, hãy bỏ qua email này.
     </p>
@@ -57,12 +52,9 @@ const ticketInfoTemplate = (name, event, order, tickets) => `
     padding: 20px; 
     background-color: #f9f9f9;
   ">
-      <!-- Tiêu đề canh giữa -->
       <h2 style="color: #007bff; text-align: center;">
         🎫 Thông Tin Đặt Vé
       </h2>
-      
-      <!-- Phần chào hỏi, thông tin chính canh trái -->
       <div style="text-align: left; color: #333; font-size: 16px;">
         <p style="margin: 0 0 10px;">
           Chào <strong>${name}</strong>,
@@ -83,8 +75,6 @@ const ticketInfoTemplate = (name, event, order, tickets) => `
           Dưới đây là thông tin vé của bạn:
         </p>
       </div>
-
-      <!-- Danh sách vé canh trái -->
       <div style="text-align: left; margin: 20px 0;">
           ${
               tickets.length > 0
@@ -113,24 +103,56 @@ const ticketInfoTemplate = (name, event, order, tickets) => `
                   : '<p style="font-size: 14px; color: #555;">Chưa có thông tin vé.</p>'
           }
       </div>
-
-      <!-- Đoạn cuối canh trái -->
       <div style="text-align: left; color: #555; font-size: 14px;">
         <p style="margin-top: 20px;">
           Vui lòng kiểm tra và liên hệ với chúng tôi nếu có bất kỳ thắc mắc nào.
         </p>
       </div>
-
       <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-
-      <!-- Chân trang canh giữa -->
       <p style="font-size: 12px; color: #777; text-align: center;">
           Melody Meet
       </p>
   </div>
 `;
 
-const upgradeApprovedTemplate = (organizerName) => `
+const eventReminderTemplate = (name, event) => `
+  <div style="
+    font-family: Arial, sans-serif; 
+    max-width: 600px; 
+    margin: auto; 
+    border: 1px solid #007bff; 
+    border-radius: 8px; 
+    padding: 20px; 
+    background-color: #f0f8ff;"
+  >
+    <h2 style="color: #007bff; text-align: center;">
+      ⏰ Nhắc Nhở Sự Kiện Sắp Diễn Ra
+    </h2>
+    <div style="text-align: left; color: #333; font-size: 16px;">
+      <p style="margin: 0 0 10px;">
+        Chào <strong>${name}</strong>,
+      </p>
+      <p style="margin: 0 0 10px;">
+        Đây là email nhắc nhở bạn về sự kiện <strong>"${event.name}"</strong> mà bạn đã đăng ký.
+      </p>
+      <p style="margin: 0 0 10px;">
+        Thời gian diễn ra sự kiện: <strong>${timeText(event) ? timeText(event) : 'Chưa cập nhật'}</strong>.
+      </p>
+      <p style="margin: 0 0 10px;">
+        Địa điểm: <strong>${event.location || 'Chưa cập nhật'}</strong>.
+      </p>
+      <p style="margin: 0 0 10px;">
+        Hãy chuẩn bị sẵn sàng và đừng bỏ lỡ sự kiện này nhé!
+      </p>
+    </div>
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+    <p style="font-size: 12px; color: #777; text-align: center;">
+        Melody Meet
+    </p>
+  </div>
+`;
+
+const upgradeApprovedTemplate = (organizationName) => `
   <div style="
     font-family: Arial, sans-serif; 
     max-width: 500px; 
@@ -144,14 +166,12 @@ const upgradeApprovedTemplate = (organizerName) => `
     <h2 style="color: #28a745; margin-bottom: 10px;">
       ✅ Yêu cầu nâng cấp được duyệt
     </h2>
-
     <p style="font-size: 16px; color: #333; margin: 0 0 10px;">
       Chào bạn,
     </p>
     <p style="font-size: 16px; color: #333; margin: 0 0 20px;">
       Chúc mừng! Yêu cầu nâng cấp thành người tổ chức sự kiện của bạn đã được <strong>duyệt thành công</strong>.
     </p>
-
     <div style="
       font-size: 18px; 
       font-weight: bold; 
@@ -162,9 +182,8 @@ const upgradeApprovedTemplate = (organizerName) => `
       display: inline-block;
       margin: 20px 0;"
     >
-      ${organizerName}
+      ${organizationName}
     </div>
-
     <p style="font-size: 16px; color: #333; margin: 20px 0;">
       Bây giờ bạn có thể:
     </p>
@@ -174,7 +193,6 @@ const upgradeApprovedTemplate = (organizerName) => `
       <li>Xem báo cáo và thống kê</li>
       <li>Truy cập các tính năng dành cho người tổ chức</li>
     </ul>
-
     <div style="
       font-size: 16px; 
       color: #856404; 
@@ -187,13 +205,10 @@ const upgradeApprovedTemplate = (organizerName) => `
       <strong>⚠️ Lưu ý quan trọng:</strong><br>
       Để áp dụng quyền mới, vui lòng <strong>đăng xuất và đăng nhập lại</strong> vào tài khoản của bạn.
     </div>
-
     <p style="font-size: 14px; color: #555; margin-top: 20px;">
       Sau khi đăng nhập lại, hãy bắt đầu tạo sự kiện đầu tiên của bạn ngay hôm nay!
     </p>
-
     <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-
     <p style="font-size: 12px; color: #777; margin: 0;">
       Nếu có thắc mắc, vui lòng liên hệ với chúng tôi.
     </p>
@@ -214,18 +229,15 @@ const upgradeRejectedTemplate = (adminNote) => `
     <h2 style="color: #dc3545; margin-bottom: 10px;">
       ❌ Yêu cầu nâng cấp bị từ chối
     </h2>
-
     <p style="font-size: 16px; color: #333; margin: 0 0 10px;">
       Chào bạn,
     </p>
     <p style="font-size: 16px; color: #333; margin: 0 0 20px;">
       Rất tiếc, yêu cầu nâng cấp thành người tổ chức sự kiện của bạn đã bị <strong>từ chối</strong>.
     </p>
-
     ${
         adminNote
-            ? `
-    <div style="
+            ? `<div style="
       font-size: 16px; 
       color: #721c24; 
       background: #f8d7da; 
@@ -236,11 +248,9 @@ const upgradeRejectedTemplate = (adminNote) => `
     >
       <strong>Lý do từ chối:</strong><br>
       ${adminNote}
-    </div>
-    `
+    </div>`
             : ''
     }
-
     <p style="font-size: 16px; color: #333; margin: 20px 0;">
       Bạn có thể:
     </p>
@@ -250,13 +260,10 @@ const upgradeRejectedTemplate = (adminNote) => `
       <li>Gửi lại yêu cầu nâng cấp</li>
       <li>Liên hệ với chúng tôi để được hỗ trợ</li>
     </ul>
-
     <p style="font-size: 14px; color: #555; margin-top: 20px;">
       Chúng tôi luôn sẵn sàng hỗ trợ bạn trong quá trình nâng cấp tài khoản.
     </p>
-
     <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-
     <p style="font-size: 12px; color: #777; margin: 0;">
       Nếu có thắc mắc, vui lòng liên hệ với chúng tôi.
     </p>
@@ -266,6 +273,7 @@ const upgradeRejectedTemplate = (adminNote) => `
 export default {
     otpTemplate,
     ticketInfoTemplate,
+    eventReminderTemplate,
     upgradeApprovedTemplate,
     upgradeRejectedTemplate,
-};
+}; 

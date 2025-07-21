@@ -1,7 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import Redis from 'ioredis';
 
 import { connectDB } from './config/database.js';
 import authRoutes from './routes/authRoute.js';
@@ -13,7 +12,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 // Connect to database
 await connectDB();
-const redisClient = new Redis(process.env.REDIS_URL);
 
 // Middleware
 app.use(cors());

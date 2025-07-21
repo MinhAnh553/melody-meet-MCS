@@ -1,6 +1,7 @@
 import axios from 'axios';
 import mongoose from 'mongoose';
 import cron from 'node-cron';
+import { publishEvent, connectRabbitMQ } from '../providers/rabbitmqProvider.js';
 
 import eventModel from '../models/eventModel.js';
 import ticketTypeModel from '../models/ticketTypeModel.js';
@@ -1627,6 +1628,65 @@ const updateFinishedEvents = async () => {
 cron.schedule('*/5 * * * *', () => {
     // console.log('⏳ Kiểm tra sự kiện hết hạn...');
     updateFinishedEvents();
+});
+
+// Cron gửi nhắc nhở sự kiện bắt đầu vào ngày mai
+cron.schedule('30 11 * * *', async () => {
+    try {
+        await connectRabbitMQ(); // Đảm bảo đã kết nối
+        const now = new Date();
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const startOfDay = new Date(tomorrow.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(tomorrow.setHours(23, 59, 59, 999));
+
+        // Lấy các sự kiện bắt đầu vào ngày mai
+        const events = await eventModel.find({
+            status: 'approved',
+            startTime: { $gte: startOfDay, $lte: endOfDay },
+        }).lean();
+        
+        console.log("MinhAnh553: events", events)
+        for (const event of events) {
+            // Gọi order-service lấy danh sách order đã thanh toán
+            const ordersRes = await axios.get(
+                `${process.env.ORDER_SERVICE_URL}/api/orders/event/${event._id}`,
+                {
+                    headers: {
+                        'x-user-id': 'internal-cron',
+                        'x-user-role': 'admin'
+                    }
+                }
+            );
+            console.log("MinhAnh553: ordersRes", ordersRes)
+            const orders = ordersRes.data.orders || [];
+            // Lấy unique email
+            const emailMap = new Map();
+            for (const order of orders) {
+                if (order.status !== 'PAID') continue;
+                const email = order.buyerInfo?.email;
+                const name = order.buyerInfo?.name;
+                if (email && !emailMap.has(email)) {
+                    emailMap.set(email, name);
+                }
+            }
+            // Publish event cho từng user
+            for (const [email, name] of emailMap.entries()) {
+                await publishEvent('notification.event.reminder', {
+                    email,
+                    name,
+                    event: {
+                        name: event.name,
+                        startTime: event.startTime,
+                        endTime: event.endTime,
+                        location: event.location,
+                    },
+                });
+            }
+        }
+        console.log(`[CRON] Đã gửi nhắc nhở cho các sự kiện ngày mai (${startOfDay.toISOString()} - ${endOfDay.toISOString()})`);
+    } catch (err) {
+        console.error('[CRON] Lỗi gửi nhắc nhở sự kiện:', err);
+    }
 });
 
 export default {

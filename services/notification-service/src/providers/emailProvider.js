@@ -28,4 +28,4 @@ const sendMail = async (email, subject, html) => {
 
 export default {
     sendMail,
-};
+}; 

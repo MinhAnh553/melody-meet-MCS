@@ -6,8 +6,6 @@ import {
 } from '../providers/queueProvider.js';
 import { publishEvent } from '../providers/rabbitmqProvider.js';
 import paymentProvider from '../providers/paymentProvider.js';
-import emailProvider from '../providers/emailProvider.js';
-import mailTemplate from '../templates/mailTemplate.js';
 import axios from 'axios';
 
 async function invalidateEventCacheById(req, eventId) {
@@ -464,17 +462,13 @@ const payosWebhookHandler = async (req, res) => {
             const event = await axios.get(
                 `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
             );
-
-            await emailProvider.sendMail(
-                order.buyerInfo.email,
-                'Melody Meet: Giao Dịch Thành Công',
-                mailTemplate.ticketInfoTemplate(
-                    order.buyerInfo.name,
-                    event.data.data,
-                    order,
-                    order.tickets,
-                ),
-            );
+            await publishEvent('notification.order.success', {
+                email: order.buyerInfo.email,
+                name: order.buyerInfo.name,
+                event: event.data.data,
+                order,
+                tickets: order.tickets,
+            });
         }
 
         invalidateOrderCache(req);
@@ -909,16 +903,13 @@ const updateStatusOrder = async (req, res) => {
         );
 
         // Gửi email thông báo cho người dùng
-        await emailProvider.sendMail(
-            order.buyerInfo.email,
-            'Melody Meet: Giao Dịch Thành Công',
-            mailTemplate.ticketInfoTemplate(
-                order.buyerInfo.name,
-                event.data.data,
-                order,
-                order.tickets,
-            ),
-        );
+        await publishEvent('notification.order.success', {
+            email: order.buyerInfo.email,
+            name: order.buyerInfo.name,
+            event: event.data.data,
+            order,
+            tickets: order.tickets,
+        });
 
         logger.info(`Order ${id} status updated to ${status}`);
 
@@ -1017,16 +1008,13 @@ const verifyReturnUrlHandler = async (req, res) => {
             `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
         );
 
-        await emailProvider.sendMail(
-            order.buyerInfo.email,
-            'Melody Meet: Giao Dịch Thành Công',
-            mailTemplate.ticketInfoTemplate(
-                order.buyerInfo.name,
-                event.data.data,
-                order,
-                order.tickets,
-            ),
-        );
+        await publishEvent('notification.order.success', {
+            email: order.buyerInfo.email,
+            name: order.buyerInfo.name,
+            event: event.data.data,
+            order,
+            tickets: order.tickets,
+        });
 
         await order.save();
 

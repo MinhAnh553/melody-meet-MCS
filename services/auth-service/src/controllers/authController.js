@@ -3,8 +3,6 @@ import bcrypt from 'bcryptjs';
 import userModel from '../models/userModel.js';
 import otpModel from '../models/otpModel.js';
 import upgradeRequestModel from '../models/upgradeRequestModel.js';
-import mailTemplate from '../templates/mailTemplate.js';
-import emailProvider from '../providers/emailProvider.js';
 import logger from '../utils/logger.js';
 import {
     validateRegister,
@@ -13,6 +11,7 @@ import {
 } from '../utils/validation.js';
 import JwtProvider from '../providers/JwtProvider.js';
 import axios from 'axios';
+import { publishEvent } from '../providers/rabbitmqProvider.js';
 
 dotenv.config();
 
@@ -46,14 +45,10 @@ const sendVerificationCode = async (req, res) => {
             { upsert: true, new: true },
         );
 
-        // Send email
-        await emailProvider.sendMail(
-            email,
-            'Melody Meet: Mã Xác Minh',
-            mailTemplate.otpTemplate(code),
-        );
+        // Publish event to RabbitMQ
+        await publishEvent('notification.otp', { email, otp: code });
 
-        logger.info(`Verification code sent to ${email}`);
+        logger.info(`Verification code event published for ${email}`);
         res.status(200).json({
             success: true,
             message: 'Mã xác minh đã được gửi đến email của bạn',
@@ -583,13 +578,10 @@ const approveUpgradeRequest = async (req, res) => {
         // Send email notification to user
         const user = await userModel.findById(upgradeRequest.userId);
         if (user) {
-            await emailProvider.sendMail(
-                user.email,
-                'Melody Meet: Yêu cầu nâng cấp được duyệt',
-                mailTemplate.upgradeApprovedTemplate(
-                    upgradeRequest.organization.name,
-                ),
-            );
+            await publishEvent('notification.upgrade.approved', {
+                email: user.email,
+                organizationName: upgradeRequest.organization.name,
+            });
         }
 
         logger.info(`Upgrade request approved: ${requestId}`);
@@ -637,11 +629,10 @@ const rejectUpgradeRequest = async (req, res) => {
         // Send email notification to user
         const user = await userModel.findById(upgradeRequest.userId);
         if (user) {
-            await emailProvider.sendMail(
-                user.email,
-                'Melody Meet: Yêu cầu nâng cấp bị từ chối',
-                mailTemplate.upgradeRejectedTemplate(adminNote),
-            );
+            await publishEvent('notification.upgrade.rejected', {
+                email: user.email,
+                adminNote,
+            });
         }
 
         logger.info(`Upgrade request rejected: ${requestId}`);

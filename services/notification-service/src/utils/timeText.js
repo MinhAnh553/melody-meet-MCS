@@ -37,4 +37,4 @@ const timeText = (event) => {
     return timeText;
 };
 
-export default timeText;
+export default timeText; 
