@@ -5,6 +5,7 @@ import Register from '../components/Register';
 import Login from '../components/Login';
 import { useEffect, useState } from 'react';
 import { BsArrowUpCircle } from 'react-icons/bs';
+import ChatWidget from '../components/ChatWidget';
 
 function ClientLayout() {
     const location = useLocation();
@@ -37,6 +38,7 @@ function ClientLayout() {
             <Register />
             <Login />
             {!shouldHideFooter && <Footer />}
+            <ChatWidget />
             {showScrollTop && !shouldHideScrollTop && (
                 <button
                     onClick={handleScrollToTop}

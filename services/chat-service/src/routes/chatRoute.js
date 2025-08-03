@@ -4,9 +4,8 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 
 const Router = express.Router();
 
-Router.route('/').post(
-    authMiddleware.isValidPermission(['client', 'organizer', 'admin']),
-    chatController.createChat,
-);
+Router.route('/')
+    .post(chatController.createChat)
+    .get(chatController.getChatHistory);
 
 export default Router;

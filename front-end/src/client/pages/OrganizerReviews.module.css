@@ -637,7 +637,7 @@
 }
 
 .organizerCard {
-    border: 1px solid #f0f0f0;
+    border: 1px solid #cccccce3;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
@@ -858,7 +858,7 @@
 }
 
 .reviewCard {
-    border: 1px solid #f0f0f0;
+    border: 1px solid #cccccce3;
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
@@ -995,7 +995,7 @@
 }
 
 .emptyCard {
-    border: 2px dashed #e0e0e0;
+    border: 2px dashed #cccccce3;
     border-radius: 16px;
     background: #fafafa;
 }

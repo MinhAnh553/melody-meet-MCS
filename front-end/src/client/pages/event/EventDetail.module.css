@@ -17,9 +17,11 @@
 
 /* Hero Section */
 .heroSection {
-    background: linear-gradient(rgb(39, 39, 42) 48.04%, rgb(0, 0, 0) 100%);
-    padding: 2rem 25px;
     border-radius: 10px;
+    padding: 2rem 25px;
+    border: 1px solid #cccccce3;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .eventTitle {
@@ -27,7 +29,7 @@
     font-weight: 700;
     line-height: 1.2;
     margin-bottom: 2rem;
-    color: white;
+    color: #1f2937;
 }
 
 .eventInfoItem {
@@ -109,14 +111,14 @@
 
 .ratingText {
     font-weight: 600;
-    color: white;
+    color: #1890ff;
     font-size: 1rem;
 }
 
 .ratingCount {
     font-size: 0.9rem;
     opacity: 0.9;
-    color: white;
+    color: #1890ff;
 }
 
 .actionButtons {
@@ -214,7 +216,7 @@
     padding: 2rem;
     margin-bottom: 2rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f0f0f0;
+    border: 1px solid #cccccce3;
 }
 
 .stickyCard {

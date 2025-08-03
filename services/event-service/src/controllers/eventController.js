@@ -1,7 +1,10 @@
 import axios from 'axios';
 import mongoose from 'mongoose';
 import cron from 'node-cron';
-import { publishEvent, connectRabbitMQ } from '../providers/rabbitmqProvider.js';
+import {
+    publishEvent,
+    connectRabbitMQ,
+} from '../providers/rabbitmqProvider.js';
 
 import eventModel from '../models/eventModel.js';
 import ticketTypeModel from '../models/ticketTypeModel.js';
@@ -782,6 +785,7 @@ const searchEvents = async (req, res) => {
             location,
             minPrice,
             maxPrice,
+            timeFilter,
         } = req.query;
         const eventQuery = {
             status: { $in: ['approved', 'event_over'] },
@@ -799,6 +803,31 @@ const searchEvents = async (req, res) => {
             const end = new Date(date);
             end.setHours(23, 59, 59, 999);
             eventQuery.startTime = { $gte: start, $lte: end };
+        }
+
+        // Lọc theo thời gian (timeFilter)
+        if (timeFilter) {
+            const now = new Date();
+            switch (timeFilter) {
+                case 'upcoming':
+                    // Sự kiện sắp diễn ra (trong 30 ngày tới)
+                    const thirtyDaysFromNow = new Date();
+                    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                    eventQuery.startTime = {
+                        $gte: now,
+                        $lte: thirtyDaysFromNow,
+                    };
+                    break;
+                case 'future':
+                    // Sự kiện trong tương lai
+                    eventQuery.startTime = { $gte: now };
+                    break;
+                case 'past':
+                    // Sự kiện đã diễn ra
+                    eventQuery.startTime = { $lt: now };
+                    break;
+                // 'all' không cần filter gì thêm
+            }
         }
 
         // Lọc theo vị trí
@@ -1635,17 +1664,23 @@ cron.schedule('30 11 * * *', async () => {
     try {
         await connectRabbitMQ(); // Đảm bảo đã kết nối
         const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const tomorrow = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() + 1,
+        );
         const startOfDay = new Date(tomorrow.setHours(0, 0, 0, 0));
         const endOfDay = new Date(tomorrow.setHours(23, 59, 59, 999));
 
         // Lấy các sự kiện bắt đầu vào ngày mai
-        const events = await eventModel.find({
-            status: 'approved',
-            startTime: { $gte: startOfDay, $lte: endOfDay },
-        }).lean();
-        
-        console.log("MinhAnh553: events", events)
+        const events = await eventModel
+            .find({
+                status: 'approved',
+                startTime: { $gte: startOfDay, $lte: endOfDay },
+            })
+            .lean();
+
+        console.log('MinhAnh553: events', events);
         for (const event of events) {
             // Gọi order-service lấy danh sách order đã thanh toán
             const ordersRes = await axios.get(
@@ -1653,11 +1688,11 @@ cron.schedule('30 11 * * *', async () => {
                 {
                     headers: {
                         'x-user-id': 'internal-cron',
-                        'x-user-role': 'admin'
-                    }
-                }
+                        'x-user-role': 'admin',
+                    },
+                },
             );
-            console.log("MinhAnh553: ordersRes", ordersRes)
+            console.log('MinhAnh553: ordersRes', ordersRes);
             const orders = ordersRes.data.orders || [];
             // Lấy unique email
             const emailMap = new Map();
@@ -1683,7 +1718,9 @@ cron.schedule('30 11 * * *', async () => {
                 });
             }
         }
-        console.log(`[CRON] Đã gửi nhắc nhở cho các sự kiện ngày mai (${startOfDay.toISOString()} - ${endOfDay.toISOString()})`);
+        console.log(
+            `[CRON] Đã gửi nhắc nhở cho các sự kiện ngày mai (${startOfDay.toISOString()} - ${endOfDay.toISOString()})`,
+        );
     } catch (err) {
         console.error('[CRON] Lỗi gửi nhắc nhở sự kiện:', err);
     }

@@ -2,15 +2,29 @@ import mongoose from 'mongoose';
 
 const chatSchema = new mongoose.Schema(
     {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+        },
         message: { type: String, required: true },
         response: { type: String, required: true },
         events: [
             {
                 eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' },
                 name: String,
-                // Add more event fields as needed
-            }
+                background: String,
+                location: {
+                    venueName: String,
+                    district: String,
+                    province: String,
+                },
+                startTime: Date,
+                organizer: {
+                    name: String,
+                },
+                status: String,
+            },
         ],
     },
     { timestamps: true },

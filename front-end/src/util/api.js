@@ -307,6 +307,18 @@ const rejectUpgradeRequest = async (requestId, adminNote = '') => {
     return axios.patch(URL_API, { adminNote });
 };
 
+// Gọi chat-service (trả lời AI)
+export const chatWithAssistant = async (message, userId, userRole) => {
+    const URL_API = `${API_URL}/chats`;
+    return axios.post(URL_API, { message, userId, userRole });
+};
+
+// Lấy lịch sử chat của user
+export const getChatHistory = async (userId) => {
+    const CHAT_HISTORY_URL = `${API_URL}/chats?userId=${userId}`;
+    return axios.get(CHAT_HISTORY_URL);
+};
+
 export default {
     sendOTP,
     verifyOTPAndRegister,

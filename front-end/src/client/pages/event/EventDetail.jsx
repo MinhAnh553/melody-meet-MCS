@@ -276,7 +276,7 @@ const EventDetail = () => {
                 <div className={styles.heroSection}>
                     <div className="row g-5 align-items-center">
                         {/* Event Info - Giữ nguyên thiết kế gốc */}
-                        <div className="col-md-5 text-white">
+                        <div className="col-md-5">
                             <h1
                                 className="fw-bold mb-3"
                                 style={{ fontSize: '1.5rem' }}
@@ -287,7 +287,7 @@ const EventDetail = () => {
                             <p className="mb-2" style={{ fontSize: '1rem' }}>
                                 <i className="bi bi-clock"></i>
                                 {'  '}
-                                <span style={{ color: 'rgb(45, 194, 117)' }}>
+                                <span style={{ color: '#3B82F6' }}>
                                     <TimeText event={event} />
                                 </span>
                             </p>
@@ -295,7 +295,12 @@ const EventDetail = () => {
                             <p className="mb-5" style={{ fontSize: '1rem' }}>
                                 <i className="bi bi-geo-alt-fill"></i>
                                 {'   '}
-                                <span style={{ color: 'rgb(45, 194, 117)' }}>
+                                <span
+                                    style={{
+                                        color: '#60A5FA',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     {event.location.venueName}
                                 </span>
                                 <br />
@@ -315,7 +320,7 @@ const EventDetail = () => {
                                 <p
                                     className="fw-bold mb-0"
                                     style={{
-                                        color: 'rgb(45, 194, 117)',
+                                        color: '#3B82F6',
                                         fontSize: '1.3rem',
                                     }}
                                 >
@@ -393,7 +398,17 @@ const EventDetail = () => {
                                                 backgroundColor:
                                                     event.status ===
                                                         'event_over' || !user
-                                                        ? '#ccc'
+                                                        ? '#E5E7EB'
+                                                        : '',
+                                                color:
+                                                    event.status ===
+                                                        'event_over' || !user
+                                                        ? '#9CA3AF'
+                                                        : '',
+                                                border:
+                                                    event.status ===
+                                                        'event_over' || !user
+                                                        ? '1px solid #E5E7EB'
                                                         : '',
                                             }}
                                         >
@@ -435,6 +450,11 @@ const EventDetail = () => {
                                 // width={100}
                                 // height={60}
                                 className="img-fluid rounded shadow"
+                                style={{
+                                    borderRadius: '10px',
+                                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                    border: '1px solid #ccc',
+                                }}
                                 fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
                             />
                         </div>
@@ -710,7 +730,15 @@ const EventDetail = () => {
                         style={{
                             backgroundColor:
                                 event.status === 'event_over' || !user
-                                    ? '#ccc'
+                                    ? '#E5E7EB'
+                                    : '',
+                            color:
+                                event.status === 'event_over' || !user
+                                    ? '#9CA3AF'
+                                    : '',
+                            border:
+                                event.status === 'event_over' || !user
+                                    ? '1px solid #E5E7EB'
                                     : '',
                         }}
                     >
