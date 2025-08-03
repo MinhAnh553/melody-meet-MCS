@@ -423,6 +423,63 @@ const Search = () => {
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                         />
+                        <div style={{ marginTop: 12 }}>
+                            <div
+                                style={{
+                                    fontSize: 14,
+                                    color: '#666',
+                                    marginBottom: 8,
+                                }}
+                            >
+                                Địa điểm phổ biến:
+                            </div>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 8,
+                                }}
+                            >
+                                {[
+                                    'Hồ Chí Minh',
+                                    'Hà Nội',
+                                    'Cần Thơ',
+                                    'Đà Nẵng',
+                                    'Lâm Đồng',
+                                ].map((suggestion) => (
+                                    <Button
+                                        key={suggestion}
+                                        size="small"
+                                        type={
+                                            location === suggestion
+                                                ? 'primary'
+                                                : 'default'
+                                        }
+                                        style={{
+                                            borderRadius: 16,
+                                            fontSize: 12,
+                                            fontWeight: 500,
+                                            borderColor:
+                                                location === suggestion
+                                                    ? '#2c44a7'
+                                                    : '#d9d9d9',
+                                            color:
+                                                location === suggestion
+                                                    ? '#fff'
+                                                    : '#2c44a7',
+                                            background:
+                                                location === suggestion
+                                                    ? '#2c44a7'
+                                                    : '#fff',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onClick={() => setLocation(suggestion)}
+                                    >
+                                        {suggestion}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
                     </Form.Item>
                     <Form.Item
                         label={
