@@ -18,14 +18,14 @@ const ChatWidget = () => {
     const suggestionQuestions = [
         'Sự kiện sắp diễn ra?',
         'Sự kiện ở Cần Thơ?',
-        'Gợi ý cho tôi những sự kiện trending!'
+        'Gợi ý cho tôi những sự kiện trending!',
     ];
 
     // Lấy lịch sử chat khi mở khung chat
     useEffect(() => {
         if (open && user) {
             // console.log('Loading chat history for user:', user._id);
-            getChatHistory(user._id || user.id)
+            getChatHistory(user._id)
                 .then((response) => {
                     // console.log('Chat history response:', response);
                     if (response.success && response.data) {
@@ -48,15 +48,17 @@ const ChatWidget = () => {
                                 },
                             ]);
 
-                        console.log(
-                            'Mapped messages:',
-                            historyMessages.length,
-                            'messages',
-                        );
+                        // console.log(
+                        //     'Mapped messages:',
+                        //     historyMessages.length,
+                        //     'messages',
+                        // );
                         setMessages(historyMessages);
-                        
+
                         // Hiển thị gợi ý nếu không có lịch sử chat
-                        setShowSuggestions(chats.length === 0 && historyMessages.length === 0);
+                        setShowSuggestions(
+                            chats.length === 0 && historyMessages.length === 0,
+                        );
                     }
                 })
                 .catch((err) => {
@@ -180,7 +182,11 @@ const ChatWidget = () => {
             try {
                 let response;
                 if (user) {
-                    response = await chatWithAssistant(question, user._id, user.role);
+                    response = await chatWithAssistant(
+                        question,
+                        user._id,
+                        user.role,
+                    );
                 } else {
                     response = await chatWithAssistant(question);
                 }
@@ -225,7 +231,9 @@ const ChatWidget = () => {
                         ...prev,
                         {
                             sender: 'bot',
-                            text: response?.message || 'Có lỗi xảy ra khi xử lý yêu cầu.',
+                            text:
+                                response?.message ||
+                                'Có lỗi xảy ra khi xử lý yêu cầu.',
                         },
                     ]);
                 }
@@ -306,16 +314,24 @@ const ChatWidget = () => {
                                     Gợi ý:
                                 </div> */}
                                 <div className={styles.suggestionsList}>
-                                    {suggestionQuestions.map((question, index) => (
-                                        <button
-                                            key={index}
-                                            className={styles.suggestionButton}
-                                            onClick={() => handleSuggestionClick(question)}
-                                            disabled={loading}
-                                        >
-                                            {question}
-                                        </button>
-                                    ))}
+                                    {suggestionQuestions.map(
+                                        (question, index) => (
+                                            <button
+                                                key={index}
+                                                className={
+                                                    styles.suggestionButton
+                                                }
+                                                onClick={() =>
+                                                    handleSuggestionClick(
+                                                        question,
+                                                    )
+                                                }
+                                                disabled={loading}
+                                            >
+                                                {question}
+                                            </button>
+                                        ),
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -368,7 +384,7 @@ const ChatWidget = () => {
                                                         }
                                                         onClick={() => {
                                                             window.open(
-                                                                `/event/${ev.eventId}`,
+                                                                `/event/${ev.id}`,
                                                                 '_blank',
                                                             );
                                                         }}

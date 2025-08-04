@@ -77,7 +77,7 @@ const createEvent = async (req, res) => {
             startTime: new Date(data.startTime),
             endTime: new Date(data.endTime),
             ticketTypes: ticketTypes,
-            createdBy: req.user.id,
+            createdBy: req.user._id,
         };
 
         // Validate input
@@ -209,7 +209,7 @@ const getAllEvents = async (req, res) => {
                         `${process.env.ORDER_SERVICE_URL}/api/orders/revenue/${event._id}`,
                         {
                             headers: {
-                                'x-user-id': req.user?.id,
+                                'x-user-id': req.user?._id,
                                 'x-user-role': req.user?.role,
                             },
                         },
@@ -284,7 +284,7 @@ const getEventById = async (req, res) => {
                 `${process.env.AUTH_SERVICE_URL}/api/auth/users/${event.createdBy}`,
                 {
                     headers: {
-                        'x-user-id': req.user?.id,
+                        'x-user-id': req.user?._id,
                         'x-user-role': req.user?.role,
                     },
                 },
@@ -333,7 +333,7 @@ const getEventById = async (req, res) => {
 // [GET] /events/my
 const getMyEvents = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
@@ -509,7 +509,7 @@ const updateEvent = async (req, res) => {
             startTime: new Date(data.startTime) || event.startTime,
             endTime: new Date(data.endTime) || event.endTime,
             status: data.status || event.status,
-            createdBy: event.createdBy || req.user.id,
+            createdBy: event.createdBy || req.user._id,
         };
 
         // Xóa các loại vé cũ
@@ -564,7 +564,7 @@ const getEvents = async (req, res) => {
                 `${process.env.ORDER_SERVICE_URL}/api/orders/revenue`,
                 {
                     headers: {
-                        'x-user-id': req.user?.id,
+                        'x-user-id': req.user?._id,
                         'x-user-role': req.user?.role,
                     },
                 },
@@ -673,7 +673,7 @@ const getEvents = async (req, res) => {
 const createOrder = async (req, res) => {
     logger.info('Create order');
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const eventId = req.params.id;
         const data = req.body;
         const tickets = JSON.parse(data.items);
@@ -751,7 +751,7 @@ const createOrder = async (req, res) => {
             },
             {
                 headers: {
-                    'x-user-id': req.user?.id,
+                    'x-user-id': req.user?._id,
                     'x-user-role': req.user?.role,
                 },
             },
@@ -916,7 +916,7 @@ const searchEvents = async (req, res) => {
 const getEventSummary = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Kiểm tra sự kiện tồn tại và thuộc về người dùng
         const event = await eventModel.findOne({
@@ -937,7 +937,7 @@ const getEventSummary = async (req, res) => {
             `${process.env.ORDER_SERVICE_URL}/api/orders/event/${eventId}`,
             {
                 headers: {
-                    'x-user-id': req.user?.id,
+                    'x-user-id': req.user?._id,
                     'x-user-role': req.user?.role,
                 },
             },
@@ -1014,7 +1014,7 @@ const getEventSummary = async (req, res) => {
 // [GET] /events/organizer/total_ticket_sold
 const getTotalTicketSold = async (req, res) => {
     try {
-        const organizerId = req.user.id;
+        const organizerId = req.user._id;
 
         // Lấy tất cả eventId do organizer tạo
         const events = await eventModel.find({ createdBy: organizerId }, '_id');
@@ -1132,7 +1132,7 @@ const createReview = async (req, res) => {
         }
 
         const { eventId, rating, comment } = req.body;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Kiểm tra sự kiện đã diễn ra chưa
         const event = await eventModel.findById(eventId);
@@ -1194,7 +1194,7 @@ const updateReview = async (req, res) => {
     try {
         const { rating, comment } = req.body;
         const { reviewId } = req.params;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Validate rating
         if (!rating || rating < 1 || rating > 5) {
@@ -1252,7 +1252,7 @@ const updateReview = async (req, res) => {
 const checkEventReview = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Kiểm tra đã đánh giá sự kiện này chưa
         const review = await reviewModel.findOne({
@@ -1426,7 +1426,7 @@ const getEventReviewStats = async (req, res) => {
 // [GET] /reviews/my-reviews - Lấy đánh giá của người dùng hiện tại
 const getMyReviews = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
@@ -1487,7 +1487,7 @@ const getMyReviews = async (req, res) => {
 const deleteReview = async (req, res) => {
     try {
         const { reviewId } = req.params;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Kiểm tra đánh giá có tồn tại và thuộc về người dùng không
         const review = await reviewModel.findOne({

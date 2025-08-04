@@ -94,7 +94,7 @@ app.use(
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             // Chỉ thêm headers user nếu request đã được xác thực
             if (srcReq?.jwtDecoded) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded._id;
                 proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
             proxyReqOpts.headers['content-type'] = 'application/json';
@@ -143,7 +143,7 @@ app.use(
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             // Chỉ thêm headers user nếu request đã được xác thực
             if (srcReq?.jwtDecoded) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded._id;
                 proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
 
@@ -196,7 +196,7 @@ app.use(
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             if (srcReq?.jwtDecoded) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded._id;
                 proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
 
@@ -221,7 +221,7 @@ app.use(
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             if (srcReq?.jwtDecoded) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded._id;
                 proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
 
@@ -246,7 +246,7 @@ app.use(
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             if (srcReq?.jwtDecoded) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded._id;
                 proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
 
@@ -279,7 +279,7 @@ app.use(
         ...proxyOptions,
         proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
             if (srcReq?.jwtDecoded) {
-                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded.id;
+                proxyReqOpts.headers['x-user-id'] = srcReq.jwtDecoded._id;
                 proxyReqOpts.headers['x-user-role'] = srcReq.jwtDecoded.role;
             }
 

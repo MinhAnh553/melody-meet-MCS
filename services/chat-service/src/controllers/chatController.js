@@ -807,7 +807,7 @@ const createChat = async (req, res) => {
                 message,
                 response: aiResponse,
                 events: events.map((e) => ({
-                    eventId: e._id,
+                    id: e._id,
                     name: e.name,
                     background: e.background,
                     location: e.location,
@@ -855,7 +855,7 @@ const createChat = async (req, res) => {
 const getChatHistory = async (req, res) => {
     try {
         // Ưu tiên lấy userId từ query, fallback sang header
-        const userId = req.query.userId || req.user?.id;
+        const userId = req.query.userId || req.user?._id;
         if (!userId) {
             return res.status(400).json({
                 success: false,

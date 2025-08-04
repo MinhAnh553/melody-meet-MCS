@@ -158,7 +158,7 @@ const login = async (req, res) => {
         }
 
         const userInfo = {
-            id: user._id,
+            _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
@@ -207,7 +207,7 @@ const refreshToken = async (req, res) => {
         );
 
         const userInfo = {
-            id: refreshTokenDecoded.id,
+            _id: refreshTokenDecoded._id,
             name: refreshTokenDecoded.name,
             email: refreshTokenDecoded.email,
             role: refreshTokenDecoded.role,
@@ -238,14 +238,14 @@ const refreshToken = async (req, res) => {
 const getAccount = async (req, res) => {
     logger.info(`Get account request received`);
     try {
-        const user = await userModel.findById(req.user.id).select('-password');
+        const user = await userModel.findById(req.user._id).select('-password');
         if (user.role === req.user?.role && user.role === 'organizer') {
             // Lấy tổng số sự kiện đã tạo
             const totalEvents = await axios.get(
                 `${process.env.EVENT_SERVICE_URL}/api/events/organizer/my?query=&page=1&limit=10&status=approved`,
                 {
                     headers: {
-                        'x-user-id': req.user?.id,
+                        'x-user-id': req.user?._id,
                         'x-user-role': req.user?.role,
                     },
                 },
@@ -255,7 +255,7 @@ const getAccount = async (req, res) => {
                 `${process.env.EVENT_SERVICE_URL}/api/events/organizer/total_ticket_sold`,
                 {
                     headers: {
-                        'x-user-id': req.user?.id,
+                        'x-user-id': req.user?._id,
                         'x-user-role': req.user?.role,
                     },
                 },
@@ -546,7 +546,7 @@ const getUpgradeRequests = async (req, res) => {
 const approveUpgradeRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
-        const adminId = req.user.id;
+        const adminId = req.user._id;
 
         const upgradeRequest = await upgradeRequestModel.findById(requestId);
         if (!upgradeRequest) {
@@ -603,7 +603,7 @@ const rejectUpgradeRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
         const { adminNote } = req.body;
-        const adminId = req.user.id;
+        const adminId = req.user._id;
 
         const upgradeRequest = await upgradeRequestModel.findById(requestId);
         if (!upgradeRequest) {

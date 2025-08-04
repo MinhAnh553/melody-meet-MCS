@@ -540,7 +540,7 @@ const createTicketsForOrder = async (order) => {
 const getMyOrders = async (req, res) => {
     logger.info('Get my orders');
     try {
-        const userId = req.user?.id;
+        const userId = req.user?._id;
         const orders = await orderModel
             .find({ userId, status: 'PAID' })
             .sort({ createdAt: -1 });
@@ -553,7 +553,7 @@ const getMyOrders = async (req, res) => {
                         `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
                         {
                             headers: {
-                                'x-user-id': req.user?.id,
+                                'x-user-id': req.user?._id,
                                 'x-user-role': req.user?.role,
                             },
                         },
@@ -668,7 +668,7 @@ const getDashboard = async (req, res) => {
             `${process.env.AUTH_SERVICE_URL}/api/auth/users/total`,
             {
                 headers: {
-                    'x-user-id': req.user?.id,
+                    'x-user-id': req.user?._id,
                     'x-user-role': req.user?.role,
                 },
             },
@@ -679,7 +679,7 @@ const getDashboard = async (req, res) => {
             `${process.env.EVENT_SERVICE_URL}/api/events/admin/total-events`,
             {
                 headers: {
-                    'x-user-id': req.user?.id,
+                    'x-user-id': req.user?._id,
                     'x-user-role': req.user?.role,
                 },
             },
@@ -734,7 +734,7 @@ const getAllOrders = async (req, res) => {
                     `${process.env.EVENT_SERVICE_URL}/api/events/search`,
                     {
                         headers: {
-                            'x-user-id': req.user?.id,
+                            'x-user-id': req.user?._id,
                             'x-user-role': req.user?.role,
                         },
                         params: {
@@ -801,7 +801,7 @@ const getAllOrders = async (req, res) => {
                     `${process.env.EVENT_SERVICE_URL}/api/events/${order.eventId}`,
                     {
                         headers: {
-                            'x-user-id': req.user?.id,
+                            'x-user-id': req.user?._id,
                             'x-user-role': req.user?.role,
                         },
                     },

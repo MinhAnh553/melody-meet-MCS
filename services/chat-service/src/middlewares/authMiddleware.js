@@ -3,7 +3,7 @@ import logger from '../utils/logger.js';
 const isValidPermission = (allowedRoles) => async (req, res, next) => {
     try {
         req.user = {
-            id: req.headers['x-user-id'],
+            _id: req.headers['x-user-id'],
             role: req.headers['x-user-role'],
         };
 

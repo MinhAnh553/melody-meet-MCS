@@ -471,7 +471,7 @@ function PurchasedTickets() {
 
             orders.forEach((order) => {
                 if (canReviewEvent(order)) {
-                    const reviewId = generateReviewId(order.eventId, user.id);
+                    const reviewId = generateReviewId(order.eventId, user._id);
                     reviewPromises.push(
                         checkEventReview(order.eventId).then((review) => {
                             if (review) {
@@ -521,7 +521,7 @@ function PurchasedTickets() {
         try {
             const res = await api.checkEventReview(eventId);
             if (res.success) {
-                const reviewId = generateReviewId(eventId, user.id);
+                const reviewId = generateReviewId(eventId, user._id);
                 setEventReviews((prev) => ({
                     ...prev,
                     [reviewId]: res.review,
@@ -543,7 +543,7 @@ function PurchasedTickets() {
 
     const handleReviewSuccess = () => {
         if (selectedEvent) {
-            const reviewId = generateReviewId(selectedEvent.eventId, user.id);
+            const reviewId = generateReviewId(selectedEvent.eventId, user._id);
             checkEventReview(selectedEvent.eventId).then((review) => {
                 if (review) {
                     setEventReviews((prev) => ({
@@ -868,7 +868,7 @@ function PurchasedTickets() {
                                     eventReviews[
                                         generateReviewId(
                                             record.eventId,
-                                            user?.id,
+                                            user?._id,
                                         )
                                     ]
                                         ? 'Chỉnh sửa đánh giá'
@@ -880,7 +880,7 @@ function PurchasedTickets() {
                                         eventReviews[
                                             generateReviewId(
                                                 record.eventId,
-                                                user?.id,
+                                                user?._id,
                                             )
                                         ]
                                             ? 'default'
@@ -891,7 +891,7 @@ function PurchasedTickets() {
                                         eventReviews[
                                             generateReviewId(
                                                 record.eventId,
-                                                user?.id,
+                                                user?._id,
                                             )
                                         ] ? (
                                             <StarFilled
@@ -909,7 +909,7 @@ function PurchasedTickets() {
                                         eventReviews[
                                             generateReviewId(
                                                 record.eventId,
-                                                user?.id,
+                                                user?._id,
                                             )
                                         ]
                                             ? {
@@ -923,7 +923,7 @@ function PurchasedTickets() {
                                     {eventReviews[
                                         generateReviewId(
                                             record.eventId,
-                                            user?.id,
+                                            user?._id,
                                         )
                                     ]
                                         ? 'Đã đánh giá'
@@ -1257,7 +1257,7 @@ function PurchasedTickets() {
                                                 generateReviewId(
                                                     selectedTicket.order
                                                         .eventId,
-                                                    user?.id,
+                                                    user?._id,
                                                 )
                                             ]
                                                 ? 'default'
@@ -1269,7 +1269,7 @@ function PurchasedTickets() {
                                                 generateReviewId(
                                                     selectedTicket.order
                                                         .eventId,
-                                                    user?.id,
+                                                    user?._id,
                                                 )
                                             ] ? (
                                                 <StarFilled
@@ -1291,7 +1291,7 @@ function PurchasedTickets() {
                                                 generateReviewId(
                                                     selectedTicket.order
                                                         .eventId,
-                                                    user?.id,
+                                                    user?._id,
                                                 )
                                             ]
                                                 ? {
@@ -1306,7 +1306,7 @@ function PurchasedTickets() {
                                         {eventReviews[
                                             generateReviewId(
                                                 selectedTicket.order.eventId,
-                                                user?.id,
+                                                user?._id,
                                             )
                                         ]
                                             ? 'Đã đánh giá'
@@ -1866,7 +1866,7 @@ function PurchasedTickets() {
                                                         generateReviewId(
                                                             selectedTicket.order
                                                                 .eventId,
-                                                            user?.id,
+                                                            user?._id,
                                                         )
                                                     ]
                                                         ? 'default'
@@ -1877,7 +1877,7 @@ function PurchasedTickets() {
                                                         generateReviewId(
                                                             selectedTicket.order
                                                                 .eventId,
-                                                            user?.id,
+                                                            user?._id,
                                                         )
                                                     ] ? (
                                                         <StarFilled
@@ -1902,7 +1902,7 @@ function PurchasedTickets() {
                                                         generateReviewId(
                                                             selectedTicket.order
                                                                 .eventId,
-                                                            user?.id,
+                                                            user?._id,
                                                         )
                                                     ]
                                                         ? {
@@ -1920,7 +1920,7 @@ function PurchasedTickets() {
                                                     generateReviewId(
                                                         selectedTicket.order
                                                             .eventId,
-                                                        user?.id,
+                                                        user?._id,
                                                     )
                                                 ]
                                                     ? 'Chỉnh sửa đánh giá'
