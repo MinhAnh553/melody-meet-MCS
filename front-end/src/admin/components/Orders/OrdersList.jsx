@@ -24,6 +24,8 @@ import {
     ClockCircleOutlined,
     CaretUpOutlined,
     CaretDownOutlined,
+    CheckCircleFilled,
+    CloseCircleFilled,
 } from '@ant-design/icons';
 import {
     FaSearch,
@@ -308,7 +310,10 @@ const OrdersList = () => {
                     <Tooltip title="Xem chi tiết">
                         <span
                             onClick={() => handleViewOrderDetails(record)}
-                            style={{ color: '#1890ff', cursor: 'pointer' }}
+                            style={{
+                                color: '#1890ff',
+                                cursor: 'pointer',
+                            }}
                         >
                             <EyeOutlined />
                         </span>
@@ -316,24 +321,32 @@ const OrdersList = () => {
                     {record.status === 'PENDING' && (
                         <>
                             <Tooltip title="Hoàn thành">
-                                <Button
-                                    type="text"
-                                    icon={<CheckOutlined />}
+                                <span
+                                    // className={styles.iconButton}
                                     onClick={() =>
                                         handleCompleteClick(record._id)
                                     }
-                                    style={{ color: '#52c41a' }}
-                                />
+                                    style={{
+                                        color: '#52c41a',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <CheckCircleFilled />
+                                </span>
                             </Tooltip>
                             <Tooltip title="Hủy đơn">
-                                <Button
-                                    type="text"
-                                    icon={<CloseOutlined />}
+                                <span
+                                    // className={`${styles.iconButton} ${styles.iconButtonCancel}`}
                                     onClick={() =>
                                         handleCancelClick(record._id)
                                     }
-                                    style={{ color: '#ff4d4f' }}
-                                />
+                                    style={{
+                                        color: '#dc2626',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <CloseCircleFilled />
+                                </span>
                             </Tooltip>
                         </>
                     )}
