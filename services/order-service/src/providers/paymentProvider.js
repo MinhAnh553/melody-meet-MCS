@@ -93,13 +93,21 @@ const randomTransId = (method = 'payos') => {
 // 1. Payos
 const createPayOSOrder = async (order) => {
     const orderCode = parseInt(randomTransId('payos'));
+    
+    // Transform tickets to match PayOS expected format
+    const items = order.tickets.map(ticket => ({
+        name: ticket.name,
+        quantity: ticket.quantity,
+        price: ticket.price
+    }));
+    
     const payload = {
         orderCode,
         buyerName: order.buyerInfo.name,
         buyerEmail: order.buyerInfo.email,
         buyerPhone: order.buyerInfo.phone,
         amount: order.totalPrice,
-        items: order.tickets,
+        items: items,
         description: 'Melody Meet',
         expiredAt: Math.floor(new Date(order.expiredAt).getTime() / 1000),
         returnUrl: `${YOUR_DOMAIN}/event/${order.eventId}/bookings/${order._id}/payment-success`,

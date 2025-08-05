@@ -1358,11 +1358,14 @@ function OrderPage() {
                     borderRadius: 16,
                     padding: 0,
                     overflow: 'hidden',
-                    minWidth: isMobile ? 0 : 420,
+                    minWidth: isMobile ? 0 : 700,
+                    minHeight: isMobile ? 0 : 500,
                 }}
                 style={{
                     paddingTop: '5px',
+                    minWidth: isMobile ? 0 : 750,
                 }}
+                zIndex={9000}
             >
                 <div
                     style={{
@@ -1426,6 +1429,7 @@ function OrderPage() {
                         style={{
                             margin: isMobile ? '0 8px' : '0 32px',
                             marginTop: 16,
+                            alignItems: 'center',
                         }}
                         items={[
                             {
@@ -1448,18 +1452,27 @@ function OrderPage() {
                                     <div
                                         style={{
                                             display: 'flex',
-                                            flexDirection: 'column',
+                                            flexDirection: isMobile
+                                                ? 'column'
+                                                : 'row',
                                             marginTop: 8,
-                                            alignItems: 'center',
+                                            gap: 24,
+                                            alignItems: isMobile
+                                                ? 'center'
+                                                : 'flex-start',
                                         }}
                                     >
+                                        {/* Left Column - QR Code */}
                                         <div
                                             style={{
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                marginBottom: 16,
+                                                flex: isMobile ? 'none' : 1,
+                                                minWidth: isMobile
+                                                    ? 'auto'
+                                                    : 300,
                                             }}
                                         >
                                             <div
@@ -1527,15 +1540,21 @@ function OrderPage() {
                                             </div>
                                         </div>
 
+                                        {/* Right Column - Instructions */}
                                         <div
                                             style={{
-                                                width: '100%',
+                                                flex: isMobile ? 'none' : 1,
                                                 padding: isMobile
                                                     ? '0 8px'
-                                                    : 24,
+                                                    : '0 0 0 24px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                alignItems: 'center',
+                                                alignItems: isMobile
+                                                    ? 'center'
+                                                    : 'flex-start',
+                                                minWidth: isMobile
+                                                    ? 'auto'
+                                                    : 300,
                                             }}
                                         >
                                             <div
@@ -1545,7 +1564,9 @@ function OrderPage() {
                                                         ? 16
                                                         : 20,
                                                     marginBottom: 12,
-                                                    textAlign: 'center',
+                                                    textAlign: isMobile
+                                                        ? 'center'
+                                                        : 'left',
                                                     color: '#262626',
                                                 }}
                                             >
@@ -1628,17 +1649,28 @@ function OrderPage() {
                                     <div
                                         style={{
                                             display: 'flex',
-                                            flexDirection: 'column',
+                                            flexDirection: isMobile
+                                                ? 'column'
+                                                : 'row',
                                             marginTop: 8,
+                                            gap: 24,
+                                            alignItems: isMobile
+                                                ? 'stretch'
+                                                : 'flex-start',
                                         }}
                                     >
+                                        {/* Left Column - Bank Info */}
                                         <div
                                             style={{
                                                 background: '#fafafa',
                                                 borderRadius: 16,
                                                 border: '1px solid #f0f0f0',
                                                 padding: isMobile ? 16 : 20,
-                                                marginBottom: 16,
+                                                marginBottom: isMobile ? 16 : 0,
+                                                flex: isMobile ? 'none' : 1,
+                                                minWidth: isMobile
+                                                    ? 'auto'
+                                                    : 300,
                                             }}
                                         >
                                             {/* Bank info fields với responsive design */}
@@ -1756,8 +1788,17 @@ function OrderPage() {
                                             ))}
                                         </div>
 
+                                        {/* Right Column - Instructions */}
                                         {!isMobile && (
-                                            <div style={{ padding: '0 24px' }}>
+                                            <div
+                                                style={{
+                                                    padding: '0 0 0 24px',
+                                                    flex: isMobile ? 'none' : 1,
+                                                    minWidth: isMobile
+                                                        ? 'auto'
+                                                        : 300,
+                                                }}
+                                            >
                                                 <div
                                                     style={{
                                                         fontWeight: 700,
@@ -1806,35 +1847,71 @@ function OrderPage() {
                                                     Lưu ý: Nhập chính xác "Số
                                                     tiền" thanh toán
                                                 </div>
+                                                <div
+                                                    style={{
+                                                        background: '#f0f2f5',
+                                                        borderRadius: 8,
+                                                        padding: 12,
+                                                        textAlign: 'center',
+                                                        color: '#595959',
+                                                        fontSize: isMobile
+                                                            ? 14
+                                                            : 16,
+                                                        margin: isMobile
+                                                            ? '16px 8px 0'
+                                                            : '0',
+                                                    }}
+                                                >
+                                                    Giao dịch sẽ kết thúc sau
+                                                    <span
+                                                        style={{
+                                                            color: '#52c41a',
+                                                            fontWeight: 700,
+                                                            fontSize: isMobile
+                                                                ? 16
+                                                                : 18,
+                                                            marginLeft: 8,
+                                                        }}
+                                                    >
+                                                        {formatCountdown(
+                                                            timeLeft,
+                                                        )}
+                                                    </span>
+                                                </div>
                                             </div>
                                         )}
-                                        <div
-                                            style={{
-                                                background: '#f0f2f5',
-                                                borderRadius: 8,
-                                                padding: 12,
-                                                textAlign: 'center',
-                                                color: '#595959',
-                                                fontSize: isMobile ? 14 : 16,
-                                                margin: isMobile
-                                                    ? '16px 8px 0'
-                                                    : '0',
-                                            }}
-                                        >
-                                            Giao dịch sẽ kết thúc sau
-                                            <span
+
+                                        {isMobile && (
+                                            <div
                                                 style={{
-                                                    color: '#52c41a',
-                                                    fontWeight: 700,
+                                                    background: '#f0f2f5',
+                                                    borderRadius: 8,
+                                                    padding: 12,
+                                                    textAlign: 'center',
+                                                    color: '#595959',
                                                     fontSize: isMobile
-                                                        ? 16
-                                                        : 18,
-                                                    marginLeft: 8,
+                                                        ? 14
+                                                        : 16,
+                                                    margin: isMobile
+                                                        ? '16px 8px 0'
+                                                        : '0',
                                                 }}
                                             >
-                                                {formatCountdown(timeLeft)}
-                                            </span>
-                                        </div>
+                                                Giao dịch sẽ kết thúc sau
+                                                <span
+                                                    style={{
+                                                        color: '#52c41a',
+                                                        fontWeight: 700,
+                                                        fontSize: isMobile
+                                                            ? 16
+                                                            : 18,
+                                                        marginLeft: 8,
+                                                    }}
+                                                >
+                                                    {formatCountdown(timeLeft)}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 ),
                             },
