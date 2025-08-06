@@ -296,6 +296,182 @@ const getTotalUsers = async (req, res) => {
     }
 };
 
+// Get period-specific user statistics
+const getUsersByPeriod = async (req, res) => {
+    try {
+        const { period = 'month' } = req.query; // day, week, month, year
+        const now = new Date();
+        let startDate, endDate, groupFormat;
+
+        // Calculate date range based on period
+        switch (period) {
+            case 'day':
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                );
+                endDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() + 1,
+                );
+                groupFormat = {
+                    $dateToString: {
+                        format: '%Y-%m-%d %H:00',
+                        date: '$createdAt',
+                    },
+                };
+                break;
+            case 'week':
+                const dayOfWeek = now.getDay();
+                const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() - daysToSubtract,
+                );
+                endDate = new Date(
+                    startDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+                );
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear() + 1, 0, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m', date: '$createdAt' },
+                };
+                break;
+            default:
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+        }
+
+        // Get total users
+        const totalUsers = await userModel.countDocuments({ deleted: false });
+
+        // Get period-specific users
+        const periodUsers = await userModel.countDocuments({
+            deleted: false,
+            createdAt: { $gte: startDate, $lt: endDate },
+        });
+
+        // Get users by time period
+        const usersByPeriod = await userModel.aggregate([
+            {
+                $match: {
+                    deleted: false,
+                    createdAt: { $gte: startDate, $lt: endDate },
+                },
+            },
+            {
+                $group: {
+                    _id: groupFormat,
+                    users: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Generate complete date range for the period
+        const dateRange = [];
+        const currentDate = new Date(startDate);
+
+        while (currentDate < endDate) {
+            let formattedDate;
+            if (period === 'day') {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const hour = String(currentDate.getHours()).padStart(2, '0');
+                formattedDate = `${year}-${month}-${day} ${hour}:00`;
+                currentDate.setHours(currentDate.getHours() + 1);
+            } else if (period === 'week' || period === 'month') {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                formattedDate = `${year}-${month}-${day}`;
+                currentDate.setDate(currentDate.getDate() + 1);
+            } else if (period === 'year') {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                formattedDate = `${year}-${month}`;
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+            dateRange.push(formattedDate);
+        }
+
+        // Fill in missing dates with zero users
+        const completeUsersData = dateRange.map((date) => {
+            const existingData = usersByPeriod.find(
+                (item) => item._id === date,
+            );
+            return {
+                date,
+                users: existingData ? existingData.users : 0,
+            };
+        });
+
+        // Calculate growth percentage (comparing with previous period)
+        const previousStartDate = new Date(
+            startDate.getTime() - (endDate.getTime() - startDate.getTime()),
+        );
+        const previousPeriodUsers = await userModel.countDocuments({
+            deleted: false,
+            createdAt: { $gte: previousStartDate, $lt: startDate },
+        });
+
+        const usersGrowth =
+            previousPeriodUsers > 0
+                ? ((periodUsers - previousPeriodUsers) / previousPeriodUsers) *
+                  100
+                : 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                period,
+                totalUsers,
+                periodUsers,
+                usersGrowth: Math.round(usersGrowth * 100) / 100,
+                usersByPeriod: completeUsersData,
+                dateRange: {
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                },
+            },
+        });
+    } catch (error) {
+        logger.error('Get users by period error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
@@ -678,6 +854,7 @@ export default {
     refreshToken,
     getAccount,
     getTotalUsers,
+    getUsersByPeriod,
     getAllUsers,
     updateUser,
     getUserById,

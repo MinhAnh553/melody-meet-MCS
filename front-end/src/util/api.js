@@ -148,8 +148,8 @@ const getOrdersByEventId = (id) => {
 };
 
 // admin
-const getDashboard = () => {
-    const URL_API = `${API_URL}/orders/dashboard`;
+const getDashboard = (period = 'month') => {
+    const URL_API = `${API_URL}/orders/dashboard?period=${period}`;
     return axios.get(URL_API);
 };
 

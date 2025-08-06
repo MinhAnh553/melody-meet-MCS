@@ -624,46 +624,172 @@ const getOrdersByEventId = async (req, res) => {
 // [GET] /orders/dashboard
 const getDashboard = async (req, res) => {
     try {
-        const orders = await orderModel.aggregate([
+        const { period = 'month' } = req.query; // day, week, month, year
+        const now = new Date();
+        let startDate, endDate, groupFormat, dateFormat;
+
+        // Calculate date range based on period
+        switch (period) {
+            case 'day':
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                );
+                endDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() + 1,
+                );
+                groupFormat = {
+                    $dateToString: {
+                        format: '%Y-%m-%d %H:00',
+                        date: '$createdAt',
+                    },
+                };
+                dateFormat = '%Y-%m-%d %H:00';
+                break;
+            case 'week':
+                const dayOfWeek = now.getDay();
+                const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() - daysToSubtract,
+                );
+                endDate = new Date(
+                    startDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+                );
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                dateFormat = '%Y-%m-%d';
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                dateFormat = '%Y-%m-%d';
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear() + 1, 0, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m', date: '$createdAt' },
+                };
+                dateFormat = '%Y-%m';
+                break;
+            default:
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                dateFormat = '%Y-%m-%d';
+        }
+
+        // Get total statistics
+        const totalStats = await orderModel.aggregate([
             { $match: { status: 'PAID' } },
             {
                 $group: {
                     _id: null,
                     totalRevenue: { $sum: '$totalPrice' },
-                    countPaidOrders: { $sum: 1 },
+                    totalOrders: { $sum: 1 },
                 },
             },
         ]);
 
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Get period-specific statistics
+        const periodStats = await orderModel.aggregate([
+            {
+                $match: {
+                    status: 'PAID',
+                    createdAt: { $gte: startDate, $lt: endDate },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    periodRevenue: { $sum: '$totalPrice' },
+                    periodOrders: { $sum: 1 },
+                },
+            },
+        ]);
 
-        const ordersMonth = await orderModel.find({
-            status: 'PAID',
-            createdAt: { $gte: thirtyDaysAgo }, // Lọc theo thời gian
-        });
+        // Get revenue by time period
+        const revenueByPeriod = await orderModel.aggregate([
+            {
+                $match: {
+                    status: 'PAID',
+                    createdAt: { $gte: startDate, $lt: endDate },
+                },
+            },
+            {
+                $group: {
+                    _id: groupFormat,
+                    revenue: { $sum: '$totalPrice' },
+                    orders: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
 
-        const revenueByDay = [];
-        const labels = [];
+        // Generate complete date range for the period
+        const dateRange = [];
+        const currentDate = new Date(startDate);
 
-        for (let i = 0; i < 30; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() - (29 - i)); // Tạo nhãn ngày từ 30 ngày trước đến hôm nay
-            const formattedDate = date.toISOString().split('T')[0]; // Format YYYY-MM-DD
-            labels.push(formattedDate);
-            revenueByDay.push({ date: formattedDate, revenue: 0 }); // Khởi tạo revenue = 0
+        while (currentDate < endDate) {
+            let formattedDate;
+            if (period === 'day') {
+                // Format: "YYYY-MM-DD HH:00"
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const hour = String(currentDate.getHours()).padStart(2, '0');
+                formattedDate = `${year}-${month}-${day} ${hour}:00`;
+                currentDate.setHours(currentDate.getHours() + 1);
+            } else if (period === 'week' || period === 'month') {
+                // Format: "YYYY-MM-DD"
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                formattedDate = `${year}-${month}-${day}`;
+                currentDate.setDate(currentDate.getDate() + 1);
+            } else if (period === 'year') {
+                // Format: "YYYY-MM"
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                formattedDate = `${year}-${month}`;
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+            dateRange.push(formattedDate);
         }
 
-        // Cộng doanh thu theo từng ngày
-        ordersMonth.forEach((order) => {
-            const orderDate = order.createdAt.toISOString().split('T')[0]; // Format YYYY-MM-DD
-            const index = labels.indexOf(orderDate); // Xác định vị trí trong mảng
-            if (index !== -1) {
-                revenueByDay[index].revenue += order.totalPrice;
-            }
+        // Fill in missing dates with zero revenue
+        const completeRevenueData = dateRange.map((date) => {
+            const existingData = revenueByPeriod.find(
+                (item) => item._id === date,
+            );
+            return {
+                date,
+                revenue: existingData ? existingData.revenue : 0,
+                orders: existingData ? existingData.orders : 0,
+            };
         });
 
-        // Tổng người dùng
+        // Get user statistics
         const totalUsers = await axios.get(
             `${process.env.AUTH_SERVICE_URL}/api/auth/users/total`,
             {
@@ -674,7 +800,7 @@ const getDashboard = async (req, res) => {
             },
         );
 
-        // Tổng sự kiện
+        // Get event statistics
         const totalEvents = await axios.get(
             `${process.env.EVENT_SERVICE_URL}/api/events/admin/total-events`,
             {
@@ -685,17 +811,118 @@ const getDashboard = async (req, res) => {
             },
         );
 
-        const totalOrders = orders.length > 0 ? orders[0].countPaidOrders : 0;
-        const totalRevenue = orders.length > 0 ? orders[0].totalRevenue : 0;
+        // Get period-specific user statistics
+        let usersByPeriodData = {
+            data: { periodUsers: 0, usersGrowth: 0, usersByPeriod: [] },
+        };
+        try {
+            const usersByPeriod = await axios.get(
+                `${process.env.AUTH_SERVICE_URL}/api/auth/users/period?period=${period}`,
+                {
+                    headers: {
+                        'x-user-id': req.user?._id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
+            );
+            usersByPeriodData = usersByPeriod;
+        } catch (error) {
+            logger.error('Error fetching users by period:', error.message);
+        }
+
+        // Get period-specific event statistics
+        let eventsByPeriodData = {
+            data: { periodEvents: 0, eventsGrowth: 0, eventsByPeriod: [] },
+        };
+        try {
+            const eventsByPeriod = await axios.get(
+                `${process.env.EVENT_SERVICE_URL}/api/events/admin/period?period=${period}`,
+                {
+                    headers: {
+                        'x-user-id': req.user?._id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
+            );
+            eventsByPeriodData = eventsByPeriod;
+        } catch (error) {
+            logger.error('Error fetching events by period:', error.message);
+        }
+
+        // Calculate additional statistics
+        const totalRevenue =
+            totalStats.length > 0 ? totalStats[0].totalRevenue : 0;
+        const totalOrders =
+            totalStats.length > 0 ? totalStats[0].totalOrders : 0;
+        const periodRevenue =
+            periodStats.length > 0 ? periodStats[0].periodRevenue : 0;
+        const periodOrders =
+            periodStats.length > 0 ? periodStats[0].periodOrders : 0;
+
+        // Calculate growth percentages (comparing with previous period)
+        const previousStartDate = new Date(
+            startDate.getTime() - (endDate.getTime() - startDate.getTime()),
+        );
+        const previousPeriodStats = await orderModel.aggregate([
+            {
+                $match: {
+                    status: 'PAID',
+                    createdAt: { $gte: previousStartDate, $lt: startDate },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    previousRevenue: { $sum: '$totalPrice' },
+                    previousOrders: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const previousRevenue =
+            previousPeriodStats.length > 0
+                ? previousPeriodStats[0].previousRevenue
+                : 0;
+        const previousOrders =
+            previousPeriodStats.length > 0
+                ? previousPeriodStats[0].previousOrders
+                : 0;
+
+        const revenueGrowth =
+            previousRevenue > 0
+                ? ((periodRevenue - previousRevenue) / previousRevenue) * 100
+                : 0;
+        const ordersGrowth =
+            previousOrders > 0
+                ? ((periodOrders - previousOrders) / previousOrders) * 100
+                : 0;
 
         return res.status(200).json({
             success: true,
             data: {
+                period,
                 totalRevenue,
                 totalUsers: totalUsers.data.totalUsers,
                 totalEvents: totalEvents.data.totalEvents,
                 totalOrders,
-                revenueByDay,
+                periodRevenue,
+                periodOrders,
+                revenueGrowth: Math.round(revenueGrowth * 100) / 100,
+                ordersGrowth: Math.round(ordersGrowth * 100) / 100,
+                revenueByPeriod: completeRevenueData,
+                dateRange: {
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                },
+                // Add period-specific user and event statistics
+                periodUsers: usersByPeriodData.data?.data?.periodUsers || 0,
+                usersGrowth: usersByPeriodData.data?.data?.usersGrowth || 0,
+                usersByPeriod:
+                    usersByPeriodData.data?.data?.usersByPeriod || [],
+                periodEvents: eventsByPeriodData.data?.data?.periodEvents || 0,
+                eventsGrowth: eventsByPeriodData.data?.data?.eventsGrowth || 0,
+                eventsByPeriod:
+                    eventsByPeriodData.data?.data?.eventsByPeriod || [],
             },
         });
     } catch (error) {

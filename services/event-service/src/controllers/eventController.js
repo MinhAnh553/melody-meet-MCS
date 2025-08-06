@@ -1052,6 +1052,180 @@ const getTotalEvents = async (req, res) => {
     }
 };
 
+// [GET] /events/admin/period - Get period-specific event statistics
+const getEventsByPeriod = async (req, res) => {
+    try {
+        const { period = 'month' } = req.query; // day, week, month, year
+        const now = new Date();
+        let startDate, endDate, groupFormat;
+
+        // Calculate date range based on period
+        switch (period) {
+            case 'day':
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                );
+                endDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() + 1,
+                );
+                groupFormat = {
+                    $dateToString: {
+                        format: '%Y-%m-%d %H:00',
+                        date: '$createdAt',
+                    },
+                };
+                break;
+            case 'week':
+                const dayOfWeek = now.getDay();
+                const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() - daysToSubtract,
+                );
+                endDate = new Date(
+                    startDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+                );
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear() + 1, 0, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m', date: '$createdAt' },
+                };
+                break;
+            default:
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                groupFormat = {
+                    $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+                };
+        }
+
+        // Get total events
+        const totalEvents = await eventModel.countDocuments();
+
+        // Get period-specific events
+        const periodEvents = await eventModel.countDocuments({
+            createdAt: { $gte: startDate, $lt: endDate },
+        });
+
+        // Get events by time period
+        const eventsByPeriod = await eventModel.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lt: endDate },
+                },
+            },
+            {
+                $group: {
+                    _id: groupFormat,
+                    events: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Generate complete date range for the period
+        const dateRange = [];
+        const currentDate = new Date(startDate);
+
+        while (currentDate < endDate) {
+            let formattedDate;
+            if (period === 'day') {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const hour = String(currentDate.getHours()).padStart(2, '0');
+                formattedDate = `${year}-${month}-${day} ${hour}:00`;
+                currentDate.setHours(currentDate.getHours() + 1);
+            } else if (period === 'week' || period === 'month') {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                formattedDate = `${year}-${month}-${day}`;
+                currentDate.setDate(currentDate.getDate() + 1);
+            } else if (period === 'year') {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                );
+                formattedDate = `${year}-${month}`;
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+            dateRange.push(formattedDate);
+        }
+
+        // Fill in missing dates with zero events
+        const completeEventsData = dateRange.map((date) => {
+            const existingData = eventsByPeriod.find(
+                (item) => item._id === date,
+            );
+            return {
+                date,
+                events: existingData ? existingData.events : 0,
+            };
+        });
+
+        // Calculate growth percentage (comparing with previous period)
+        const previousStartDate = new Date(
+            startDate.getTime() - (endDate.getTime() - startDate.getTime()),
+        );
+        const previousPeriodEvents = await eventModel.countDocuments({
+            createdAt: { $gte: previousStartDate, $lt: startDate },
+        });
+
+        const eventsGrowth =
+            previousPeriodEvents > 0
+                ? ((periodEvents - previousPeriodEvents) /
+                      previousPeriodEvents) *
+                  100
+                : 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                period,
+                totalEvents,
+                periodEvents,
+                eventsGrowth: Math.round(eventsGrowth * 100) / 100,
+                eventsByPeriod: completeEventsData,
+                dateRange: {
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                },
+            },
+        });
+    } catch (error) {
+        logger.error('Error in getEventsByPeriod:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 // [PUT] /events/:id/status - Cập nhật trạng thái sự kiện
 const updateEventStatus = async (req, res) => {
     try {
@@ -1748,4 +1922,5 @@ export default {
     getMyReviews,
     deleteReview,
     getOrganizerReviews,
+    getEventsByPeriod,
 };

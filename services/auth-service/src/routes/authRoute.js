@@ -26,6 +26,11 @@ Router.route('/users/total').get(
     authController.getTotalUsers,
 );
 
+Router.route('/users/period').get(
+    authMiddleware.isValidPermission(['admin']),
+    authController.getUsersByPeriod,
+);
+
 Router.route('/users/admin/all-users').get(
     authMiddleware.isValidPermission(['admin']),
     authController.getAllUsers,

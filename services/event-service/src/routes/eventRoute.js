@@ -44,6 +44,12 @@ Router.route('/admin/total-events').get(
     eventController.getTotalEvents,
 );
 
+// Period-specific events
+Router.route('/admin/period').get(
+    authMiddleware.isValidPermission(['admin']),
+    eventController.getEventsByPeriod,
+);
+
 // Update event status (admin only)
 Router.route('/admin/update/:id/status').put(
     authMiddleware.isValidPermission(['admin']),

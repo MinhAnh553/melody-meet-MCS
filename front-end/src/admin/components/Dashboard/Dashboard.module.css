@@ -4,6 +4,41 @@
 
 .pageTitle {
     margin-bottom: 1.5rem;
+    color: var(--text-light);
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.periodSelector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.periodButtons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.periodButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.periodButton:hover {
+    transform: translateY(-2px);
+}
+
+.periodIcon {
+    font-size: 1.1rem;
 }
 
 .statsGrid {
@@ -15,35 +50,51 @@
 
 .statCard {
     background-color: var(--dark-card-bg);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .statCard:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.statHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
 }
 
 .statIcon {
     font-size: 2rem;
-    margin-bottom: 1rem;
     color: var(--primary-color);
     align-self: flex-start;
 }
 
 .statValue {
     color: #fff;
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: bold;
     margin-bottom: 0.5rem;
+    line-height: 1;
 }
 
 .statLabel {
     color: var(--text-secondary);
     font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.statSubtext {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    opacity: 0.7;
 }
 
 .revenueIcon {
@@ -62,106 +113,172 @@
     color: var(--danger-color);
 }
 
+.growthIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.growthValue {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.growthValue.negative {
+    color: var(--danger-color);
+}
+
+.growthIcon {
+    display: flex;
+    align-items: center;
+}
+
+.growthUp {
+    color: var(--success-color);
+    font-size: 0.7rem;
+}
+
+.growthDown {
+    color: var(--danger-color);
+    font-size: 0.7rem;
+}
+
+.growthLabel {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+}
+
 .chartsContainer {
-    /* display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 1.5rem; */
     margin-bottom: 2rem;
 }
 
-@media (max-width: 992px) {
-    .chartsContainer {
+.chartRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .chartRow {
         grid-template-columns: 1fr;
     }
 }
 
 .chartCard {
     background-color: var(--dark-card-bg);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     height: 100%;
+    border: 1px solid var(--border-color);
 }
 
 .chartTitle {
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
     color: var(--text-light);
-}
-
-.recentActivitiesCard {
-    background-color: var(--dark-card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.activityItem {
     display: flex;
     align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
+    gap: 0.5rem;
 }
 
-.activityItem:last-child {
-    border-bottom: none;
+.chartIcon {
+    color: var(--primary-color);
+    font-size: 1.1rem;
 }
 
-.activityIcon {
-    margin-right: 1rem;
-    font-size: 1.25rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.activityIconSuccess {
-    background-color: rgba(46, 204, 113, 0.2);
-    color: var(--success-color);
-}
-
-.activityIconWarning {
-    background-color: rgba(243, 156, 18, 0.2);
-    color: var(--warning-color);
-}
-
-.activityIconDanger {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: var(--danger-color);
-}
-
-.activityIconInfo {
-    background-color: rgba(52, 152, 219, 0.2);
-    color: var(--secondary-color);
-}
-
-.activityContent {
-    flex: 1;
-}
-
-.activityTitle {
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.activityTime {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.upcomingEventsCard {
-    background-color: var(--dark-card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.summaryContainer {
     margin-bottom: 2rem;
 }
 
-.eventsList {
+.summaryCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+.summaryTitle {
+    color: var(--text-light);
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.summaryStats {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.summaryItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.summaryLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.summaryValue {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.summaryValue.positive {
+    color: var(--success-color);
+}
+
+.summaryValue.negative {
+    color: var(--danger-color);
+}
+
+@media (max-width: 768px) {
+    .periodSelector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .periodButtons {
+        justify-content: center;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .summaryStats {
+        grid-template-columns: 1fr;
+    }
+
+    .statValue {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .periodButton {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .statCard {
+        padding: 1rem;
+    }
+
+    .chartCard {
+        padding: 1rem;
+    }
 }
