@@ -146,7 +146,7 @@ const EventSummary = () => {
             style={{
                 minHeight: '100vh',
                 color: '#fff',
-                paddingTop: '20px',
+                padding: '20px',
             }}
         >
             <Card

@@ -74,7 +74,7 @@ const Footer = () => {
                     </div>
 
                     {/* Quick Links */}
-                    <div className="col-lg-2 col-md-6">
+                    <div className="col-lg-2 col-md-6 d-none d-md-block">
                         <h5 className="text-white mb-3 fw-bold">Khám Phá</h5>
                         <ul className="list-unstyled footer-links">
                             <li className="mb-2">
@@ -127,7 +127,7 @@ const Footer = () => {
                     </div>
 
                     {/* Company Info */}
-                    <div className="col-lg-3 col-md-6">
+                    <div className="col-lg-3 col-md-6 d-none d-md-block">
                         <h5 className="text-white mb-3 fw-bold">
                             Về Chúng Tôi
                         </h5>
@@ -198,7 +198,7 @@ const Footer = () => {
                                 Live Chat: Có sẵn
                             </p>
                         </div>
-                        <div className="support-buttons mt-3">
+                        {/* <div className="support-buttons mt-3">
                             <a
                                 href="#"
                                 className="btn btn-outline-light btn-sm me-2 mb-2"
@@ -220,7 +220,7 @@ const Footer = () => {
                                 <i className="bi bi-chat me-1"></i>
                                 Chat
                             </a>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
