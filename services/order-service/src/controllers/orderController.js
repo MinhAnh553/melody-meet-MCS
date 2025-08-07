@@ -113,7 +113,12 @@ const getRevenue = async (req, res) => {
 const getRevenueByEventId = async (req, res) => {
     try {
         const { eventId } = req.params;
+
         const orders = await orderModel.find({ eventId, status: 'PAID' });
+
+        if (!orders) {
+            return res.status(200).json({ success: true, totalRevenue: 0 });
+        }
         const totalRevenue = orders.reduce(
             (acc, order) => acc + order.totalPrice,
             0,

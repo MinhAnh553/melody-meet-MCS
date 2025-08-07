@@ -587,7 +587,7 @@ const getUserById = async (req, res) => {
 // Update organizer
 const updateOrganizer = async (req, res) => {
     try {
-        const { id } = req.user;
+        const { _id: id } = req.user;
         const data = req.body;
         // Cập nhật trực tiếp các trường của organizer
         const update = {};
@@ -630,7 +630,7 @@ const updateOrganizer = async (req, res) => {
 // Create upgrade request
 const createUpgradeRequest = async (req, res) => {
     try {
-        const { id } = req.user;
+        const { _id: id } = req.user;
         const { organization, agree } = req.body;
 
         // Check if user already has a pending request
@@ -828,7 +828,7 @@ const rejectUpgradeRequest = async (req, res) => {
 // Get user's upgrade request status
 const getUserUpgradeRequest = async (req, res) => {
     try {
-        const { id } = req.user;
+        const { _id: id } = req.user;
 
         const upgradeRequest = await upgradeRequestModel
             .findOne({ userId: id })

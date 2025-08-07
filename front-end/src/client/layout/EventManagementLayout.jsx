@@ -24,7 +24,10 @@ const EventManagement = () => {
     // }, [eventId]);
 
     return (
-        <div className="d-flex flex-column flex-md-row min-vh-100">
+        <div
+            className="d-flex flex-column flex-md-row min-vh-100"
+            style={{ background: '#27272a' }}
+        >
             <div
                 className="flex-shrink-0 bg-dark text-white d-none d-md-block"
                 style={{ width: '250px' }}
