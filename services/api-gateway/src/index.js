@@ -39,7 +39,7 @@ const rateLimitOptions = rateLimit({
     }),
 });
 
-app.use(rateLimitOptions);
+// app.use(rateLimitOptions);
 
 app.use((req, res, next) => {
     logger.info(`Received ${req.method} request to ${req.url}`);
