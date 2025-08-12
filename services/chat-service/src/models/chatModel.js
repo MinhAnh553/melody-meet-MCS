@@ -8,7 +8,7 @@ const chatSchema = new mongoose.Schema(
             required: true,
         },
         message: { type: String, required: true },
-        response: { type: String, required: true },
+        response: { type: String },
         events: [
             {
                 eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' },

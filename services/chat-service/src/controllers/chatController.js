@@ -4,6 +4,7 @@ import logger from '../utils/logger.js';
 import axios from 'axios';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const modelOpenai = 'gpt-4.1-nano';
 
 // Hàm kiểm tra query có phải là từ khóa thực sự không (loại bỏ các từ như 'sự kiện', 'event', 'show', 'chương trình', ...)
 function isGenericQuery(query) {
@@ -37,7 +38,7 @@ async function extractEventQueryAndLocationWithGPT(message) {
     const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
     const prompt = `Hãy trích xuất từ câu hỏi sau:\n- Từ khóa hoặc tên sự kiện cần tìm (nếu có)\n- Địa điểm (nếu có)\n- Thời gian (nếu có): "sắp diễn ra", "trong tương lai", "sắp tới", "từ ngày", "đến ngày", v.v.\nTrả về kết quả dạng JSON: { "query": "...", "location": "...", "timeFilter": "..." }\n- timeFilter có thể là: "upcoming", "future", "past", "all"\n- Nếu không có thông tin thì để rỗng\nKhông giải thích gì thêm, chỉ trả về JSON.\nCâu hỏi: "${message}"`;
     const res = await openai.chat.completions.create({
-        model: 'gpt-4o-mini-2024-07-18',
+        model: modelOpenai,
         messages: [
             {
                 role: 'system',
@@ -302,7 +303,7 @@ Hãy trả lời một cách thân thiện, ngắn gọn và nhắc nhở ngư�
 Phong cách: Thân thiện, vui vẻ, ngắn gọn.`;
 
     const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini-2024-07-18',
+        model: modelOpenai,
         messages: [
             {
                 role: 'system',
@@ -382,7 +383,7 @@ Phong cách: Thân thiện, vui vẻ, ngắn gọn.`;
     }
 
     const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini-2024-07-18',
+        model: modelOpenai,
         messages: [
             {
                 role: 'system',
@@ -749,7 +750,7 @@ const createChat = async (req, res) => {
         const temperature = isFirstMessage ? 0.4 : 0.6;
 
         const openaiRes = await openai.chat.completions.create({
-            model: 'gpt-4o-mini-2024-07-18',
+            model: modelOpenai,
             messages: [
                 {
                     role: 'system',
