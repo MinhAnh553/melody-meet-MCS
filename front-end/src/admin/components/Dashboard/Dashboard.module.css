@@ -282,3 +282,259 @@
         padding: 1rem;
     }
 }
+
+/* Ranking Styles */
+.rankingCard {
+    background-color: var(--dark-card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.rankingHeader {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.rankingTitle {
+    color: var(--text-light);
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rankingIcon {
+    color: #ffd700;
+    font-size: 1.5rem;
+}
+
+.rankingBody {
+    padding: 1.5rem;
+}
+
+.rankingList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rankingItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.rankingItem:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+}
+
+.firstRank {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 215, 0, 0.1),
+        rgba(255, 215, 0, 0.05)
+    );
+    border-color: #ffd700;
+}
+
+.secondRank {
+    background: linear-gradient(
+        135deg,
+        rgba(192, 192, 192, 0.1),
+        rgba(192, 192, 192, 0.05)
+    );
+    border-color: #c0c0c0;
+}
+
+.thirdRank {
+    background: linear-gradient(
+        135deg,
+        rgba(205, 127, 50, 0.1),
+        rgba(205, 127, 50, 0.05)
+    );
+    border-color: #cd7f32;
+}
+
+.otherRank {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.rankInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rankNumber {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 60px;
+}
+
+.rankText {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.goldIcon {
+    color: #ffd700;
+    font-size: 1.5rem;
+}
+
+.silverIcon {
+    color: #c0c0c0;
+    font-size: 1.3rem;
+}
+
+.bronzeIcon {
+    color: #cd7f32;
+    font-size: 1.3rem;
+}
+
+.trophyIcon {
+    color: #ffd700;
+    font-size: 1.2rem;
+}
+
+.organizerInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.organizerAvatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+}
+
+.avatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.organizerDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.organizerName {
+    color: var(--text-light);
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.organizerEmail {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.organizerStats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.revenueInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.revenueAmount {
+    color: var(--text-light);
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.revenueBadge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.statsDetails {
+    display: flex;
+    gap: 1rem;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.statLabel {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.statValue {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.noDataMessage {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .rankingItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .organizerStats {
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .revenueInfo {
+        align-items: flex-start;
+    }
+
+    .statsDetails {
+        justify-content: space-between;
+        width: 100%;
+    }
+}

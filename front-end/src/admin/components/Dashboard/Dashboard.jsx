@@ -41,12 +41,14 @@ ChartJS.register(
 );
 
 import LoadingSpinner from '../../../client/components/loading/LoadingSpinner';
+import TopOrganizersRanking from './TopOrganizersRanking';
 import styles from './Dashboard.module.css';
 import { formatCurrency } from '../../utils/formatters';
 import api from '../../../util/api';
 
 const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
+    const [topOrganizersData, setTopOrganizersData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState('month');
 
@@ -64,9 +66,17 @@ const Dashboard = () => {
     const fetchData = async (period) => {
         setLoading(true);
         try {
-            const res = await api.getDashboard(period);
-            if (res.success) {
-                setDashboardData(res.data);
+            const [dashboardRes, topOrganizersRes] = await Promise.all([
+                api.getDashboard(period),
+                api.getTopOrganizers(period),
+            ]);
+
+            if (dashboardRes.success) {
+                setDashboardData(dashboardRes.data);
+            }
+
+            if (topOrganizersRes.success) {
+                setTopOrganizersData(topOrganizersRes.data);
             }
         } catch (err) {
             console.log(err.message);
@@ -288,6 +298,12 @@ const Dashboard = () => {
                 </ButtonGroup>
             </div>
 
+            {/* Top Organizers Ranking */}
+            <TopOrganizersRanking
+                topOrganizers={topOrganizersData?.topOrganizers || []}
+                period={selectedPeriod}
+            />
+
             {/* Statistics Cards */}
             <div className={styles.statsGrid}>
                 <Card className={styles.statCard}>
@@ -306,9 +322,9 @@ const Dashboard = () => {
                     <div className={styles.statLabel}>
                         Doanh thu {getPeriodTitle().toLowerCase()}
                     </div>
-                    <div className={styles.statSubtext}>
+                    {/* <div className={styles.statSubtext}>
                         Tổng: {formatCurrency(totalRevenue)}
-                    </div>
+                    </div> */}
                 </Card>
 
                 <Card className={styles.statCard}>
@@ -325,9 +341,9 @@ const Dashboard = () => {
                     <div className={styles.statLabel}>
                         Đơn hàng {getPeriodTitle().toLowerCase()}
                     </div>
-                    <div className={styles.statSubtext}>
+                    {/* <div className={styles.statSubtext}>
                         Tổng: {totalOrders}
-                    </div>
+                    </div> */}
                 </Card>
 
                 <Card className={styles.statCard}>
@@ -344,7 +360,7 @@ const Dashboard = () => {
                     <div className={styles.statLabel}>
                         Người dùng {getPeriodTitle().toLowerCase()}
                     </div>
-                    <div className={styles.statSubtext}>Tổng: {totalUsers}</div>
+                    {/* <div className={styles.statSubtext}>Tổng: {totalUsers}</div> */}
                 </Card>
 
                 <Card className={styles.statCard}>
@@ -361,9 +377,9 @@ const Dashboard = () => {
                     <div className={styles.statLabel}>
                         Sự kiện {getPeriodTitle().toLowerCase()}
                     </div>
-                    <div className={styles.statSubtext}>
+                    {/* <div className={styles.statSubtext}>
                         Tổng: {totalEvents}
-                    </div>
+                    </div> */}
                 </Card>
             </div>
 

@@ -626,6 +626,137 @@ const getOrdersByEventId = async (req, res) => {
     }
 };
 
+// [GET] /orders/top-organizers
+const getTopOrganizers = async (req, res) => {
+    try {
+        const { period = 'month' } = req.query; // day, week, month, year
+        const now = new Date();
+        let startDate, endDate;
+
+        // Calculate date range based on period
+        switch (period) {
+            case 'day':
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                );
+                endDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() + 1,
+                );
+                break;
+            case 'week':
+                const dayOfWeek = now.getDay();
+                const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() - daysToSubtract,
+                );
+                endDate = new Date(
+                    startDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+                );
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear() + 1, 0, 1);
+                break;
+            default:
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        }
+
+        // Lấy danh sách đơn hàng đã PAID trong khoảng thời gian
+        const topOrganizers = await orderModel.aggregate([
+            {
+                $match: {
+                    status: 'PAID',
+                    createdAt: { $gte: startDate, $lt: endDate },
+                },
+            },
+            // Kết nối với bảng events để lấy thông tin ban tổ chức
+            {
+                $lookup: {
+                    from: 'events',
+                    localField: 'eventId',
+                    foreignField: '_id',
+                    as: 'eventDetails',
+                },
+            },
+            { $unwind: '$eventDetails' },
+            // Chỉ lấy các sự kiện đã được duyệt
+            { $match: { 'eventDetails.status': 'approved' } },
+            // Nhóm theo ban tổ chức (createdBy)
+            {
+                $group: {
+                    _id: '$eventDetails.createdBy',
+                    totalRevenue: { $sum: '$totalPrice' },
+                    totalOrders: { $sum: 1 },
+                    eventCount: { $addToSet: '$eventDetails._id' },
+                },
+            },
+            // Tính số lượng sự kiện unique
+            {
+                $addFields: {
+                    eventCount: { $size: '$eventCount' },
+                },
+            },
+            // Kết nối với bảng users để lấy thông tin ban tổ chức
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'organizerInfo',
+                },
+            },
+            { $unwind: '$organizerInfo' },
+            // Chỉ lấy các ban tổ chức (role = organizer)
+            { $match: { 'organizerInfo.role': 'organizer' } },
+            // Sắp xếp theo doanh thu giảm dần
+            { $sort: { totalRevenue: -1 } },
+            // Lấy top 10
+            { $limit: 10 },
+            // Format dữ liệu trả về
+            {
+                $project: {
+                    _id: 1,
+                    organizerName: '$organizerInfo.organizer.name',
+                    organizerEmail: '$organizerInfo.email',
+                    organizerLogo: '$organizerInfo.organizer.logo',
+                    totalRevenue: 1,
+                    totalOrders: 1,
+                    eventCount: 1,
+                },
+            },
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                period,
+                topOrganizers,
+                dateRange: {
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                },
+            },
+        });
+    } catch (error) {
+        logger.error('Error in getTopOrganizers:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 // [GET] /orders/dashboard
 const getDashboard = async (req, res) => {
     try {
@@ -1276,6 +1407,7 @@ export default {
     getMyOrders,
     getOrdersByEventId,
     getDashboard,
+    getTopOrganizers,
     getAllOrders,
     updateStatusOrder,
     verifyReturnUrlHandler,

@@ -153,6 +153,11 @@ const getDashboard = (period = 'month') => {
     return axios.get(URL_API);
 };
 
+const getTopOrganizers = (period = 'month') => {
+    const URL_API = `${API_URL}/orders/top-organizers?period=${period}`;
+    return axios.get(URL_API);
+};
+
 const getAllEvents = (params) => {
     const URL_API = `${API_URL}/events/admin/all-events`;
     return axios.get(URL_API, { params });
@@ -376,6 +381,7 @@ export default {
     getAllOrders,
     getAllUsers,
     getDashboard,
+    getTopOrganizers,
     search,
     searchEvents,
     searchEventsByDate,

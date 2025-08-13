@@ -37,6 +37,12 @@ Router.route('/dashboard').get(
     orderController.getDashboard,
 );
 
+// Get top organizers ranking
+Router.route('/top-organizers').get(
+    authMiddleware.isValidPermission(['admin']),
+    orderController.getTopOrganizers,
+);
+
 // Lấy danh sách đơn hàng của admin
 Router.route('/admin/all-orders').get(
     authMiddleware.isValidPermission(['admin']),

@@ -25,7 +25,7 @@ const { Title } = Typography;
 
 const paymentMethods = [
     {
-        label: 'PayOS',
+        label: 'VietQR',
         value: 'payos',
         icon: (
             <img
