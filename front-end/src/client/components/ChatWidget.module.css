@@ -176,6 +176,7 @@
     scrollbar-width: thin;
     scrollbar-color: #d9d9d9 transparent;
     scroll-behavior: smooth;
+    position: relative;
 }
 
 .chatArea::-webkit-scrollbar {
@@ -560,4 +561,34 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+}
+
+/* Scroll to Bottom Button */
+.scrollToBottomButton {
+    position: fixed;
+    bottom: 110px;
+    right: 44px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    transition: all 0.3s ease;
+    z-index: 10001;
+    animation: slideUp 0.3s ease;
+}
+
+.scrollToBottomButton:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+.scrollToBottomButton:active {
+    transform: scale(0.95);
 }

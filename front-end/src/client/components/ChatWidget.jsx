@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane } from 'react-icons/fa';
+import {
+    FaComments,
+    FaTimes,
+    FaPaperPlane,
+    FaChevronDown,
+} from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { chatWithAssistant, getChatHistory } from '../../util/api';
 import React from 'react';
@@ -11,6 +16,7 @@ const ChatWidget = () => {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [showScrollButton, setShowScrollButton] = useState(false);
     const { user } = useAuth();
     const chatAreaRef = useRef(null);
 
@@ -59,6 +65,14 @@ const ChatWidget = () => {
                         setShowSuggestions(
                             chats.length === 0 && historyMessages.length === 0,
                         );
+
+                        // Scroll to bottom sau khi load lịch sử
+                        setTimeout(() => {
+                            if (chatAreaRef.current) {
+                                chatAreaRef.current.scrollTop =
+                                    chatAreaRef.current.scrollHeight;
+                            }
+                        }, 200);
                     }
                 })
                 .catch((err) => {
@@ -70,18 +84,97 @@ const ChatWidget = () => {
             console.log('No user logged in, starting fresh chat');
             setMessages([]);
             setShowSuggestions(true);
+
+            // Scroll to bottom khi mở chat mới
+            setTimeout(() => {
+                if (chatAreaRef.current) {
+                    chatAreaRef.current.scrollTop =
+                        chatAreaRef.current.scrollHeight;
+                }
+            }, 100);
         }
     }, [open, user]);
 
-    // Auto scroll to bottom khi có tin nhắn mới
+    // Scroll to bottom khi chat được mở
     useEffect(() => {
-        if (chatAreaRef.current) {
+        if (open && chatAreaRef.current) {
             setTimeout(() => {
                 chatAreaRef.current.scrollTop =
                     chatAreaRef.current.scrollHeight;
-            }, 100);
+                // Ẩn nút scroll khi mở chat
+                setShowScrollButton(false);
+            }, 300);
+        }
+    }, [open]);
+
+    // Auto scroll to bottom khi có tin nhắn mới - Chỉ scroll khi có 1 tin nhắn đơn lẻ
+    useEffect(() => {
+        if (chatAreaRef.current) {
+            // Chỉ scroll khi có tin nhắn mới và không phải là tin nhắn có events
+            const lastMessage = messages[messages.length - 1];
+            const hasEvents =
+                lastMessage &&
+                lastMessage.events &&
+                lastMessage.events.length > 0;
+
+            // Chỉ scroll nếu tin nhắn cuối không có events (chỉ có text)
+            if (!hasEvents) {
+                setTimeout(() => {
+                    chatAreaRef.current.scrollTop =
+                        chatAreaRef.current.scrollHeight;
+                }, 100);
+            }
+
+            // Ẩn nút scroll nếu user đang ở bottom
+            setTimeout(() => {
+                if (chatAreaRef.current) {
+                    const { scrollTop, scrollHeight, clientHeight } =
+                        chatAreaRef.current;
+                    const isNearBottom =
+                        scrollTop + clientHeight >= scrollHeight - 100;
+                    setShowScrollButton(!isNearBottom);
+                }
+            }, 150);
         }
     }, [messages]);
+
+    // Scroll khi user gửi tin nhắn
+    useEffect(() => {
+        if (chatAreaRef.current) {
+            const lastMessage = messages[messages.length - 1];
+            // Chỉ scroll nếu tin nhắn cuối là từ user
+            if (lastMessage && lastMessage.sender === 'user') {
+                setTimeout(() => {
+                    chatAreaRef.current.scrollTop =
+                        chatAreaRef.current.scrollHeight;
+                }, 50);
+            }
+        }
+    }, [messages]);
+
+    // Kiểm tra vị trí scroll để hiển thị/ẩn nút scroll down
+    useEffect(() => {
+        const handleScroll = () => {
+            if (chatAreaRef.current) {
+                const { scrollTop, scrollHeight, clientHeight } =
+                    chatAreaRef.current;
+                const isNearBottom =
+                    scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+                setShowScrollButton(!isNearBottom);
+            }
+        };
+
+        const chatArea = chatAreaRef.current;
+        if (chatArea) {
+            chatArea.addEventListener('scroll', handleScroll);
+            // Kiểm tra ngay khi component mount
+            handleScroll();
+
+            return () => {
+                chatArea.removeEventListener('scroll', handleScroll);
+            };
+        }
+    }, [messages, open]); // Thêm open để kiểm tra lại khi chat được mở
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -92,6 +185,14 @@ const ChatWidget = () => {
         setInput('');
         setLoading(true);
         setShowSuggestions(false); // Ẩn gợi ý khi người dùng gửi tin nhắn
+
+        // Scroll to bottom ngay khi user gửi tin nhắn
+        setTimeout(() => {
+            if (chatAreaRef.current) {
+                chatAreaRef.current.scrollTop =
+                    chatAreaRef.current.scrollHeight;
+            }
+        }, 50);
 
         try {
             let response;
@@ -167,6 +268,36 @@ const ChatWidget = () => {
         }
     };
 
+    // Scroll khi AI trả lời xong (chỉ nếu không có events)
+    useEffect(() => {
+        if (!loading && chatAreaRef.current) {
+            const lastMessage = messages[messages.length - 1];
+            const hasEvents =
+                lastMessage &&
+                lastMessage.events &&
+                lastMessage.events.length > 0;
+
+            // Chỉ scroll nếu tin nhắn cuối không có events
+            if (!hasEvents) {
+                setTimeout(() => {
+                    chatAreaRef.current.scrollTop =
+                        chatAreaRef.current.scrollHeight;
+                }, 100);
+            }
+
+            // Kiểm tra lại vị trí scroll sau khi AI trả lời
+            setTimeout(() => {
+                if (chatAreaRef.current) {
+                    const { scrollTop, scrollHeight, clientHeight } =
+                        chatAreaRef.current;
+                    const isNearBottom =
+                        scrollTop + clientHeight >= scrollHeight - 100;
+                    setShowScrollButton(!isNearBottom);
+                }
+            }, 150);
+        }
+    }, [loading, messages]);
+
     // Function xử lý khi click vào câu hỏi gợi ý
     const handleSuggestionClick = (question) => {
         setInput(question);
@@ -176,6 +307,14 @@ const ChatWidget = () => {
         setInput('');
         setLoading(true);
         setShowSuggestions(false);
+
+        // Scroll to bottom ngay khi click suggestion
+        setTimeout(() => {
+            if (chatAreaRef.current) {
+                chatAreaRef.current.scrollTop =
+                    chatAreaRef.current.scrollHeight;
+            }
+        }, 50);
 
         // Gọi API với câu hỏi gợi ý
         const sendSuggestionMessage = async () => {
@@ -248,6 +387,16 @@ const ChatWidget = () => {
         };
 
         sendSuggestionMessage();
+    };
+
+    // Function scroll to bottom
+    const scrollToBottom = () => {
+        if (chatAreaRef.current) {
+            chatAreaRef.current.scrollTo({
+                top: chatAreaRef.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
     };
 
     // Component typing indicator
@@ -577,6 +726,17 @@ const ChatWidget = () => {
                         </div>
                     )}
                 </div>
+            )}
+
+            {/* Scroll to bottom button - Fixed position */}
+            {open && showScrollButton && (
+                <button
+                    onClick={scrollToBottom}
+                    className={styles.scrollToBottomButton}
+                    title="Cuộn xuống tin nhắn mới nhất"
+                >
+                    <FaChevronDown />
+                </button>
             )}
         </>
     );
