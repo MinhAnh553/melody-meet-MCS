@@ -732,6 +732,7 @@ function PurchasedTickets() {
                 </div>
             ),
             width: 130,
+            align: 'center',
         },
         {
             title: (
@@ -935,6 +936,7 @@ function PurchasedTickets() {
                 );
             },
             width: 200,
+            align: 'center',
         },
     ];
 
