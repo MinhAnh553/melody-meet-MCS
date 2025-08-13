@@ -1828,6 +1828,194 @@ const updateFinishedEvents = async () => {
     }
 };
 
+// [GET] /events/search/ai - API riêng cho AI tìm kiếm sự kiện
+const searchEventsForAI = async (req, res) => {
+    try {
+        const {
+            query = '',
+            date,
+            startDate,
+            endDate,
+            location,
+            timeFilter,
+            startTime, // Tham số mới cho AI
+            limit = 10,
+            minPrice,
+            maxPrice,
+        } = req.query;
+        console.log('MinhAnh553: searchEventsForAI ->  req.query', req.query);
+
+        const eventQuery = {
+            status: { $in: ['approved', 'event_over'] },
+        };
+
+        // Tối ưu tìm kiếm theo query: tìm kiếm cả trong tên và mô tả với độ ưu tiên
+        if (query && query.trim()) {
+            const trimmedQuery = query.trim();
+            // Tìm kiếm chính xác trước, sau đó tìm kiếm mờ
+            eventQuery.$or = [
+                { name: { $regex: `^${trimmedQuery}`, $options: 'i' } }, // Bắt đầu với query
+                { name: { $regex: trimmedQuery, $options: 'i' } }, // Chứa query
+                { description: { $regex: trimmedQuery, $options: 'i' } }, // Trong mô tả
+            ];
+        }
+
+        // Xử lý tìm kiếm theo startTime (tham số mới cho AI) - ưu tiên cao nhất
+        if (startTime) {
+            const startTimeDate = new Date(startTime);
+            if (!isNaN(startTimeDate.getTime())) {
+                const start = new Date(startTimeDate);
+                start.setHours(0, 0, 0, 0); // Bắt đầu từ 00:00:00
+                const end = new Date(startTimeDate);
+                end.setHours(23, 59, 59, 999); // Kết thúc lúc 23:59:59
+                eventQuery.startTime = { $gte: start, $lte: end };
+                logger.info(
+                    `AI search with startTime: ${startTime} -> ${start.toISOString()} to ${end.toISOString()}`,
+                );
+            }
+        }
+        // Nếu không có startTime thì xử lý theo date/startDate/endDate như cũ
+        else if (startDate && endDate) {
+            eventQuery.startTime = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate + 'T23:59:59.999Z'),
+            };
+        } else if (date) {
+            const start = new Date(date);
+            const end = new Date(date);
+            end.setHours(23, 59, 59, 999);
+            eventQuery.startTime = { $gte: start, $lte: end };
+        }
+
+        // Lọc theo thời gian (timeFilter) - chỉ áp dụng khi không có startTime
+        if (timeFilter && !startTime) {
+            const now = new Date();
+            switch (timeFilter) {
+                case 'upcoming':
+                    const thirtyDaysFromNow = new Date();
+                    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                    eventQuery.startTime = {
+                        $gte: now,
+                        $lte: thirtyDaysFromNow,
+                    };
+                    break;
+                case 'future':
+                    eventQuery.startTime = { $gte: now };
+                    break;
+                case 'past':
+                    eventQuery.startTime = { $lt: now };
+                    break;
+            }
+        }
+
+        // Tối ưu lọc theo vị trí: tìm kiếm thông minh hơn
+        if (location && location.trim()) {
+            const locationQuery = { $regex: location.trim(), $options: 'i' };
+            const locationConditions = [
+                { 'location.venueName': locationQuery },
+                { 'location.province': locationQuery },
+                { 'location.district': locationQuery },
+                { 'location.ward': locationQuery },
+                { 'location.address': locationQuery },
+            ];
+
+            // Nếu đã có $or cho query, thì merge với location bằng $and
+            if (eventQuery.$or) {
+                eventQuery.$and = [
+                    { $or: eventQuery.$or },
+                    { $or: locationConditions },
+                ];
+                delete eventQuery.$or;
+            } else {
+                eventQuery.$or = locationConditions;
+            }
+        }
+
+        // Lọc theo giá - tối ưu hóa query
+        let eventIdsByPrice = null;
+        if (minPrice || maxPrice) {
+            const priceQuery = {};
+            if (minPrice) {
+                priceQuery.price = { $gte: Number(minPrice) };
+            }
+            if (maxPrice) {
+                priceQuery.price = {
+                    ...priceQuery.price,
+                    $lte: Number(maxPrice),
+                };
+            }
+
+            const ticketTypes = await ticketTypeModel
+                .find(priceQuery)
+                .select('eventId')
+                .lean();
+
+            eventIdsByPrice = ticketTypes.map((t) => t.eventId.toString());
+            if (eventIdsByPrice.length === 0) {
+                return res.status(200).json({ success: true, events: [] });
+            }
+        }
+
+        if (eventIdsByPrice) {
+            eventQuery._id = { $in: eventIdsByPrice };
+        }
+
+        // Tối ưu truy vấn sự kiện: thêm index hint và select fields cần thiết
+        const events = await eventModel
+            .find(eventQuery)
+            .sort({ startTime: 1 }) // Sắp xếp theo thời gian tăng dần (sự kiện sắp diễn ra trước)
+            .limit(parseInt(limit))
+            .select(
+                '_id name background startTime location organizer status description',
+            )
+            .lean();
+
+        // // Tối ưu lấy ticketTypes: batch query
+        // const eventIds = events.map((e) => e._id);
+        // const ticketTypesMap = {};
+
+        // if (eventIds.length > 0) {
+        //     const ticketTypes = await ticketTypeModel
+        //         .find({ eventId: { $in: eventIds } })
+        //         .select('eventId price name')
+        //         .lean();
+
+        //     ticketTypes.forEach((tt) => {
+        //         const eid = tt.eventId.toString();
+        //         if (!ticketTypesMap[eid]) ticketTypesMap[eid] = [];
+        //         ticketTypesMap[eid].push(tt);
+        //     });
+        // }
+
+        // events.forEach((e) => {
+        //     e.ticketTypes = ticketTypesMap[e._id.toString()] || [];
+        // });
+
+        // // Filter: all ticketTypes of event must be in price range
+        // let filteredEvents = events;
+        // if (minPrice || maxPrice) {
+        //     filteredEvents = events.filter((e) => {
+        //         if (!e.ticketTypes.length) return false;
+        //         return e.ticketTypes.every((tt) => {
+        //             const price = tt.price;
+        //             if (minPrice && price < Number(minPrice)) return false;
+        //             if (maxPrice && price > Number(maxPrice)) return false;
+        //             return true;
+        //         });
+        //     });
+        // }
+
+        logger.info(`AI search completed: ${events.length} events found`);
+        return res.status(200).json({ success: true, events: events });
+    } catch (error) {
+        logger.error('Search events for AI error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 cron.schedule('*/5 * * * *', () => {
     // console.log('⏳ Kiểm tra sự kiện hết hạn...');
     updateFinishedEvents();
@@ -1910,6 +2098,7 @@ export default {
     getEvents,
     createOrder,
     searchEvents,
+    searchEventsForAI,
     getEventSummary,
     getTotalEvents,
     getTotalTicketSold,

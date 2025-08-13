@@ -221,6 +221,34 @@ const searchEvents = (filters) => {
     return axios.get(URL_API, { params });
 };
 
+// Search events theo ngày cụ thể (cho chatbot)
+const searchEventsByDate = (date, location = null, limit = 10) => {
+    const params = {
+        date: date,
+        limit: limit,
+    };
+    if (location) params.location = location;
+    const URL_API = `${API_URL}/events/search`;
+    return axios.get(URL_API, { params });
+};
+
+// Search events cho AI với startTime
+const searchEventsForAI = (
+    startTime,
+    query = '',
+    location = null,
+    limit = 10,
+) => {
+    const params = {
+        startTime: startTime,
+        limit: limit,
+    };
+    if (query) params.query = query;
+    if (location) params.location = location;
+    const URL_API = `${API_URL}/events/search/ai`;
+    return axios.get(URL_API, { params });
+};
+
 // Review APIs
 const createReview = (data) => {
     const URL_API = `${API_URL}/events/reviews/create`;
@@ -350,6 +378,8 @@ export default {
     getDashboard,
     search,
     searchEvents,
+    searchEventsByDate,
+    searchEventsForAI,
     refreshToken,
     // Review APIs
     createReview,

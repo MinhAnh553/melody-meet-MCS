@@ -63,6 +63,9 @@ Router.route('/').get(eventController.getEvents);
 // Search
 Router.route('/search').get(eventController.searchEvents);
 
+// Search for AI (không cần auth)
+Router.route('/search/ai').get(eventController.searchEventsForAI);
+
 // Get event by id to edit
 Router.route('/:id/edit').get(
     authMiddleware.isValidPermission(['organizer', 'admin']),
