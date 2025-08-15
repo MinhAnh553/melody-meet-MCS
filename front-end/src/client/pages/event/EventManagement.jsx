@@ -9,6 +9,7 @@ import {
     BsPencilSquare,
     BsPieChartFill,
     BsPeopleFill,
+    BsBarChartFill,
 } from 'react-icons/bs';
 import api from '../../../util/api';
 import TimeText from '../../components/providers/TimeText';
@@ -110,7 +111,7 @@ const EventManagement = () => {
                 paddingBottom: '20px',
             }}
         >
-            {/* Thanh Tìm kiếm */}
+            {/* Header với nút so sánh */}
             <Row className="mx-3 mb-3">
                 <Col xs={12} md={6} className="mb-2 mb-md-0">
                     <form className="d-flex search-form">
@@ -136,6 +137,15 @@ const EventManagement = () => {
                     md="auto"
                     className="d-flex align-items-center mb-2 mb-md-0"
                 >
+                    <Button
+                        variant="info"
+                        className="me-3"
+                        onClick={() => navigate('/organizer/comparison')}
+                        style={{ border: '1px solid #444' }}
+                    >
+                        <BsBarChartFill className="me-2" />
+                        Phân tích sự kiện
+                    </Button>
                     <Button
                         variant={activeTab === 'approved' ? 'success' : 'dark'}
                         onClick={handleUpcoming}

@@ -1011,6 +1011,139 @@ const getEventSummary = async (req, res) => {
     }
 };
 
+// [GET] /events/organizer/comparison
+const getEventComparison = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { period = 'all' } = req.query; // all, month, quarter, year
+
+        // Lấy tất cả sự kiện của organizer
+        const events = await eventModel
+            .find({
+                createdBy: userId,
+                status: { $in: ['approved', 'event_over'] },
+            })
+            .sort({ createdAt: -1 });
+
+        const comparisonData = [];
+
+        for (const event of events) {
+            // Lấy dữ liệu đơn hàng cho từng sự kiện
+            const ordersResponse = await axios.get(
+                `${process.env.ORDER_SERVICE_URL}/api/orders/event/${event._id}`,
+                {
+                    headers: {
+                        'x-user-id': req.user?._id,
+                        'x-user-role': req.user?.role,
+                    },
+                },
+            );
+            const orders = ordersResponse.data.orders || [];
+
+            // Tính toán thống kê
+            let totalRevenue = 0;
+            let totalSold = 0;
+            let totalOrders = 0;
+            let averageTicketPrice = 0;
+
+            // Lọc đơn hàng theo period nếu cần
+            let filteredOrders = orders;
+            if (period !== 'all') {
+                const now = new Date();
+                let startDate;
+
+                switch (period) {
+                    case 'month':
+                        startDate = new Date(
+                            now.getFullYear(),
+                            now.getMonth(),
+                            1,
+                        );
+                        break;
+                    case 'quarter':
+                        const quarter = Math.floor(now.getMonth() / 3);
+                        startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                        break;
+                    case 'year':
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        break;
+                    default:
+                        startDate = new Date(0);
+                }
+
+                filteredOrders = orders.filter(
+                    (order) =>
+                        new Date(order.createdAt) >= startDate &&
+                        order.status === 'PAID',
+                );
+            } else {
+                filteredOrders = orders.filter(
+                    (order) => order.status === 'PAID',
+                );
+            }
+
+            // Tính toán từ đơn hàng đã lọc
+            for (const order of filteredOrders) {
+                totalRevenue += order.totalPrice;
+                totalSold += order.tickets.reduce(
+                    (sum, ticket) => sum + ticket.quantity,
+                    0,
+                );
+                totalOrders += 1;
+            }
+
+            // Tính giá vé trung bình
+            if (totalSold > 0) {
+                averageTicketPrice = totalRevenue / totalSold;
+            }
+
+            // Lấy thông tin loại vé
+            const ticketTypes = await ticketTypeModel.find({
+                eventId: event._id,
+            });
+            const totalTickets = ticketTypes.reduce(
+                (sum, ticket) => sum + ticket.totalQuantity,
+                0,
+            );
+            const soldPercentage =
+                totalTickets > 0 ? (totalSold / totalTickets) * 100 : 0;
+
+            comparisonData.push({
+                eventId: event._id,
+                eventName: event.name,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                status: event.status,
+                background: event.background,
+                location: event.location,
+                totalRevenue,
+                totalSold,
+                totalOrders,
+                totalTickets,
+                soldPercentage,
+                averageTicketPrice,
+                ticketTypes: ticketTypes.length,
+                createdAt: event.createdAt,
+            });
+        }
+
+        // Sắp xếp theo doanh thu giảm dần
+        comparisonData.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+        return res.status(200).json({
+            success: true,
+            data: comparisonData,
+            period,
+        });
+    } catch (error) {
+        logger.error('Error in getEventComparison:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 // [GET] /events/organizer/total_ticket_sold
 const getTotalTicketSold = async (req, res) => {
     try {
@@ -2112,4 +2245,5 @@ export default {
     deleteReview,
     getOrganizerReviews,
     getEventsByPeriod,
+    getEventComparison,
 };

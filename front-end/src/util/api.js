@@ -131,6 +131,11 @@ const getEventSummary = (id) => {
     return axios.get(URL_API);
 };
 
+const getEventComparison = (period = 'all') => {
+    const URL_API = `${API_URL}/events/organizer/comparison?period=${period}`;
+    return axios.get(URL_API);
+};
+
 const getEventParticipants = (
     eventId,
     page = 1,
@@ -377,6 +382,7 @@ export default {
     getMyEvents,
     getOrdersByEventId,
     getEventSummary,
+    getEventComparison,
     getEventParticipants,
     getAllOrders,
     getAllUsers,

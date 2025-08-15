@@ -23,7 +23,7 @@ import {
     UserOutlined,
     MailOutlined,
 } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../util/api';
 import OrderDetails from '../../../admin/components/Orders/OrderDetails';
 
@@ -32,6 +32,7 @@ const { Option } = Select;
 const OrderList = () => {
     const [loading, setLoading] = useState(true);
     const { eventId } = useParams();
+    const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -220,6 +221,82 @@ const OrderList = () => {
     return (
         <div style={{ padding: 24, background: '#23242a', minHeight: '100vh' }}>
             <Spin spinning={loading} tip="Đang tải...">
+                {/* Navigation Buttons */}
+                <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
+                    <Col span={24}>
+                        <Card
+                            bordered={false}
+                            style={{
+                                borderRadius: 14,
+                                backgroundColor: '#31353e',
+                                border: '1px solid #444',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: 16,
+                                    padding: '16px 0',
+                                }}
+                            >
+                                <Button
+                                    type="default"
+                                    size="large"
+                                    style={{
+                                        borderRadius: 12,
+                                        fontWeight: 'bold',
+                                        padding: '8px 24px',
+                                        height: 'auto',
+                                        fontSize: '16px',
+                                    }}
+                                    onClick={() =>
+                                        navigate(
+                                            `/organizer/event/${eventId}/summary`,
+                                        )
+                                    }
+                                >
+                                    📊 Tổng quan
+                                </Button>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    style={{
+                                        borderRadius: 12,
+                                        fontWeight: 'bold',
+                                        padding: '8px 24px',
+                                        height: 'auto',
+                                        fontSize: '16px',
+                                        backgroundColor: '#8e44ad',
+                                        borderColor: '#8e44ad',
+                                    }}
+                                    disabled
+                                >
+                                    📋 Đơn hàng
+                                </Button>
+                                <Button
+                                    type="default"
+                                    size="large"
+                                    style={{
+                                        borderRadius: 12,
+                                        fontWeight: 'bold',
+                                        padding: '8px 24px',
+                                        height: 'auto',
+                                        fontSize: '16px',
+                                    }}
+                                    onClick={() =>
+                                        navigate(
+                                            `/organizer/event/${eventId}/participants`,
+                                        )
+                                    }
+                                >
+                                    👥 Người tham gia
+                                </Button>
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
+
                 <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
                     <Col xs={24} sm={12} md={8} lg={6}>
                         <Card bordered={false} style={{ borderRadius: 14 }}>

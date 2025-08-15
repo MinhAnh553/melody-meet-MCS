@@ -26,6 +26,12 @@ Router.route('/organizer/my').get(
     eventController.getMyEvents,
 );
 
+// Get event comparison data
+Router.route('/organizer/comparison').get(
+    authMiddleware.isValidPermission(['organizer', 'admin']),
+    eventController.getEventComparison,
+);
+
 // Get ticket sold
 Router.route('/organizer/total_ticket_sold').get(
     authMiddleware.isValidPermission(['organizer', 'admin']),

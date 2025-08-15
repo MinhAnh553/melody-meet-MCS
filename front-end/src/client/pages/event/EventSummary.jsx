@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, Container, Row, Col, ProgressBar } from 'react-bootstrap';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+    Card,
+    Container,
+    Row,
+    Col,
+    ProgressBar,
+    Button,
+} from 'react-bootstrap';
 import api from '../../../util/api';
 import swalCustomize from '../../../util/swalCustomize';
 
@@ -33,6 +40,7 @@ ChartJS.register(
 const EventSummary = () => {
     const [loading, setLoading] = useState(true);
     const { eventId } = useParams();
+    const navigate = useNavigate();
     const [eventData, setEventData] = useState(null);
 
     useEffect(() => {
@@ -149,6 +157,69 @@ const EventSummary = () => {
                 padding: '20px',
             }}
         >
+            {/* Navigation Buttons */}
+            <Row className="mx-3 mb-4">
+                <Col>
+                    <Card
+                        className="p-3 shadow-sm text-white"
+                        style={{
+                            backgroundColor: '#31353e',
+                            border: '1px solid #444',
+                            borderRadius: '20px',
+                        }}
+                    >
+                        <div className="d-flex justify-content-center gap-3">
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                className="px-4 py-2"
+                                style={{
+                                    backgroundColor: '#8e44ad',
+                                    borderColor: '#8e44ad',
+                                    borderRadius: '15px',
+                                    fontWeight: 'bold',
+                                }}
+                                disabled
+                            >
+                                📊 Tổng quan
+                            </Button>
+                            <Button
+                                variant="outline-light"
+                                size="lg"
+                                className="px-4 py-2"
+                                style={{
+                                    borderRadius: '15px',
+                                    fontWeight: 'bold',
+                                }}
+                                onClick={() =>
+                                    navigate(
+                                        `/organizer/event/${eventId}/orders`,
+                                    )
+                                }
+                            >
+                                📋 Đơn hàng
+                            </Button>
+                            <Button
+                                variant="outline-light"
+                                size="lg"
+                                className="px-4 py-2"
+                                style={{
+                                    borderRadius: '15px',
+                                    fontWeight: 'bold',
+                                }}
+                                onClick={() =>
+                                    navigate(
+                                        `/organizer/event/${eventId}/participants`,
+                                    )
+                                }
+                            >
+                                👥 Người tham gia
+                            </Button>
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
+
             <Card
                 className="mx-3 p-4 shadow-sm text-white"
                 style={{

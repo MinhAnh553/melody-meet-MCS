@@ -18,6 +18,7 @@ import EventManagement from '../client/pages/event/EventManagement.jsx';
 import OrderList from '../client/pages/event/OrderList.jsx';
 import EventSummary from '../client/pages/event/EventSummary.jsx';
 import EventParticipants from '../client/pages/event/EventParticipants.jsx';
+import EventComparison from '../client/pages/event/EventComparison.jsx';
 import Layout from '../admin/components/layouts/Layout.jsx';
 import Dashboard from '../admin/components/Dashboard/Dashboard.jsx';
 import EventsList from '../admin/components/Events/EventsList.jsx';
@@ -171,6 +172,10 @@ const AnimatedRoutes = () => {
                                 }
                             />
                         </Route>
+                        <Route
+                            path="comparison"
+                            element={<EventComparison />}
+                        />
                         <Route
                             path="infomation"
                             element={<EventManagementLayout />}
