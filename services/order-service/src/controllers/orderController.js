@@ -7,6 +7,7 @@ import {
 import { publishEvent } from '../providers/rabbitmqProvider.js';
 import paymentProvider from '../providers/paymentProvider.js';
 import axios from 'axios';
+import cron from 'node-cron';
 
 async function invalidateEventCacheById(req, eventId) {
     await req.redisClient.del(`event:${eventId}`);
@@ -690,8 +691,12 @@ const getTopOrganizers = async (req, res) => {
                 },
             },
             { $unwind: '$eventDetails' },
-            // Chỉ lấy các sự kiện đã được duyệt
-            { $match: { 'eventDetails.status': 'approved' } },
+            // Chỉ lấy các sự kiện có status được duyệt hoặc đã kết thúc
+            {
+                $match: {
+                    'eventDetails.status': { $in: ['approved', 'event_over'] },
+                },
+            },
             // Nhóm theo ban tổ chức (createdBy)
             {
                 $group: {
@@ -1393,6 +1398,19 @@ const verifyReturnUrlHandler = async (req, res) => {
         });
     }
 };
+
+// cron job 5 phút xóa đơn hàng CANCELED
+const deleteCanceledOrders = async (req) => {
+    const canceledOrders = await orderModel.find({
+        status: 'CANCELED',
+        createdAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) },
+    });
+    for (const order of canceledOrders) {
+        await order.deleteOne();
+    }
+};
+
+cron.schedule('*/5 * * * *', deleteCanceledOrders);
 
 export default {
     getRevenue,

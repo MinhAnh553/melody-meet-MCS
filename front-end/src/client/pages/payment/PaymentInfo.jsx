@@ -119,6 +119,7 @@ function getVietQRUrl({
 function OrderPage() {
     const { user } = useAuth();
     const { orderId } = useParams();
+    const { eventId } = useParams();
     const navigate = useNavigate();
 
     const [order, setOrder] = useState(null);
@@ -201,7 +202,7 @@ function OrderPage() {
             if (res.success) {
                 if (res.status === 'PAID') {
                     navigate(
-                        `/event/${order.eventId}/bookings/${order._id}/payment-success`,
+                        `/event/${eventId}/bookings/${orderId}/payment-success`,
                     );
                     swalCustomize.Toast.fire({
                         icon: 'success',

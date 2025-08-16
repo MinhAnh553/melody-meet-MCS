@@ -563,14 +563,14 @@ const UpgradeRequestsList = () => {
                                 {getStatusTag(selectedRequest.status)}
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                                <div
+                                {/* <div
                                     className={
                                         orderStyles.orderDetailsOrderCodeLink
                                     }
                                     style={{ fontSize: 17 }}
                                 >
                                     Mã yêu cầu: <b>{selectedRequest._id}</b>
-                                </div>
+                                </div> */}
                                 <div
                                     className={
                                         orderStyles.orderDetailsOrderDate
@@ -582,7 +582,7 @@ const UpgradeRequestsList = () => {
                             </div>
                         </div>
                         <Modal.Body
-                            className={orderStyles.orderDetailsContent}
+                            className={orderStyles.orderDetailsContenta}
                             style={{
                                 background: '#fff',
                                 borderBottomLeftRadius: 16,
@@ -769,7 +769,7 @@ const UpgradeRequestsList = () => {
                                                     ?.description || '-'}
                                             </span>
                                         </div>
-                                        {selectedRequest.organization
+                                        {/* {selectedRequest.organization
                                             ?.licenseUrl && (
                                             <div
                                                 className={
@@ -839,7 +839,7 @@ const UpgradeRequestsList = () => {
                                                     </a>
                                                 )}
                                             </div>
-                                        )}
+                                        )} */}
                                         <div
                                             className={
                                                 orderStyles.orderDetailsInfoItem

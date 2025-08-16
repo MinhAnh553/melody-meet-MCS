@@ -138,8 +138,8 @@ const UpgradeRequestPage = () => {
     });
     const [logo, setLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
-    const [licenseFile, setLicenseFile] = useState(null);
-    const [licensePreview, setLicensePreview] = useState(null);
+    // const [licenseFile, setLicenseFile] = useState(null);
+    // const [licensePreview, setLicensePreview] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [checkingStatus, setCheckingStatus] = useState(true);
     const [rejectedNote, setRejectedNote] = useState('');
@@ -179,7 +179,7 @@ const UpgradeRequestPage = () => {
                             agree: organization?.agree || false,
                         });
                         setLogoPreview(organization?.logo || null);
-                        setLicensePreview(organization?.licenseUrl || null);
+                        // setLicensePreview(organization?.licenseUrl || null);
                         setRejectedNote(
                             adminNote ||
                                 'Yêu cầu trước của bạn đã bị từ chối. Vui lòng chỉnh sửa thông tin và gửi lại.',
@@ -211,10 +211,10 @@ const UpgradeRequestPage = () => {
         setLogoPreview(previewUrl);
     };
 
-    const handleLicenseSelect = (file, previewUrl) => {
-        setLicenseFile(file);
-        setLicensePreview(previewUrl);
-    };
+    // const handleLicenseSelect = (file, previewUrl) => {
+    //     setLicenseFile(file);
+    //     setLicensePreview(previewUrl);
+    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -223,6 +223,11 @@ const UpgradeRequestPage = () => {
             return swalCustomize.Toast.fire({
                 icon: 'error',
                 title: 'Vui lòng nhập tên tổ chức',
+            });
+        if (!form.orgTax.trim())
+            return swalCustomize.Toast.fire({
+                icon: 'error',
+                title: 'Vui lòng nhập mã số thuế',
             });
         if (!logo && !logoPreview)
             return swalCustomize.Toast.fire({
@@ -280,15 +285,15 @@ const UpgradeRequestPage = () => {
                 logoMediaId = uploadRes.data?.mediaId || uploadRes.mediaId;
             }
             // Upload license file if changed
-            let licenseUrl = licensePreview,
-                licenseMediaId = '';
-            if (licenseFile) {
-                const formData = new FormData();
-                formData.append('file', licenseFile);
-                const uploadRes = await api.uploadMedia(formData);
-                licenseUrl = uploadRes.data?.url || uploadRes.url;
-                licenseMediaId = uploadRes.data?.mediaId || uploadRes.mediaId;
-            }
+            // let licenseUrl = licensePreview,
+            //     licenseMediaId = '';
+            // if (licenseFile) {
+            //     const formData = new FormData();
+            //     formData.append('file', licenseFile);
+            //     const uploadRes = await api.uploadMedia(formData);
+            //     licenseUrl = uploadRes.data?.url || uploadRes.url;
+            //     licenseMediaId = uploadRes.data?.mediaId || uploadRes.mediaId;
+            // }
             // Build request body
             const data = {
                 organization: {
@@ -300,8 +305,8 @@ const UpgradeRequestPage = () => {
                     phone: form.orgPhone,
                     logo: logoUrl,
                     logoMediaId,
-                    licenseUrl,
-                    licenseMediaId,
+                    // licenseUrl,
+                    // licenseMediaId,
                     accountName: form.accountName,
                     accountNumber: form.accountNumber,
                     bankName: form.bankName,
@@ -564,7 +569,7 @@ const UpgradeRequestPage = () => {
                                                 </div>
                                             </div>
                                         </Col>
-                                        {statusData.organization
+                                        {/* {statusData.organization
                                             ?.licenseUrl && (
                                             <Col md={12}>
                                                 <div
@@ -600,7 +605,7 @@ const UpgradeRequestPage = () => {
                                                     </div>
                                                 </div>
                                             </Col>
-                                        )}
+                                        )} */}
                                     </Row>
                                 </div>
 
@@ -849,7 +854,14 @@ const UpgradeRequestPage = () => {
                                                             styles.formLabel
                                                         }
                                                     >
-                                                        Mã số thuế
+                                                        Mã số thuế{' '}
+                                                        <span
+                                                            className={
+                                                                styles.required
+                                                            }
+                                                        >
+                                                            *
+                                                        </span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -979,7 +991,7 @@ const UpgradeRequestPage = () => {
                                                     />
                                                 </div>
                                             </Col>
-                                            <Col md={12}>
+                                            {/* <Col md={12}>
                                                 <div
                                                     className={styles.formGroup}
                                                 >
@@ -1007,7 +1019,7 @@ const UpgradeRequestPage = () => {
                                                         }
                                                     />
                                                 </div>
-                                            </Col>
+                                            </Col> */}
                                         </Row>
                                     </Col>
                                 </Row>
