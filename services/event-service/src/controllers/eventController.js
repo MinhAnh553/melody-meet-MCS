@@ -1979,7 +1979,7 @@ const searchEventsForAI = async (req, res) => {
         console.log('MinhAnh553: searchEventsForAI ->  req.query', req.query);
 
         const eventQuery = {
-            status: { $in: ['approved', 'event_over'] },
+            status: { $in: ['approved'] },
         };
 
         // Tối ưu tìm kiếm theo query: tìm kiếm cả trong tên và mô tả với độ ưu tiên
