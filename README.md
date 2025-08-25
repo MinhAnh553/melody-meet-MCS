@@ -61,5 +61,5 @@ Hệ thống được thiết kế theo **Microservices Architecture**, gồm c�
 
 ### Clone dự án
 ```bash
-git clone https://github.com/MinhAnh553/melody-meet-microservices.git
+git clone https://github.com/MinhAnh553/melody-meet-MCSs.git
 cd melody-meet-microservices
